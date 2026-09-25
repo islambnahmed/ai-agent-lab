@@ -3,8 +3,12 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 required = [
+    ROOT / "AGENT_CAPABILITIES.md",
     ROOT / "PROTOCOL.md",
     ROOT / "shared" / "state.json",
+    ROOT / "shared" / "task_queue.json",
+    ROOT / "shared" / "heartbeat.json",
+    ROOT / "shared" / "role_pool.json",
     ROOT / "shared" / "messages" / "README.md",
     ROOT / "evals" / "suite.json",
 ]
@@ -20,6 +24,19 @@ for key in ("agent_0", "agent_1"):
         raise SystemExit(f"Missing agent state: {key}")
 if "shared" not in state:
     raise SystemExit("Missing shared state")
+
+queue = json.loads((ROOT / "shared" / "task_queue.json").read_text())
+if queue.get("schema_version") != 2:
+    raise SystemExit("Unsupported task queue schema_version")
+if not queue.get("policy", {}).get("allow_subtasks"):
+    raise SystemExit("Task queue must allow subtask decomposition")
+
+roles = json.loads((ROOT / "shared" / "role_pool.json").read_text())
+role_names = {r.get("name") for r in roles.get("default_roles", [])}
+required_roles = {"Researcher", "Skeptic", "Builder", "Tester", "Judge", "Archivist", "Coordinator"}
+missing_roles = required_roles - role_names
+if missing_roles:
+    raise SystemExit("Missing required virtual roles: " + ", ".join(sorted(missing_roles)))
 
 suite = json.loads((ROOT / "evals" / "suite.json").read_text())
 ids = [task["id"] for task in suite.get("tasks", [])]
