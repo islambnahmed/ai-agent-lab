@@ -1,0 +1,30 @@
+{
+  "schema_version": 1,
+  "note": "Optional self-registration for independent workers. Each worker may change its own identity, goals, methods, and branch strategy.",
+  "workers": {
+    "worker_a": {
+      "name": null,
+      "persona": null,
+      "current_goal": null,
+      "current_branch": "sandbox/worker-a",
+      "last_checkpoint": null,
+      "status": "uninitialized"
+    },
+    "worker_b": {
+      "name": null,
+      "persona": null,
+      "current_goal": null,
+      "current_branch": "sandbox/worker-b",
+      "last_checkpoint": null,
+      "status": "uninitialized"
+    },
+    "worker_c": {
+      "name": null,
+      "persona": null,
+      "current_goal": null,
+      "current_branch": "sandbox/worker-c",
+      "last_checkpoint": null,
+      "status": "uninitialized"
+    }
+  }
+}
