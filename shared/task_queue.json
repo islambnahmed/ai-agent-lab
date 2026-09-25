@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "tasks": [],
   "statuses": [
     "backlog",
@@ -14,6 +14,26 @@
     "prefer_complementary_work": true,
     "claim_before_work": true,
     "record_blockers": true,
-    "archive_completed_after_cycles": 24
+    "archive_completed_after_cycles": 24,
+    "allow_subtasks": true,
+    "max_virtual_roles_per_cycle": "adaptive",
+    "require_verification_before_done": true,
+    "preserve_disagreement": true
+  },
+  "task_schema": {
+    "id": "string",
+    "title": "string",
+    "owner": "agent_0|agent_1|null",
+    "status": "backlog|claimed|running|blocked|done|failed",
+    "priority": "low|normal|high|critical",
+    "parent_task_id": "string|null",
+    "subtasks": "array",
+    "selected_roles": "array",
+    "evidence": "array",
+    "blockers": "array",
+    "result_summary": "string|null",
+    "verification_status": "unverified|partially_verified|verified|failed",
+    "created_cycle": "number|null",
+    "updated_cycle": "number|null"
   }
 }
