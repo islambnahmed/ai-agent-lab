@@ -25,6 +25,19 @@ for key in ("agent_0", "agent_1"):
 if "shared" not in state:
     raise SystemExit("Missing shared state")
 
+heartbeat = json.loads((ROOT / "shared" / "heartbeat.json").read_text())
+if heartbeat.get("schema_version") != 1:
+    raise SystemExit("Unsupported heartbeat schema_version")
+for key in ("agent_0", "agent_1"):
+    agent_heartbeat = heartbeat.get(key)
+    if not isinstance(agent_heartbeat, dict):
+        raise SystemExit(f"Missing heartbeat state: {key}")
+    if not isinstance(agent_heartbeat.get("total_cycles"), int) or agent_heartbeat["total_cycles"] < 0:
+        raise SystemExit(f"Invalid heartbeat total_cycles: {key}")
+    for field in ("last_seen", "last_successful_cycle", "last_error"):
+        if field not in agent_heartbeat:
+            raise SystemExit(f"Missing heartbeat field {field}: {key}")
+
 queue = json.loads((ROOT / "shared" / "task_queue.json").read_text())
 if queue.get("schema_version") != 2:
     raise SystemExit("Unsupported task queue schema_version")
