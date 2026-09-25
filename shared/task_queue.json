@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "tasks": [],
+  "statuses": [
+    "backlog",
+    "claimed",
+    "running",
+    "blocked",
+    "done",
+    "failed"
+  ],
+  "policy": {
+    "max_active_per_agent": 1,
+    "prefer_complementary_work": true,
+    "claim_before_work": true,
+    "record_blockers": true,
+    "archive_completed_after_cycles": 24
+  }
+}
