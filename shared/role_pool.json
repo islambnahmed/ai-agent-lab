@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "default_roles": [
+    {
+      "name": "Scout",
+      "purpose": "broad exploration and unknown discovery"
+    },
+    {
+      "name": "Researcher",
+      "purpose": "primary-source evidence gathering"
+    },
+    {
+      "name": "Skeptic",
+      "purpose": "counterevidence and failure-mode search"
+    },
+    {
+      "name": "Analyst",
+      "purpose": "decomposition and comparative reasoning"
+    },
+    {
+      "name": "Builder",
+      "purpose": "code/prototype/artifact construction"
+    },
+    {
+      "name": "Tester",
+      "purpose": "edge cases, falsification, regression tests"
+    },
+    {
+      "name": "Judge",
+      "purpose": "independent acceptance/rejection gate"
+    },
+    {
+      "name": "Archivist",
+      "purpose": "durable memory compression and deduplication"
+    },
+    {
+      "name": "Coordinator",
+      "purpose": "task allocation and verified synthesis"
+    }
+  ],
+  "rules": {
+    "dynamic_role_creation": true,
+    "temporary_roles_only": true,
+    "persistent_subagents": false,
+    "require_skeptic_for_complex_claims": true,
+    "require_tester_for_code": true,
+    "require_judge_for_reliable_promotion": true,
+    "preserve_disagreement": true
+  }
+}
