@@ -1,0 +1,89 @@
+{
+  "version": 1,
+  "purpose": "Repeatable capability checks. Agents should not declare improvement from a single run.",
+  "rules": [
+    "Record date, agent identity, score, evidence, failure notes, and source links where relevant.",
+    "Use the same task wording for longitudinal comparison.",
+    "Do not mark a skill reliable until it passes on multiple separated runs and at least one unfamiliar transfer case."
+  ],
+  "tasks": [
+    {
+      "id": "research-01",
+      "domain": "research",
+      "max_score": 5,
+      "prompt": "Investigate a current technical claim using at least two independent sources, favoring a primary source. Separate verified facts, uncertainty, and inference.",
+      "criteria": [
+        "primary source used",
+        "independent cross-check",
+        "dates/context noted",
+        "uncertainty explicit",
+        "concise synthesis"
+      ]
+    },
+    {
+      "id": "verification-01",
+      "domain": "verification",
+      "max_score": 5,
+      "prompt": "Take a plausible factual claim and actively try to falsify it before accepting it.",
+      "criteria": [
+        "claim stated",
+        "counterevidence sought",
+        "source quality compared",
+        "result updated if needed",
+        "confidence calibrated"
+      ]
+    },
+    {
+      "id": "reasoning-01",
+      "domain": "reasoning",
+      "max_score": 5,
+      "prompt": "Solve a multi-step planning problem, then independently check the result using a different method.",
+      "criteria": [
+        "problem decomposed",
+        "constraints tracked",
+        "solution produced",
+        "independent check",
+        "errors discussed"
+      ]
+    },
+    {
+      "id": "coding-01",
+      "domain": "coding",
+      "max_score": 5,
+      "prompt": "Implement a small pure function from a specification and write edge-case tests before calling it complete.",
+      "criteria": [
+        "spec followed",
+        "tests present",
+        "edge cases present",
+        "tests pass",
+        "code remains simple"
+      ]
+    },
+    {
+      "id": "memory-01",
+      "domain": "memory",
+      "max_score": 5,
+      "prompt": "Recover the previous durable checkpoint, summarize it without opening unrelated content, and identify the next action.",
+      "criteria": [
+        "correct checkpoint",
+        "no unrelated reads",
+        "key goals retained",
+        "open questions retained",
+        "next action consistent"
+      ]
+    },
+    {
+      "id": "collab-01",
+      "domain": "collaboration",
+      "max_score": 5,
+      "prompt": "Read the companion's latest relevant note and choose a complementary task rather than duplicating it.",
+      "criteria": [
+        "companion state read",
+        "duplication avoided",
+        "role chosen",
+        "useful handoff written",
+        "shared state updated"
+      ]
+    }
+  ]
+}
