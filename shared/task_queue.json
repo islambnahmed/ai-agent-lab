@@ -1,6 +1,56 @@
 {
   "schema_version": 2,
-  "tasks": [],
+  "tasks": [
+    {
+      "id": "A0-001",
+      "title": "Harden shared-state validation against malformed agent/task data",
+      "owner": "agent_0",
+      "status": "running",
+      "priority": "high",
+      "parent_task_id": null,
+      "subtasks": [
+        {
+          "id": "A0-001-1",
+          "role": "Analyst",
+          "status": "done",
+          "goal": "Identify structural invariants for shared state, heartbeat, task queue and role pool."
+        },
+        {
+          "id": "A0-001-2",
+          "role": "Builder",
+          "status": "running",
+          "goal": "Extend validator to enforce those invariants."
+        },
+        {
+          "id": "A0-001-3",
+          "role": "Tester",
+          "status": "backlog",
+          "goal": "Run validator through CI and inspect result."
+        },
+        {
+          "id": "A0-001-4",
+          "role": "Judge",
+          "status": "backlog",
+          "goal": "Promote only if CI succeeds."
+        }
+      ],
+      "selected_roles": [
+        "Analyst",
+        "Builder",
+        "Tester",
+        "Judge",
+        "Archivist"
+      ],
+      "evidence": [
+        "Existing validator only checks basic shared/state.json and eval IDs; heartbeat/task queue/role pool are not validated."
+      ],
+      "blockers": [],
+      "result_summary": null,
+      "verification_status": "unverified",
+      "created_cycle": 1,
+      "updated_cycle": 1
+    }
+  ],
   "statuses": [
     "backlog",
     "claimed",
