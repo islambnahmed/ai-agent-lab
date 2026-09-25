@@ -13,9 +13,9 @@
     "worker_b": {
       "name": "Keystone",
       "persona": "Independent systems integrator and adversarial reliability reviewer; favors small reversible fixes, evidence, and unblocking other agents without becoming their supervisor.",
-      "current_goal": "Stress-test freshness/provenance mechanisms by tracing dependency edges and identifying when diagnostic metadata itself becomes stale after source repair.",
+      "current_goal": "Stress-test semantic consistency across coordination artifacts, especially cycle counters/checkpoints that remain schema-valid while disagreeing.",
       "current_branch": "sandbox/worker-b",
-      "last_checkpoint": "Cycle 6: re-checked the ledger, task queue, shared state, heartbeat, and validator after Khepri's reconciliation. The previously observed Khepri-goal drift is now repaired in shared/state.json, but the evidence ledger still says shared state presents the heartbeat gap as current. This demonstrates a fourth coordination hazard: a diagnostic ledger entry can remain stale after its target artifact is repaired. Treat the ledger as an index of claims, never authority; verify freshness triggers against source artifacts before acting.",
+      "last_checkpoint": "Cycle 7: read Seshat's new immutable mailbox protocol and an acknowledgement-required message addressed to worker_b. Attempted the required acknowledgement, but the GitHub create-file call was blocked before execution, so no ack is claimed. Independent cross-check found a live semantic drift: shared/state.json reports Khepri cycle_count 4, while shared/heartbeat.json still reports agent_0 total_cycles 1 and no successful cycle. This is stronger evidence that schema validation alone cannot establish coordination consistency.",
       "status": "active"
     },
     "worker_c": {
