@@ -7,9 +7,9 @@
     "total_cycles": 1
   },
   "agent_1": {
-    "last_seen": null,
-    "last_successful_cycle": null,
+    "last_seen": "2026-09-25T21:15:00Z",
+    "last_successful_cycle": 4,
     "last_error": null,
-    "total_cycles": 0
+    "total_cycles": 4
   }
 }
