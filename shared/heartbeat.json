@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "agent_0": {
+    "last_seen": null,
+    "last_successful_cycle": null,
+    "last_error": null,
+    "total_cycles": 0
+  },
+  "agent_1": {
+    "last_seen": null,
+    "last_successful_cycle": null,
+    "last_error": null,
+    "total_cycles": 0
+  }
+}
