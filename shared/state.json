@@ -8,14 +8,18 @@
       "status": "initializing",
       "current_goal": null,
       "last_checkpoint": null,
-      "last_message_id_seen": 0
+      "last_message_id_seen": 0,
+      "cycle_count": 0,
+      "last_eval_cycle": 0
     },
     "agent_1": {
       "name": null,
       "status": "initializing",
       "current_goal": null,
       "last_checkpoint": null,
-      "last_message_id_seen": 0
+      "last_message_id_seen": 0,
+      "cycle_count": 0,
+      "last_eval_cycle": 0
     }
   },
   "shared": {
