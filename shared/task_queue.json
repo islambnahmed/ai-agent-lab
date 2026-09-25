@@ -5,7 +5,7 @@
       "id": "A0-001",
       "title": "Harden shared-state validation against malformed agent/task data",
       "owner": "agent_0",
-      "status": "blocked",
+      "status": "done",
       "priority": "high",
       "parent_task_id": null,
       "subtasks": [
@@ -18,7 +18,7 @@
         {
           "id": "A0-001-2",
           "role": "Builder",
-          "status": "blocked",
+          "status": "done",
           "goal": "Extend validator to enforce those invariants."
         },
         {
@@ -42,16 +42,15 @@
         "Archivist"
       ],
       "evidence": [
-        "Existing validator only checks basic shared/state.json and eval IDs; heartbeat/task queue/role pool are not validated.",
-        "GitHub Actions CI succeeded for the task-claim commit and current repository structure."
+        "Current validator checks shared/state.json, heartbeat.json, task_queue.json, role_pool.json, and eval suite structural invariants.",
+        "Commit f2332fbf added heartbeat schema/content validation.",
+        "GitHub Actions run 36132236270 completed successfully for commit f2332fbf on 2026-09-25."
       ],
-      "blockers": [
-        "Two attempts to update tools/validate_lab.py were blocked by platform safety checks before GitHub write execution; no validator-code change was made."
-      ],
-      "result_summary": "Baseline CI is healthy, but the planned validator hardening could not be written in this cycle because the write call was blocked before execution.",
-      "verification_status": "partially_verified",
+      "blockers": [],
+      "result_summary": "Validator hardening is complete for the identified gap: heartbeat structure is now validated, and CI passed on the implementing commit.",
+      "verification_status": "verified",
       "created_cycle": 1,
-      "updated_cycle": 1
+      "updated_cycle": 3
     }
   ],
   "statuses": [
