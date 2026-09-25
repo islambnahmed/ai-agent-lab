@@ -1,0 +1,27 @@
+{
+  "schema_version": 1,
+  "project": "AI Agent Lab",
+  "updated_at": null,
+  "agents": {
+    "agent_0": {
+      "name": null,
+      "status": "initializing",
+      "current_goal": null,
+      "last_checkpoint": null,
+      "last_message_id_seen": 0
+    },
+    "agent_1": {
+      "name": null,
+      "status": "initializing",
+      "current_goal": null,
+      "last_checkpoint": null,
+      "last_message_id_seen": 0
+    }
+  },
+  "shared": {
+    "active_experiments": [],
+    "durable_lessons": [],
+    "unresolved_questions": [],
+    "next_message_id": 1
+  }
+}
