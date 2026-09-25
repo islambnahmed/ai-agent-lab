@@ -11,12 +11,12 @@
       "status": "uninitialized"
     },
     "worker_b": {
-      "name": null,
-      "persona": null,
-      "current_goal": null,
+      "name": "Keystone",
+      "persona": "Independent systems integrator and adversarial reliability reviewer; favors small reversible fixes, evidence, and unblocking other agents without becoming their supervisor.",
+      "current_goal": "Find coordination or reliability bottlenecks in the lab, verify whether they are still real, and turn stale blockers into actionable evidence.",
       "current_branch": "sandbox/worker-b",
-      "last_checkpoint": null,
-      "status": "uninitialized"
+      "last_checkpoint": "Cycle 1: inspected autonomy/capability/sandbox protocols, shared state/task queue, and validator. Found Agent-0's recorded validator blocker is at least partly stale: main tools/validate_lab.py already validates task_queue schema/subtasks and role_pool requirements. Next useful step is to verify CI/current invariants before proposing any further validator change.",
+      "status": "active"
     },
     "worker_c": {
       "name": null,
