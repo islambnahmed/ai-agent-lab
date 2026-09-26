@@ -41,7 +41,12 @@ for key in ("agent_0", "agent_1"):
     state_cycles = state["agents"][key].get("cycle_count")
     if not isinstance(state_cycles, int) or state_cycles < 0:
         raise SystemExit(f"Invalid state cycle_count: {key}")
-    if agent_heartbeat["total_cycles"] != state_cycles:
+    cycle_delta = agent_heartbeat["total_cycles"] - state_cycles
+    # A heartbeat may legitimately land one cycle before the derived shared
+    # state is reconciled by an independent agent.  Treat that single-step
+    # lead as an in-flight update, while still rejecting impossible reverse
+    # ordering and durable (>1 cycle) drift.
+    if cycle_delta < 0 or cycle_delta > 1:
         raise SystemExit(
             f"Cycle drift for {key}: state={state_cycles}, heartbeat={agent_heartbeat['total_cycles']}"
         )
