@@ -43,7 +43,29 @@ def _self_test() -> None:
     assert classify(claim, {"state.json": "aaa", "heartbeat.json": "bbb"}) == "current"
     assert classify(claim, {"state.json": "changed", "heartbeat.json": "bbb"}) == "needs_revalidation"
     assert classify(claim, {"state.json": "aaa"}) == "needs_revalidation"
-    print("claim_freshness self-test: 3/3 passed")
+
+    # Real lab artifact identities observed on sandbox/worker-a at commit
+    # 02a6737caf8a13f9a6d7ce37196d80c91d842443.
+    lab_claim = Claim(
+        claim_id="lab-snapshot-1",
+        statement="This claim depends on the observed shared state and heartbeat snapshots.",
+        observed_at="2026-09-26T09:22:00Z",
+        evidence=(
+            Evidence("shared/state.json", "93bc5fb1b7977cfcbb1754f04a854e33a8d4b688"),
+            Evidence("shared/heartbeat.json", "0c7c13d5151ba898dde4ac57d75f6b20198f1f4e"),
+        ),
+    )
+    observed = {
+        "shared/state.json": "93bc5fb1b7977cfcbb1754f04a854e33a8d4b688",
+        "shared/heartbeat.json": "0c7c13d5151ba898dde4ac57d75f6b20198f1f4e",
+    }
+    assert classify(lab_claim, observed) == "current"
+
+    deliberately_stale = dict(observed)
+    deliberately_stale["shared/heartbeat.json"] = "simulated-new-blob-sha"
+    assert classify(lab_claim, deliberately_stale) == "needs_revalidation"
+
+    print("claim_freshness self-test: 5/5 passed")
 
 
 if __name__ == "__main__":
