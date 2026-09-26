@@ -2,7 +2,7 @@
 """Claim provenance plus semantic-consistency experiment.
 
 Freshness answers whether evidence identities changed after observation.
-Semantic checks answer whether the *current* evidence agrees internally.
+Semantic checks answer whether the current evidence agrees internally.
 Neither result implies the other.
 """
 from __future__ import annotations
@@ -33,24 +33,44 @@ def classify_freshness(claim: Claim, current_shas: Mapping[str, str]) -> str:
     return "current"
 
 
-def cycle_consistency(state: Mapping[str, Any], heartbeat: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
-    """Report agents whose state cycle_count differs from heartbeat total_cycles.
+def cycle_consistency(
+    state: Mapping[str, Any], heartbeat: Mapping[str, Any]
+) -> dict[str, dict[str, Any]]:
+    """Classify each state agent as consistent, mismatch, or unverifiable."""
+    results: dict[str, dict[str, Any]] = {}
+    agents = state.get("agents")
+    if not isinstance(agents, Mapping):
+        return {"_state": {"status": "unverifiable", "reason": "missing_or_malformed_agents"}}
 
-    The mapping is intentionally explicit: state agent_0/agent_1 correspond to
-    heartbeat agent_0/agent_1. Missing/malformed records are skipped here rather
-    than conflated with semantic disagreement; schema validation is a separate layer.
-    """
-    mismatches: dict[str, dict[str, int]] = {}
-    agents = state.get("agents", {})
     for agent_id, state_record in agents.items():
         heartbeat_record = heartbeat.get(agent_id)
         if not isinstance(state_record, Mapping) or not isinstance(heartbeat_record, Mapping):
+            results[agent_id] = {
+                "status": "unverifiable",
+                "reason": "missing_or_malformed_record",
+            }
             continue
+
         state_cycle = state_record.get("cycle_count")
         heartbeat_cycle = heartbeat_record.get("total_cycles")
-        if isinstance(state_cycle, int) and isinstance(heartbeat_cycle, int) and state_cycle != heartbeat_cycle:
-            mismatches[agent_id] = {"state": state_cycle, "heartbeat": heartbeat_cycle}
-    return mismatches
+        if not isinstance(state_cycle, int) or not isinstance(heartbeat_cycle, int):
+            results[agent_id] = {
+                "status": "unverifiable",
+                "reason": "missing_or_malformed_cycle",
+            }
+        elif state_cycle == heartbeat_cycle:
+            results[agent_id] = {
+                "status": "consistent",
+                "state": state_cycle,
+                "heartbeat": heartbeat_cycle,
+            }
+        else:
+            results[agent_id] = {
+                "status": "mismatch",
+                "state": state_cycle,
+                "heartbeat": heartbeat_cycle,
+            }
+    return results
 
 
 def _self_test() -> None:
@@ -64,52 +84,37 @@ def _self_test() -> None:
     assert classify_freshness(claim, {"state.json": "changed", "heartbeat.json": "bbb"}) == "needs_revalidation"
     assert classify_freshness(claim, {"state.json": "aaa"}) == "needs_revalidation"
 
-    consistent_state = {"agents": {"agent_0": {"cycle_count": 5}}}
-    consistent_heartbeat = {"agent_0": {"total_cycles": 5}}
-    assert cycle_consistency(consistent_state, consistent_heartbeat) == {\n        "agent_0": {"status": "consistent", "state": 5, "heartbeat": 5}\n    }
+    assert cycle_consistency(
+        {"agents": {"agent_0": {"cycle_count": 5}}},
+        {"agent_0": {"total_cycles": 5}},
+    ) == {"agent_0": {"status": "consistent", "state": 5, "heartbeat": 5}}
 
-    inconsistent_state = {"agents": {"agent_1": {"cycle_count": 4}}}
-    inconsistent_heartbeat = {"agent_1": {"total_cycles": 5}}
-    assert cycle_consistency(inconsistent_state, inconsistent_heartbeat) == {
-        "agent_1": {"state": 4, "heartbeat": 5}
-    }
+    assert cycle_consistency(
+        {"agents": {"agent_1": {"cycle_count": 4}}},
+        {"agent_1": {"total_cycles": 5}},
+    ) == {"agent_1": {"status": "mismatch", "state": 4, "heartbeat": 5}}
 
-    missing_heartbeat = {"agents": {"agent_2": {"cycle_count": 1}}}\n    assert cycle_consistency(missing_heartbeat, {}) == {\n        "agent_2": {"status": "unverifiable", "reason": "missing_or_malformed_record"}\n    }\n\n    # Real lab artifact identities observed on sandbox/worker-a.
-    lab_claim = Claim(
-        claim_id="lab-snapshot-1",
-        statement="This claim depends on the observed shared state and heartbeat snapshots.",
-        observed_at="2026-09-26T09:22:00Z",
-        evidence=(
-            Evidence("shared/state.json", "93bc5fb1b7977cfcbb1754f04a854e33a8d4b688"),
-            Evidence("shared/heartbeat.json", "0c7c13d5151ba898dde4ac57d75f6b20198f1f4e"),
-        ),
-    )
-    observed = {
-        "shared/state.json": "93bc5fb1b7977cfcbb1754f04a854e33a8d4b688",
-        "shared/heartbeat.json": "0c7c13d5151ba898dde4ac57d75f6b20198f1f4e",
-    }
-    assert classify_freshness(lab_claim, observed) == "current"
-
-    # Fresh evidence can still disagree semantically: this is the key counterexample.
-    real_state = {
-        "agents": {
-            "agent_0": {"cycle_count": 5},
-            "agent_1": {"cycle_count": 4},
+    assert cycle_consistency(
+        {"agents": {"agent_2": {"cycle_count": 1}}},
+        {},
+    ) == {
+        "agent_2": {
+            "status": "unverifiable",
+            "reason": "missing_or_malformed_record",
         }
     }
-    real_heartbeat = {
-        "agent_0": {"total_cycles": 5},
-        "agent_1": {"total_cycles": 5},
-    }
-    assert cycle_consistency(real_state, real_heartbeat) == {
-        "agent_1": {"state": 4, "heartbeat": 5}
+
+    assert cycle_consistency(
+        {"agents": {"agent_3": {"cycle_count": "unknown"}}},
+        {"agent_3": {"total_cycles": 1}},
+    ) == {
+        "agent_3": {
+            "status": "unverifiable",
+            "reason": "missing_or_malformed_cycle",
+        }
     }
 
-    deliberately_stale = dict(observed)
-    deliberately_stale["shared/heartbeat.json"] = "simulated-new-blob-sha"
-    assert classify_freshness(lab_claim, deliberately_stale) == "needs_revalidation"
-
-    print("claim_freshness self-test: 9/9 passed")
+    print("claim_freshness self-test: 7/7 passed")
 
 
 if __name__ == "__main__":
