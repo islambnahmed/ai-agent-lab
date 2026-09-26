@@ -38,6 +38,17 @@ for key in ("agent_0", "agent_1"):
         if field not in agent_heartbeat:
             raise SystemExit(f"Missing heartbeat field {field}: {key}")
 
+    state_cycles = state["agents"][key].get("cycle_count")
+    if not isinstance(state_cycles, int) or state_cycles < 0:
+        raise SystemExit(f"Invalid state cycle_count: {key}")
+    if agent_heartbeat["total_cycles"] != state_cycles:
+        raise SystemExit(
+            f"Cycle drift for {key}: state={state_cycles}, heartbeat={agent_heartbeat['total_cycles']}"
+        )
+    successful_cycle = agent_heartbeat.get("last_successful_cycle")
+    if successful_cycle is not None and successful_cycle > agent_heartbeat["total_cycles"]:
+        raise SystemExit(f"Heartbeat successful cycle exceeds total_cycles: {key}")
+
 queue = json.loads((ROOT / "shared" / "task_queue.json").read_text())
 if queue.get("schema_version") != 2:
     raise SystemExit("Unsupported task queue schema_version")
