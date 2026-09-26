@@ -33,7 +33,7 @@ def classify_freshness(claim: Claim, current_shas: Mapping[str, str]) -> str:
     return "current"
 
 
-def cycle_consistency(state: Mapping[str, Any], heartbeat: Mapping[str, Any]) -> dict[str, dict[str, int]]:
+def cycle_consistency(state: Mapping[str, Any], heartbeat: Mapping[str, Any]) -> dict[str, dict[str, Any]]:
     """Report agents whose state cycle_count differs from heartbeat total_cycles.
 
     The mapping is intentionally explicit: state agent_0/agent_1 correspond to
@@ -66,7 +66,7 @@ def _self_test() -> None:
 
     consistent_state = {"agents": {"agent_0": {"cycle_count": 5}}}
     consistent_heartbeat = {"agent_0": {"total_cycles": 5}}
-    assert cycle_consistency(consistent_state, consistent_heartbeat) == {}
+    assert cycle_consistency(consistent_state, consistent_heartbeat) == {\n        "agent_0": {"status": "consistent", "state": 5, "heartbeat": 5}\n    }
 
     inconsistent_state = {"agents": {"agent_1": {"cycle_count": 4}}}
     inconsistent_heartbeat = {"agent_1": {"total_cycles": 5}}
@@ -74,7 +74,7 @@ def _self_test() -> None:
         "agent_1": {"state": 4, "heartbeat": 5}
     }
 
-    # Real lab artifact identities observed on sandbox/worker-a.
+    missing_heartbeat = {"agents": {"agent_2": {"cycle_count": 1}}}\n    assert cycle_consistency(missing_heartbeat, {}) == {\n        "agent_2": {"status": "unverifiable", "reason": "missing_or_malformed_record"}\n    }\n\n    # Real lab artifact identities observed on sandbox/worker-a.
     lab_claim = Claim(
         claim_id="lab-snapshot-1",
         statement="This claim depends on the observed shared state and heartbeat snapshots.",
@@ -109,7 +109,7 @@ def _self_test() -> None:
     deliberately_stale["shared/heartbeat.json"] = "simulated-new-blob-sha"
     assert classify_freshness(lab_claim, deliberately_stale) == "needs_revalidation"
 
-    print("claim_freshness self-test: 8/8 passed")
+    print("claim_freshness self-test: 9/9 passed")
 
 
 if __name__ == "__main__":
