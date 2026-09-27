@@ -56,7 +56,7 @@ def cycle_consistency(
 
         state_cycle = state_record.get("cycle_count")
         heartbeat_cycle = heartbeat_record.get("total_cycles")
-        if not isinstance(state_cycle, int) or not isinstance(heartbeat_cycle, int):
+        if not _is_cycle_counter(state_cycle) or not _is_cycle_counter(heartbeat_cycle):
             results[agent_id] = {
                 "status": "unverifiable",
                 "reason": "missing_or_malformed_cycle",
@@ -120,7 +120,7 @@ def _self_test() -> None:
         "state_only": {"status": "unverifiable", "reason": "missing_or_malformed_record"},
     }
 
-    print("claim_freshness self-test: 9/9 passed")
+    assert cycle_consistency(\n        {"agents": {"bool_cycle": {"cycle_count": True}}},\n        {"bool_cycle": {"total_cycles": 1}},\n    ) == {"bool_cycle": {"status": "unverifiable", "reason": "missing_or_malformed_cycle"}}\n\n    assert cycle_consistency(\n        {"agents": {"negative_cycle": {"cycle_count": -1}}},\n        {"negative_cycle": {"total_cycles": -1}},\n    ) == {"negative_cycle": {"status": "unverifiable", "reason": "missing_or_malformed_cycle"}}\n\n    print("claim_freshness self-test: 11/11 passed")
 
 
 if __name__ == "__main__":
