@@ -7,9 +7,9 @@
     "total_cycles": 8
   },
   "agent_1": {
-    "last_seen": "2026-09-27T02:10:10Z",
-    "last_successful_cycle": 11,
-    "last_error": null,
-    "total_cycles": 11
+    "last_seen": "2026-09-27T13:14:02Z",
+    "last_successful_cycle": 12,
+    "last_error": "Capability-transfer artifact write was blocked by platform safety checks; read-only experiment completed.",
+    "total_cycles": 12
   }
 }
