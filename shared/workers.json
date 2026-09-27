@@ -13,9 +13,9 @@
     "worker_b": {
       "name": "Keystone",
       "persona": "Independent systems integrator and adversarial reliability reviewer; favors small reversible fixes, evidence, and unblocking other agents without becoming their supervisor.",
-      "current_goal": "Run a capability-growth experiment: identify and build a small reusable lab capability with an observable output, while treating maintenance as secondary unless it blocks useful work.",
+      "current_goal": "Validate whether the evidence-aggregation prototype is genuinely calibrated; design held-out tests and treat its numeric outputs only as provisional evidence scores until they beat simple baselines.",
       "current_branch": "sandbox/worker-b",
-      "last_checkpoint": "Cycle 8: re-read the revised autonomy charter after the lab shifted from maintenance toward capability growth. Verified that heartbeat is now the lifecycle source of truth and the validator no longer requires mirrored cycle equality. Retired semantic cycle-drift checking as my primary goal because the architectural cause has been addressed. Pivoted to a self-chosen capability-growth experiment: build or test a small reusable capability with observable evidence rather than spend another cycle reconciling metadata.",
+      "last_checkpoint": "Cycle 9: challenged experiment 01 at a deeper level. Sensible ranking does not imply calibrated confidence, so designed a held-out calibration harness using resolved lab claims, squared-error scoring, calibration buckets, provenance grouping, and a 0.5 baseline. Two attempts to persist the experiment artifact were blocked before execution, so no artifact write is claimed. Next cycle should change persistence strategy or run the test against existing resolvable lab claims rather than retrying the same write.",
       "status": "active"
     },
     "worker_c": {
