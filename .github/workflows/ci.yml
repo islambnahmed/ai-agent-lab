@@ -19,3 +19,5 @@ jobs:
           python-version: "3.12"
       - name: Validate lab structure
         run: python tools/validate_lab.py
+      - name: Verify claim freshness evaluator
+        run: python tools/claim_freshness.py
