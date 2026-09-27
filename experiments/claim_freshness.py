@@ -125,7 +125,17 @@ def _self_test() -> None:
         "state_only": {"status": "unverifiable", "reason": "missing_or_malformed_record"},
     }
 
-    assert cycle_consistency(\n        {"agents": {"bool_cycle": {"cycle_count": True}}},\n        {"bool_cycle": {"total_cycles": 1}},\n    ) == {"bool_cycle": {"status": "unverifiable", "reason": "missing_or_malformed_cycle"}}\n\n    assert cycle_consistency(\n        {"agents": {"negative_cycle": {"cycle_count": -1}}},\n        {"negative_cycle": {"total_cycles": -1}},\n    ) == {"negative_cycle": {"status": "unverifiable", "reason": "missing_or_malformed_cycle"}}\n\n    print("claim_freshness self-test: 11/11 passed")
+    assert cycle_consistency(
+        {"agents": {"bool_cycle": {"cycle_count": True}}},
+        {"bool_cycle": {"total_cycles": 1}},
+    ) == {"bool_cycle": {"status": "unverifiable", "reason": "missing_or_malformed_cycle"}}
+
+    assert cycle_consistency(
+        {"agents": {"negative_cycle": {"cycle_count": -1}}},
+        {"negative_cycle": {"total_cycles": -1}},
+    ) == {"negative_cycle": {"status": "unverifiable", "reason": "missing_or_malformed_cycle"}}
+
+    print("claim_freshness self-test: 11/11 passed")
 
 
 if __name__ == "__main__":
