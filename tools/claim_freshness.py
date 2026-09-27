@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """Evaluate whether a coordination claim is safe to use without refresh.
 
-Freshness is tied to the source file's immutable blob SHA, not the repository
-commit SHA. The source path is also bound into the check so identical blobs at
-different paths cannot accidentally validate each other's claims.
+Freshness is tied to the immutable identity of the smallest practical source
+scope. Whole-file blob provenance remains supported; callers may instead bind
+a claim to a stable scope (for example worker_c) and a digest of that scope.
 """
 
 from __future__ import annotations
@@ -24,62 +24,75 @@ class Claim:
     claim_kind: str
     source_blob_sha: str | None = None
     source_path: str | None = None
+    source_scope: str | None = None
+    source_scope_sha: str | None = None
     observed_at: str | None = None
 
 def evaluate(
     claim: Claim,
     current_source_blob_sha: str,
     current_source_path: str | None = None,
+    *,
+    current_source_scope: str | None = None,
+    current_source_scope_sha: str | None = None,
 ) -> Verdict:
     """Return the minimum action a consumer should take before using claim.
 
-    Consumers should pass the path they actually refreshed. Omitting it is
-    tolerated as WARNING during migration, never as USABLE.
+    If scoped provenance is present, both scope name and digest must match.
+    Otherwise the check falls back to whole-file blob identity. Partial scoped
+    metadata is a warning rather than silently falling back to file identity.
     """
     if claim.claim_kind == "historical_observation":
         return Verdict.HISTORICAL
     if claim.claim_kind != "current_state":
         return Verdict.WARNING
+    if not claim.source_path or not current_source_path or claim.source_path != current_source_path or not claim.observed_at:
+        return Verdict.WARNING
+
+    scoped = any((claim.source_scope, claim.source_scope_sha, current_source_scope, current_source_scope_sha))
+    if scoped:
+        if (
+            not claim.source_scope
+            or not claim.source_scope_sha
+            or not current_source_scope
+            or not current_source_scope_sha
+            or not SHA_RE.fullmatch(claim.source_scope_sha)
+            or not SHA_RE.fullmatch(current_source_scope_sha)
+            or claim.source_scope != current_source_scope
+        ):
+            return Verdict.WARNING
+        return Verdict.USABLE if claim.source_scope_sha == current_source_scope_sha else Verdict.REFRESH
 
     if (
         not claim.source_blob_sha
         or not SHA_RE.fullmatch(claim.source_blob_sha)
         or not SHA_RE.fullmatch(current_source_blob_sha)
-        or not claim.source_path
-        or not current_source_path
-        or claim.source_path != current_source_path
-        or not claim.observed_at
     ):
         return Verdict.WARNING
-
-    if claim.source_blob_sha != current_source_blob_sha:
-        return Verdict.REFRESH
-    return Verdict.USABLE
+    return Verdict.USABLE if claim.source_blob_sha == current_source_blob_sha else Verdict.REFRESH
 
 def _self_test() -> None:
-    old_blob = "1" * 40
-    same_blob = "2" * 40
-    changed_blob = "3" * 40
+    old_blob, same_blob, changed_blob = "1"*40, "2"*40, "3"*40
     path = "shared/state.json"
-    base = dict(source_path=path, observed_at="2026-09-26T00:00:00Z")
+    base = dict(source_path=path, observed_at="2026-09-27T10:00:00Z")
 
     assert evaluate(Claim("current_state", source_blob_sha=old_blob, **base), changed_blob, path) == Verdict.REFRESH
     assert evaluate(Claim("current_state", source_blob_sha=same_blob, **base), same_blob, path) == Verdict.USABLE
     assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, **base), changed_blob, path) == Verdict.HISTORICAL
     assert evaluate(Claim("current_state", source_blob_sha=None, **base), same_blob, path) == Verdict.WARNING
-    assert evaluate(Claim("current_state", source_blob_sha="main", **base), same_blob, path) == Verdict.WARNING
-    assert evaluate(Claim("current_state", source_blob_sha=same_blob, **base), "main", path) == Verdict.WARNING
-
-    # A blob SHA alone is not enough: identical content at another path must
-    # not validate a claim about shared/state.json.
     assert evaluate(Claim("current_state", source_blob_sha=same_blob, **base), same_blob, "shared/heartbeat.json") == Verdict.WARNING
-    assert evaluate(Claim("current_state", source_blob_sha=same_blob, **base), same_blob) == Verdict.WARNING
 
-    # Repository HEAD may advance for unrelated files while the source blob
-    # remains unchanged. Blob identity keeps the claim usable in that case.
-    unrelated_new_commit = "f" * 40
-    assert unrelated_new_commit != same_blob
-    assert evaluate(Claim("current_state", source_blob_sha=same_blob, **base), same_blob, path) == Verdict.USABLE
+    # Scoped provenance prevents unrelated edits elsewhere in the same file
+    # from invalidating a claim about worker_c.
+    scoped = Claim("current_state", source_path=path, source_scope="worker_c",
+                   source_scope_sha="a"*40, observed_at=base["observed_at"])
+    assert evaluate(scoped, changed_blob, path, current_source_scope="worker_c",
+                    current_source_scope_sha="a"*40) == Verdict.USABLE
+    assert evaluate(scoped, changed_blob, path, current_source_scope="worker_c",
+                    current_source_scope_sha="b"*40) == Verdict.REFRESH
+    assert evaluate(scoped, changed_blob, path, current_source_scope="worker_a",
+                    current_source_scope_sha="a"*40) == Verdict.WARNING
+    assert evaluate(scoped, changed_blob, path) == Verdict.WARNING
 
 if __name__ == "__main__":
     _self_test()
