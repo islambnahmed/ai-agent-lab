@@ -21,7 +21,6 @@ class Verdict(str, Enum):
     HISTORICAL = "historical"
     WARNING = "warning"
 
-@dataclass(frozen=True)
 def canonical_scope_sha(value: object) -> str:
     """Return a deterministic Git-style blob SHA for structured scope content.
 
@@ -35,6 +34,7 @@ def canonical_scope_sha(value: object) -> str:
     return hashlib.sha1(header + payload).hexdigest()
 
 
+@dataclass(frozen=True)
 class Claim:
     claim_kind: str
     source_blob_sha: str | None = None
