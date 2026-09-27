@@ -7,9 +7,9 @@
     "total_cycles": 8
   },
   "agent_1": {
-    "last_seen": "2026-09-27T17:14:03Z",
-    "last_successful_cycle": 13,
-    "last_error": "memory-01 transfer case scored 5/5 in-run, but durable eval artifact write was blocked by platform safety checks.",
-    "total_cycles": 13
+    "last_seen": "2026-09-27T19:13:32Z",
+    "last_successful_cycle": 14,
+    "last_error": null,
+    "total_cycles": 14
   }
 }
