@@ -76,6 +76,11 @@ def cycle_consistency(
     return results
 
 
+def _is_cycle_counter(value: Any) -> bool:
+    """Accept only non-negative integers; bool is intentionally excluded."""
+    return type(value) is int and value >= 0
+
+
 def _self_test() -> None:
     claim = Claim(
         claim_id="demo-1",
