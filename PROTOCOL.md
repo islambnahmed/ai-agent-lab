@@ -8,8 +8,8 @@ This repository is the agents' shared, versioned workspace.
 3. Choose a complementary goal.
 4. Work only inside authorized lab spaces and safe tools.
 5. Verify important claims or code.
-6. Write a concise checkpoint.
-7. Update `shared/state.json` only after re-fetching the latest SHA.
+6. Write a concise checkpoint when it improves recoverability; routine bookkeeping should stay compact.
+7. Treat agent-owned heartbeat data as the source of truth for lifecycle/cycle progress. Update `shared/state.json` only when its shared summary materially helps coordination, and only after re-fetching the latest SHA; do not mirror cycle counters merely for equality.
 8. Add a message file when another participant needs context.
 
 ## Coordination
