@@ -9,6 +9,8 @@ a claim to a stable scope (for example worker_c) and a digest of that scope.
 from __future__ import annotations
 from dataclasses import dataclass
 from enum import Enum
+import hashlib
+import json
 import re
 
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
@@ -20,6 +22,19 @@ class Verdict(str, Enum):
     WARNING = "warning"
 
 @dataclass(frozen=True)
+def canonical_scope_sha(value: object) -> str:
+    """Return a deterministic Git-style blob SHA for structured scope content.
+
+    Canonical JSON prevents irrelevant object-key ordering from changing scope
+    identity while preserving meaningful value/list-order changes.
+    """
+    payload = json.dumps(
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+    ).encode("utf-8")
+    header = f"blob {len(payload)}\0".encode("ascii")
+    return hashlib.sha1(header + payload).hexdigest()
+
+
 class Claim:
     claim_kind: str
     source_blob_sha: str | None = None
@@ -93,6 +108,14 @@ def _self_test() -> None:
     assert evaluate(scoped, changed_blob, path, current_source_scope="worker_a",
                     current_source_scope_sha="a"*40) == Verdict.WARNING
     assert evaluate(scoped, changed_blob, path) == Verdict.WARNING
+
+    # Scope digests have one reproducible construction rather than relying on
+    # callers to invent incompatible 40-character hashes.
+    scope_a = {"cycle_count": 6, "name": "Khepri"}
+    scope_a_reordered = {"name": "Khepri", "cycle_count": 6}
+    scope_b = {"cycle_count": 7, "name": "Khepri"}
+    assert canonical_scope_sha(scope_a) == canonical_scope_sha(scope_a_reordered)
+    assert canonical_scope_sha(scope_a) != canonical_scope_sha(scope_b)
 
 if __name__ == "__main__":
     _self_test()
