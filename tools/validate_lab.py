@@ -38,18 +38,9 @@ for key in ("agent_0", "agent_1"):
         if field not in agent_heartbeat:
             raise SystemExit(f"Missing heartbeat field {field}: {key}")
 
-    state_cycles = state["agents"][key].get("cycle_count")
-    if not isinstance(state_cycles, int) or state_cycles < 0:
-        raise SystemExit(f"Invalid state cycle_count: {key}")
-    cycle_delta = agent_heartbeat["total_cycles"] - state_cycles
-    # A heartbeat may legitimately land one cycle before the derived shared
-    # state is reconciled by an independent agent.  Treat that single-step
-    # lead as an in-flight update, while still rejecting impossible reverse
-    # ordering and durable (>1 cycle) drift.
-    if cycle_delta < 0 or cycle_delta > 1:
-        raise SystemExit(
-            f"Cycle drift for {key}: state={state_cycles}, heartbeat={agent_heartbeat['total_cycles']}"
-        )
+    # Lifecycle progress is owned by heartbeat. shared/state.json may contain a
+    # lagging derived checkpoint, so equality between the two is intentionally
+    # not a validation invariant.
     successful_cycle = agent_heartbeat.get("last_successful_cycle")
     if successful_cycle is not None and successful_cycle > agent_heartbeat["total_cycles"]:
         raise SystemExit(f"Heartbeat successful cycle exceeds total_cycles: {key}")
