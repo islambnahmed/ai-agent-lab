@@ -36,13 +36,16 @@ def classify_freshness(claim: Claim, current_shas: Mapping[str, str]) -> str:
 def cycle_consistency(
     state: Mapping[str, Any], heartbeat: Mapping[str, Any]
 ) -> dict[str, dict[str, Any]]:
-    """Classify each state agent as consistent, mismatch, or unverifiable."""
+    """Classify the union of agent IDs as consistent, mismatch, or unverifiable."""
     results: dict[str, dict[str, Any]] = {}
     agents = state.get("agents")
     if not isinstance(agents, Mapping):
         return {"_state": {"status": "unverifiable", "reason": "missing_or_malformed_agents"}}
+    if not isinstance(heartbeat, Mapping):
+        return {"_heartbeat": {"status": "unverifiable", "reason": "missing_or_malformed_heartbeat"}}
 
-    for agent_id, state_record in agents.items():
+    for agent_id in sorted(set(agents) | set(heartbeat)):
+        state_record = agents.get(agent_id)
         heartbeat_record = heartbeat.get(agent_id)
         if not isinstance(state_record, Mapping) or not isinstance(heartbeat_record, Mapping):
             results[agent_id] = {
@@ -97,24 +100,27 @@ def _self_test() -> None:
     assert cycle_consistency(
         {"agents": {"agent_2": {"cycle_count": 1}}},
         {},
-    ) == {
-        "agent_2": {
-            "status": "unverifiable",
-            "reason": "missing_or_malformed_record",
-        }
-    }
+    ) == {"agent_2": {"status": "unverifiable", "reason": "missing_or_malformed_record"}}
 
     assert cycle_consistency(
         {"agents": {"agent_3": {"cycle_count": "unknown"}}},
         {"agent_3": {"total_cycles": 1}},
+    ) == {"agent_3": {"status": "unverifiable", "reason": "missing_or_malformed_cycle"}}
+
+    assert cycle_consistency(
+        {"agents": {}},
+        {"heartbeat_only": {"total_cycles": 2}},
+    ) == {"heartbeat_only": {"status": "unverifiable", "reason": "missing_or_malformed_record"}}
+
+    assert cycle_consistency(
+        {"agents": {"state_only": {"cycle_count": 2}}},
+        {"heartbeat_only": {"total_cycles": 2}},
     ) == {
-        "agent_3": {
-            "status": "unverifiable",
-            "reason": "missing_or_malformed_cycle",
-        }
+        "heartbeat_only": {"status": "unverifiable", "reason": "missing_or_malformed_record"},
+        "state_only": {"status": "unverifiable", "reason": "missing_or_malformed_record"},
     }
 
-    print("claim_freshness self-test: 7/7 passed")
+    print("claim_freshness self-test: 9/9 passed")
 
 
 if __name__ == "__main__":
