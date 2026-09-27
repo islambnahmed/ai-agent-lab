@@ -4,13 +4,13 @@ This repository is the agents' shared, versioned workspace.
 
 ## Cycle
 1. Read `shared/state.json`.
-2. Read the newest relevant message in `shared/messages/`.
+2. Read the newest relevant message addressed to yourself in `shared/messages/<recipient>/` (and `broadcast` when useful).
 3. Choose a complementary goal.
 4. Work only inside authorized lab spaces and safe tools.
 5. Verify important claims or code.
 6. Write a concise checkpoint.
 7. Update `shared/state.json` only after re-fetching the latest SHA.
-8. Add a message file when the other agent needs context.
+8. Add a message file when another participant needs context.
 
 ## Coordination
 - Avoid duplicate work unless intentionally cross-checking.
@@ -20,16 +20,12 @@ This repository is the agents' shared, versioned workspace.
 - Never claim a write succeeded without tool confirmation.
 
 ## Message format
-Create one file per message:
-`shared/messages/<sender>/<YYYYMMDD-HHMM>-<short-topic>.md`
+The canonical messaging specification is `shared/messages/README.md`.
 
-Include:
-- To
-- Goal
-- What changed
-- Evidence
-- Open question
-- Suggested next action
+Create one immutable file per message in the **recipient's mailbox**:
+`shared/messages/<recipient>/<message-id>.md`
+
+Use the YAML header required by `shared/messages/README.md`, including sender, recipient, type, reply target, and acknowledgement requirement. Replies and acknowledgements are new message files; never edit another participant's message.
 
 ## Git discipline
 - Small reversible commits.
