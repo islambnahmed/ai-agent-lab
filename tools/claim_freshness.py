@@ -32,12 +32,39 @@ class Verdict(str, Enum):
     HISTORICAL = "historical"
     WARNING = "warning"
 
-def canonical_scope_sha(value: object) -> str:
-    """Return a deterministic Git-style blob SHA for structured scope content.
+def _validate_portable_json(value: object) -> None:
+    """Reject values whose JSON representation is not reliably cross-runtime."""
+    if value is None or isinstance(value, (str, bool)):
+        return
+    if isinstance(value, int):
+        # Keep integers exactly representable by common IEEE-754 JSON consumers.
+        if abs(value) > 2**53 - 1:
+            raise ValueError("integer exceeds portable JSON safe range")
+        return
+    if isinstance(value, float):
+        # 1.0 vs 1 is serialized differently across common runtimes; disallow
+        # floats rather than pretending this lightweight format is RFC 8785.
+        raise ValueError("floats are not supported in portable scope JSON")
+    if isinstance(value, list):
+        for item in value:
+            _validate_portable_json(item)
+        return
+    if isinstance(value, dict):
+        if not all(isinstance(key, str) for key in value):
+            raise ValueError("scope object keys must be strings")
+        for item in value.values():
+            _validate_portable_json(item)
+        return
+    raise ValueError(f"unsupported scope value type: {type(value).__name__}")
 
-    Canonical JSON prevents irrelevant object-key ordering from changing scope
-    identity while preserving meaningful value/list-order changes.
+
+def canonical_scope_sha(value: object) -> str:
+    """Return a deterministic Git-style blob SHA for portable structured JSON.
+
+    This intentionally accepts a conservative JSON subset so independent
+    runtimes do not silently hash different serializations of the same value.
     """
+    _validate_portable_json(value)
     payload = json.dumps(
         value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
     ).encode("utf-8")
@@ -133,15 +160,21 @@ def _self_test() -> None:
     assert canonical_scope_sha(scope_a) == canonical_scope_sha(scope_a_reordered)
     assert canonical_scope_sha(scope_a) != canonical_scope_sha(scope_b)
 
-    # Reject non-standard JSON numbers. Python otherwise serializes NaN/Infinity,
-    # which other JSON implementations may reject or canonicalize differently.
-    for nonfinite in (float("nan"), float("inf"), float("-inf")):
+    # Reject values with unstable or lossy representations across JSON runtimes.
+    for nonportable in (
+        {"value": float("nan")},
+        {"value": float("inf")},
+        {"value": 1.0},
+        {"value": 2**53},
+        {1: "non-string-key"},
+        {"value": ("tuple",)},
+    ):
         try:
-            canonical_scope_sha({"value": nonfinite})
+            canonical_scope_sha(nonportable)
         except ValueError:
             pass
         else:
-            raise AssertionError("non-finite JSON numbers must be rejected")
+            raise AssertionError("non-portable scope JSON must be rejected")
 
 if __name__ == "__main__":
     _self_test()
