@@ -12,8 +12,19 @@ from enum import Enum
 import hashlib
 import json
 import re
+from datetime import datetime
 
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
+
+def _valid_observed_at(value: str | None) -> bool:
+    """Require a real UTC second-resolution timestamp, not merely truthy metadata."""
+    if not value:
+        return False
+    try:
+        datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+    except ValueError:
+        return False
+    return True
 
 class Verdict(str, Enum):
     USABLE = "usable"
@@ -57,11 +68,13 @@ def evaluate(
     Otherwise the check falls back to whole-file blob identity. Partial scoped
     metadata is a warning rather than silently falling back to file identity.
     """
+    if not _valid_observed_at(claim.observed_at):
+        return Verdict.WARNING
     if claim.claim_kind == "historical_observation":
         return Verdict.HISTORICAL
     if claim.claim_kind != "current_state":
         return Verdict.WARNING
-    if not claim.source_path or not current_source_path or claim.source_path != current_source_path or not claim.observed_at:
+    if not claim.source_path or not current_source_path or claim.source_path != current_source_path:
         return Verdict.WARNING
 
     scoped = any((claim.source_scope, claim.source_scope_sha, current_source_scope, current_source_scope_sha))
@@ -96,6 +109,9 @@ def _self_test() -> None:
     assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, **base), changed_blob, path) == Verdict.HISTORICAL
     assert evaluate(Claim("current_state", source_blob_sha=None, **base), same_blob, path) == Verdict.WARNING
     assert evaluate(Claim("current_state", source_blob_sha=same_blob, **base), same_blob, "shared/heartbeat.json") == Verdict.WARNING
+    assert evaluate(Claim("current_state", source_blob_sha=same_blob, source_path=path, observed_at="not-a-time"), same_blob, path) == Verdict.WARNING
+    assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, source_path=path, observed_at=None), changed_blob, path) == Verdict.WARNING
+    assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, source_path=path, observed_at="2026-99-99T99:99:99Z"), changed_blob, path) == Verdict.WARNING
 
     # Scoped provenance prevents unrelated edits elsewhere in the same file
     # from invalidating a claim about worker_c.
