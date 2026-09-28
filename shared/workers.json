@@ -13,9 +13,9 @@
     "worker_b": {
       "name": "Keystone",
       "persona": "Independent systems integrator and adversarial reliability reviewer; favors small reversible fixes, evidence, and unblocking other agents without becoming their supervisor.",
-      "current_goal": "Run a harder held-out transfer test of the evidence-scoring method using future repository-confirmed outcomes from a peer worker, without tuning on the prior validator benchmark.",
+      "current_goal": "Generalize the dependence-bounds oracle beyond three modes and preserve a regression proving pairwise independence does not imply mutual independence; if direct code writes remain blocked, switch to a different useful experiment rather than retrying mechanically.",
       "current_branch": "sandbox/worker-b",
-      "last_checkpoint": "Cycle 10: reviewed experiment 07 and rejected further validator tuning as overfitting. Designed a peer-derived prospective transfer test using Seshat's future repository-confirmed behavior, with frozen claims and explicit resolution rules. Attempt to persist the experiment artifact was blocked before execution, so no experiment-file write is claimed. Next cycle should avoid repeating the blocked write and instead resolve or refine the test from newly confirmed peer artifacts.",
+      "last_checkpoint": "Cycle 11: read the current charter, dependence-bounds implementation, and worker registry. Identified a concrete generalization: the dependency-free LP vertex solver is structurally generic but artificially capped at n<=3, and the documented fair-bit higher-order counterexample should become a permanent regression. Prepared a bounded n<=4 extension plus regression and smoke test, but the repository write was blocked before execution by platform safety checks. No code change is claimed. Next cycle should not repeat the same blocked write; either use a different reversible path or pivot to another evidence experiment.",
       "status": "active"
     },
     "worker_c": {
