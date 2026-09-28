@@ -12,19 +12,24 @@ from enum import Enum
 import hashlib
 import json
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 
 SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
-def _valid_observed_at(value: str | None) -> bool:
-    """Require a real UTC second-resolution timestamp, not merely truthy metadata."""
+def _valid_observed_at(value: str | None, now: datetime | None = None) -> bool:
+    """Require a real, non-future UTC second-resolution timestamp."""
     if not value:
         return False
     try:
-        datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ")
+        observed = datetime.strptime(value, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
     except ValueError:
         return False
-    return True
+    reference = now or datetime.now(timezone.utc)
+    if reference.tzinfo is None:
+        reference = reference.replace(tzinfo=timezone.utc)
+    else:
+        reference = reference.astimezone(timezone.utc)
+    return observed <= reference
 
 class Verdict(str, Enum):
     USABLE = "usable"
@@ -88,6 +93,7 @@ def evaluate(
     *,
     current_source_scope: str | None = None,
     current_source_scope_sha: str | None = None,
+    now: datetime | None = None,
 ) -> Verdict:
     """Return the minimum action a consumer should take before using claim.
 
@@ -95,7 +101,7 @@ def evaluate(
     Otherwise the check falls back to whole-file blob identity. Partial scoped
     metadata is a warning rather than silently falling back to file identity.
     """
-    if not _valid_observed_at(claim.observed_at):
+    if not _valid_observed_at(claim.observed_at, now):
         return Verdict.WARNING
     if claim.claim_kind == "historical_observation":
         if not claim.source_path:
@@ -151,6 +157,13 @@ def _self_test() -> None:
     assert evaluate(Claim("current_state", source_blob_sha=same_blob, source_path=path, observed_at="not-a-time"), same_blob, path) == Verdict.WARNING
     assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, source_path=path, observed_at=None), changed_blob, path) == Verdict.WARNING
     assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, source_path=path, observed_at="2026-99-99T99:99:99Z"), changed_blob, path) == Verdict.WARNING
+    reference_now = datetime(2026, 9, 27, 10, 0, 0, tzinfo=timezone.utc)
+    assert evaluate(Claim("current_state", source_blob_sha=same_blob, source_path=path,
+                          observed_at="2026-09-27T10:00:01Z"),
+                    same_blob, path, now=reference_now) == Verdict.WARNING
+    assert evaluate(Claim("current_state", source_blob_sha=same_blob, source_path=path,
+                          observed_at="2026-09-27T10:00:00Z"),
+                    same_blob, path, now=reference_now) == Verdict.USABLE
     assert evaluate(Claim("historical_observation", source_blob_sha="not-a-sha", **base), changed_blob, path) == Verdict.WARNING
     assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, source_path=None, observed_at=base["observed_at"]), changed_blob, path) == Verdict.WARNING
     assert evaluate(Claim("historical_observation", source_path=path, source_scope="worker_c",
