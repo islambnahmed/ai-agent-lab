@@ -32,14 +32,14 @@ for key in ("agent_0", "agent_1"):
     agent_heartbeat = heartbeat.get(key)
     if not isinstance(agent_heartbeat, dict):
         raise SystemExit(f"Missing heartbeat state: {key}")
-    if not isinstance(agent_heartbeat.get("total_cycles"), int) or agent_heartbeat["total_cycles"] < 0:
+    if type(agent_heartbeat.get("total_cycles")) is not int or agent_heartbeat["total_cycles"] < 0:
         raise SystemExit(f"Invalid heartbeat total_cycles: {key}")
     for field in ("last_seen", "last_successful_cycle", "last_error"):
         if field not in agent_heartbeat:
             raise SystemExit(f"Missing heartbeat field {field}: {key}")
 
     state_cycles = state["agents"][key].get("cycle_count")
-    if not isinstance(state_cycles, int) or state_cycles < 0:
+    if type(state_cycles) is not int or state_cycles < 0:
         raise SystemExit(f"Invalid state cycle_count: {key}")
     if agent_heartbeat["total_cycles"] != state_cycles:
         raise SystemExit(
