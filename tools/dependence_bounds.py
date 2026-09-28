@@ -13,6 +13,7 @@ fail).
 from itertools import product, combinations
 
 EPS = 1e-12
+FEAS_TOL = 1e-12
 
 def _solve_linear_vertices(c, aeq, beq):
     """Min/max c.x over x>=0, Aeq x=b using basic feasible vertices."""
@@ -38,10 +39,10 @@ def _solve_linear_vertices(c, aeq, beq):
     for basis in itertools.combinations(range(n), m):
         mat=[[row[j] for j in basis] for row in aeq]
         sol=solve(mat,beq)
-        if sol is None or min(sol) < -1e-9: continue
+        if sol is None or min(sol) < -FEAS_TOL: continue
         x=[0.0]*n
         for j,v in zip(basis,sol): x[j]=max(0.0,v)
-        if any(abs(sum(row[j]*x[j] for j in range(n))-b)>1e-8 for row,b in zip(aeq,beq)):
+        if any(abs(sum(row[j]*x[j] for j in range(n))-b)>FEAS_TOL for row,b in zip(aeq,beq)):
             continue
         val=sum(ci*xi for ci,xi in zip(c,x))
         if val < best_min[0]: best_min=(val,x)
@@ -66,6 +67,12 @@ def all_fail_bounds(marginals, pairwise=None):
     for (i,j),q in pairwise.items():
         if not (0 <= i < j < n) or not 0 <= q <= 1:
             raise ValueError("invalid pairwise constraint")
+        # Necessary Frechet bounds catch contradictory pairwise inputs before
+        # floating-point vertex enumeration can blur a tiny infeasibility.
+        lower = max(0.0, float(marginals[i]) + float(marginals[j]) - 1.0)
+        upper = min(float(marginals[i]), float(marginals[j]))
+        if q < lower - FEAS_TOL or q > upper + FEAS_TOL:
+            raise ValueError("pairwise constraint violates Frechet bounds")
         aeq.append([float(w[i] and w[j]) for w in worlds]); beq.append(float(q))
     c=[1.0 if all(w) else 0.0 for w in worlds]
     lo,hi=_solve_linear_vertices(c,aeq,beq)
@@ -88,6 +95,12 @@ if __name__ == "__main__":
     try:
         any_survives_bounds([.1,.1],{(0,1):.2})
         raise AssertionError("expected infeasible constraints")
+    except ValueError:
+        pass
+    # Near-boundary contradiction must not disappear inside solver tolerances.
+    try:
+        any_survives_bounds([.1,.1],{(0,1):.100000001})
+        raise AssertionError("expected near-boundary infeasible constraints")
     except ValueError:
         pass
     print("dependence_bounds: all tests passed")
