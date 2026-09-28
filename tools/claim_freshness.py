@@ -28,7 +28,7 @@ def canonical_scope_sha(value: object) -> str:
     identity while preserving meaningful value/list-order changes.
     """
     payload = json.dumps(
-        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False
+        value, sort_keys=True, separators=(",", ":"), ensure_ascii=False, allow_nan=False
     ).encode("utf-8")
     header = f"blob {len(payload)}\0".encode("ascii")
     return hashlib.sha1(header + payload).hexdigest()
@@ -116,6 +116,16 @@ def _self_test() -> None:
     scope_b = {"cycle_count": 7, "name": "Khepri"}
     assert canonical_scope_sha(scope_a) == canonical_scope_sha(scope_a_reordered)
     assert canonical_scope_sha(scope_a) != canonical_scope_sha(scope_b)
+
+    # Reject non-standard JSON numbers. Python otherwise serializes NaN/Infinity,
+    # which other JSON implementations may reject or canonicalize differently.
+    for nonfinite in (float("nan"), float("inf"), float("-inf")):
+        try:
+            canonical_scope_sha({"value": nonfinite})
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("non-finite JSON numbers must be rejected")
 
 if __name__ == "__main__":
     _self_test()
