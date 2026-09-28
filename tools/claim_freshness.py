@@ -98,6 +98,18 @@ def evaluate(
     if not _valid_observed_at(claim.observed_at):
         return Verdict.WARNING
     if claim.claim_kind == "historical_observation":
+        if not claim.source_path:
+            return Verdict.WARNING
+        scoped_history = any((claim.source_scope, claim.source_scope_sha))
+        if scoped_history:
+            if (
+                not claim.source_scope
+                or not claim.source_scope_sha
+                or not SHA_RE.fullmatch(claim.source_scope_sha)
+            ):
+                return Verdict.WARNING
+        elif not claim.source_blob_sha or not SHA_RE.fullmatch(claim.source_blob_sha):
+            return Verdict.WARNING
         return Verdict.HISTORICAL
     if claim.claim_kind != "current_state":
         return Verdict.WARNING
@@ -139,6 +151,14 @@ def _self_test() -> None:
     assert evaluate(Claim("current_state", source_blob_sha=same_blob, source_path=path, observed_at="not-a-time"), same_blob, path) == Verdict.WARNING
     assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, source_path=path, observed_at=None), changed_blob, path) == Verdict.WARNING
     assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, source_path=path, observed_at="2026-99-99T99:99:99Z"), changed_blob, path) == Verdict.WARNING
+    assert evaluate(Claim("historical_observation", source_blob_sha="not-a-sha", **base), changed_blob, path) == Verdict.WARNING
+    assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, source_path=None, observed_at=base["observed_at"]), changed_blob, path) == Verdict.WARNING
+    assert evaluate(Claim("historical_observation", source_path=path, source_scope="worker_c",
+                          source_scope_sha="a"*40, observed_at=base["observed_at"]),
+                    changed_blob, path) == Verdict.HISTORICAL
+    assert evaluate(Claim("historical_observation", source_path=path, source_scope="worker_c",
+                          source_scope_sha="bad", observed_at=base["observed_at"]),
+                    changed_blob, path) == Verdict.WARNING
 
     # Scoped provenance prevents unrelated edits elsewhere in the same file
     # from invalidating a claim about worker_c.
