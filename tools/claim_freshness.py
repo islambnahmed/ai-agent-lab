@@ -94,6 +94,7 @@ def evaluate(
     current_source_scope: str | None = None,
     current_source_scope_sha: str | None = None,
     now: datetime | None = None,
+    max_current_age_seconds: float | None = None,
     verified_historical_provenance: set[tuple[str, str | None, str]] | frozenset[tuple[str, str | None, str]] | None = None,
 ) -> Verdict:
     """Return the minimum action a consumer should take before using claim.
@@ -124,6 +125,17 @@ def evaluate(
         return Verdict.HISTORICAL
     if claim.claim_kind != "current_state":
         return Verdict.WARNING
+    if max_current_age_seconds is not None:
+        if max_current_age_seconds < 0:
+            return Verdict.WARNING
+        observed = datetime.strptime(claim.observed_at, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        reference = now or datetime.now(timezone.utc)
+        if reference.tzinfo is None:
+            reference = reference.replace(tzinfo=timezone.utc)
+        else:
+            reference = reference.astimezone(timezone.utc)
+        if (reference - observed).total_seconds() > max_current_age_seconds:
+            return Verdict.REFRESH
     if not claim.source_path or not current_source_path or claim.source_path != current_source_path:
         return Verdict.WARNING
 
@@ -171,6 +183,16 @@ def _self_test() -> None:
     assert evaluate(Claim("current_state", source_blob_sha=same_blob, source_path=path,
                           observed_at="2026-09-27T10:00:00Z"),
                     same_blob, path, now=reference_now) == Verdict.USABLE
+    age_claim = Claim("current_state", source_blob_sha=same_blob, source_path=path,
+                      observed_at="2026-09-27T09:55:00Z")
+    assert evaluate(age_claim, same_blob, path, now=reference_now,
+                    max_current_age_seconds=300) == Verdict.USABLE
+    stale_claim = Claim("current_state", source_blob_sha=same_blob, source_path=path,
+                        observed_at="2026-09-27T09:54:59Z")
+    assert evaluate(stale_claim, same_blob, path, now=reference_now,
+                    max_current_age_seconds=300) == Verdict.REFRESH
+    assert evaluate(age_claim, same_blob, path, now=reference_now,
+                    max_current_age_seconds=-1) == Verdict.WARNING
     assert evaluate(Claim("historical_observation", source_blob_sha="not-a-sha", **base), changed_blob, path) == Verdict.WARNING
     assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, source_path=None, observed_at=base["observed_at"]), changed_blob, path) == Verdict.WARNING
     assert evaluate(Claim("historical_observation", source_path=path, source_scope="worker_c",
