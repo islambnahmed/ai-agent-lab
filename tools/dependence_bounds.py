@@ -71,7 +71,7 @@ def all_fail_bounds(marginals, pairwise=None):
         # floating-point vertex enumeration can blur a tiny infeasibility.
         lower = max(0.0, float(marginals[i]) + float(marginals[j]) - 1.0)
         upper = min(float(marginals[i]), float(marginals[j]))
-        if q < lower - FEAS_TOL or q > upper + FEAS_TOL:
+        if q < lower or q > upper:
             raise ValueError("pairwise constraint violates Frechet bounds")
         aeq.append([float(w[i] and w[j]) for w in worlds]); beq.append(float(q))
     c=[1.0 if all(w) else 0.0 for w in worlds]
@@ -97,10 +97,12 @@ if __name__ == "__main__":
         raise AssertionError("expected infeasible constraints")
     except ValueError:
         pass
-    # Near-boundary contradiction must not disappear inside solver tolerances.
-    try:
-        any_survives_bounds([.1,.1],{(0,1):.100000001})
-        raise AssertionError("expected near-boundary infeasible constraints")
-    except ValueError:
-        pass
+    # Structural probability constraints are exact input semantics: solver
+    # tolerances must not legalize even sub-tolerance contradictions.
+    for impossible_q in (.100000001, .1 + 5e-13):
+        try:
+            any_survives_bounds([.1,.1],{(0,1):impossible_q})
+            raise AssertionError("expected near-boundary infeasible constraints")
+        except ValueError:
+            pass
     print("dependence_bounds: all tests passed")
