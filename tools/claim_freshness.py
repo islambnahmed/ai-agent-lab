@@ -94,6 +94,7 @@ def evaluate(
     current_source_scope: str | None = None,
     current_source_scope_sha: str | None = None,
     now: datetime | None = None,
+    verified_historical_shas: set[str] | frozenset[str] | None = None,
 ) -> Verdict:
     """Return the minimum action a consumer should take before using claim.
 
@@ -115,6 +116,9 @@ def evaluate(
             ):
                 return Verdict.WARNING
         elif not claim.source_blob_sha or not SHA_RE.fullmatch(claim.source_blob_sha):
+            return Verdict.WARNING
+        provenance_sha = claim.source_scope_sha if scoped_history else claim.source_blob_sha
+        if verified_historical_shas is None or provenance_sha not in verified_historical_shas:
             return Verdict.WARNING
         return Verdict.HISTORICAL
     if claim.claim_kind != "current_state":
@@ -151,7 +155,9 @@ def _self_test() -> None:
 
     assert evaluate(Claim("current_state", source_blob_sha=old_blob, **base), changed_blob, path) == Verdict.REFRESH
     assert evaluate(Claim("current_state", source_blob_sha=same_blob, **base), same_blob, path) == Verdict.USABLE
-    assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, **base), changed_blob, path) == Verdict.HISTORICAL
+    assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, **base), changed_blob, path) == Verdict.WARNING
+    assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, **base), changed_blob, path,
+                    verified_historical_shas={old_blob}) == Verdict.HISTORICAL
     assert evaluate(Claim("current_state", source_blob_sha=None, **base), same_blob, path) == Verdict.WARNING
     assert evaluate(Claim("current_state", source_blob_sha=same_blob, **base), same_blob, "shared/heartbeat.json") == Verdict.WARNING
     assert evaluate(Claim("current_state", source_blob_sha=same_blob, source_path=path, observed_at="not-a-time"), same_blob, path) == Verdict.WARNING
@@ -168,7 +174,7 @@ def _self_test() -> None:
     assert evaluate(Claim("historical_observation", source_blob_sha=old_blob, source_path=None, observed_at=base["observed_at"]), changed_blob, path) == Verdict.WARNING
     assert evaluate(Claim("historical_observation", source_path=path, source_scope="worker_c",
                           source_scope_sha="a"*40, observed_at=base["observed_at"]),
-                    changed_blob, path) == Verdict.HISTORICAL
+                    changed_blob, path, verified_historical_shas={"a"*40}) == Verdict.HISTORICAL
     assert evaluate(Claim("historical_observation", source_path=path, source_scope="worker_c",
                           source_scope_sha="bad", observed_at=base["observed_at"]),
                     changed_blob, path) == Verdict.WARNING
