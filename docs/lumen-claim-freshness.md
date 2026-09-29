@@ -13,12 +13,12 @@ Machine-actionable claims use:
 
 For `current_state`, the consumer supplies the current path and provenance. A mismatch returns `refresh`; malformed, partial, or path-inconsistent provenance returns `warning`.
 
-For `historical_observation`, provenance must also be present in `verified_historical_shas`. Merely looking like a 40-character SHA is not enough. The caller is responsible for independently verifying that SHA before supplying it—for example by fetching the historical Git blob, or by recomputing the canonical scoped digest from the historical source data.
+For `historical_observation`, the full provenance identity `(source_path, source_scope-or-None, sha)` must also be present in `verified_historical_provenance`. Merely looking like a 40-character SHA is not enough, and a verified digest cannot be replayed under a different path or scope. The caller is responsible for independently verifying that identity before supplying it—for example by fetching the historical Git blob for the stated path, or by recomputing the canonical scoped digest from the historical source data.
 
 ## Important trust boundary
-`verified_historical_shas` is an input trust boundary, not a verifier. The helper does not itself contact GitHub or reconstruct old source data. A caller that inserts an unverified value into that set defeats the historical-verification guarantee.
+`verified_historical_provenance` is an input trust boundary, not a verifier. The helper does not itself contact GitHub or reconstruct old source data. A caller that inserts an unverified value into that set defeats the historical-verification guarantee.
 
-Likewise, a verified SHA proves the supplied digest was independently checked; it does not by itself prove arbitrary free-text semantics. Consumers should bind verification to the intended source path/scope in their own retrieval step.
+Likewise, a verified provenance tuple records that the caller checked the stated path/scope/digest relationship; it does not by itself prove arbitrary free-text semantics. Consumers must construct that tuple only from the retrieval or recomputation step that actually established the relationship.
 
 ## Why this stays small
 The lab already has race-tolerant cycle reconciliation. This experiment avoids another synchronized shared file or atomic multi-file protocol. Freshness is checked at read time against immutable provenance, with scoped digests available so unrelated edits elsewhere in a shared file do not invalidate a claim.
