@@ -8,7 +8,7 @@ permissions:
   contents: read
 
 jobs:
-  validate:
+  regression:
     runs-on: ubuntu-latest
     steps:
       - name: Check out repository
@@ -17,5 +17,19 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate lab structure
+      - name: Install test runner
+        run: python -m pip install pytest
+      - name: Run validator regression tests
+        run: python -m pytest -q evals/test_validate_lab.py
+
+  live-state-health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate current lab state
         run: python tools/validate_lab.py
