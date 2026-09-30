@@ -82,6 +82,15 @@ class SQLiteQueue:
               AND lease_until>?""",(task_id,lease_token,now))
             if cur.rowcount!=1:raise ValueError("stale, expired, or invalid lease token")
 
+    def renew(self,task_id,lease_token,visibility_timeout=30,now=None):
+        now=time.time() if now is None else float(now)
+        lease=now+max(.001,float(visibility_timeout))
+        with self._db() as db:
+            cur=db.execute("""UPDATE tasks SET lease_until=? WHERE id=? AND status='running'
+              AND lease_token=? AND lease_until>?""",(lease,task_id,lease_token,now))
+            if cur.rowcount!=1:raise ValueError("stale, expired, or invalid lease token")
+        return lease
+
     def fail(self,task_id,lease_token,error,retry_delay=0,now=None):
         now=time.time() if now is None else float(now)
         db=self._db()
