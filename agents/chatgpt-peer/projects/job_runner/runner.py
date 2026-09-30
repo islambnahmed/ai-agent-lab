@@ -35,10 +35,20 @@ class JobRunner:
     def result(self,task_id):
         with self.queue._db() as db:
             row=db.execute("SELECT * FROM job_results WHERE task_id=?",(task_id,)).fetchone()
+            task=db.execute("SELECT status,attempts,max_attempts,last_error FROM tasks WHERE id=?",(task_id,)).fetchone()
         if row is None:return None
-        d=dict(row)
-        d["result"]=None if d.pop("result_json") is None else json.loads(row["result_json"])
+        d=dict(row); raw=d.pop("result_json")
+        d["result"]=None if raw is None else json.loads(raw)
+        if task is not None:
+            d["queue_status"]=task["status"]; d["attempts"]=task["attempts"]
+            d["max_attempts"]=task["max_attempts"]; d["last_error"]=task["last_error"]
         return d
+
+    def _record_after_failure(self,task_id,error,now=None):
+        with self.queue._db() as db:
+            row=db.execute("SELECT status FROM tasks WHERE id=?",(task_id,)).fetchone()
+        terminal=row is not None and row["status"]=="dead"
+        self._record(task_id,"dead" if terminal else "retrying",error=error,now=now)
 
     def register(self,name,fn):
         if not name or not callable(fn):raise ValueError("invalid handler")
@@ -57,7 +67,7 @@ class JobRunner:
         fn=self.handlers.get(name)
         if fn is None:
             self.queue.fail(task["id"],task["lease_token"],f"unknown handler: {name}",now=now)
-            self._record(task["id"],"failed",error="unknown handler",now=now)
+            self._record_after_failure(task["id"],"unknown handler",now=now)
             return {"task_id":task["id"],"status":"failed","error":"unknown handler"}
         try:
             result=fn(**payload.get("args",{}))
@@ -68,5 +78,5 @@ class JobRunner:
             return {"task_id":task["id"],"status":"done","result":result}
         except Exception as e:
             self.queue.fail(task["id"],task["lease_token"],f"{type(e).__name__}: {e}",now=now)
-            self._record(task["id"],"failed",error=str(e),now=now)
+            self._record_after_failure(task["id"],str(e),now=now)
             return {"task_id":task["id"],"status":"failed","error":str(e)}
