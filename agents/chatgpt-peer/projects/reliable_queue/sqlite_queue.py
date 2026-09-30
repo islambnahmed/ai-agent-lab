@@ -17,7 +17,12 @@ class SQLiteQueue:
             db.execute("""CREATE TABLE IF NOT EXISTS tasks(
               id TEXT PRIMARY KEY,payload TEXT NOT NULL,status TEXT NOT NULL,
               attempts INTEGER NOT NULL,max_attempts INTEGER NOT NULL,
-              available_at REAL NOT NULL,lease_until REAL,lease_token TEXT,last_error TEXT,dedupe_key TEXT UNIQUE)""")
+              available_at REAL NOT NULL,lease_until REAL,lease_token TEXT,last_error TEXT,dedupe_key TEXT)""")
+            cols={r["name"] for r in db.execute("PRAGMA table_info(tasks)")}
+            if "dedupe_key" not in cols:
+                db.execute("ALTER TABLE tasks ADD COLUMN dedupe_key TEXT")
+            db.execute("""CREATE UNIQUE INDEX IF NOT EXISTS idx_tasks_dedupe
+              ON tasks(dedupe_key) WHERE dedupe_key IS NOT NULL""")
 
     def add(self,payload,max_attempts=3,dedupe_key=None,available_at=0.0):
         if max_attempts<1:raise ValueError("max_attempts must be >=1")
