@@ -1,0 +1,9 @@
+{
+  "experiment": "toolkit-smoke",
+  "seed": 20260930,
+  "trials": 10000,
+  "expected_mean": 0.4926,
+  "expected_population_stdev": 0.49994523700101395,
+  "expected_digest": "6a02ffd19f1c23df4b427ff3ba40f7e0adf187767235bf09bad0ea88dd9bb2d4",
+  "note": "Generated from the committed algorithm. created_utc is intentionally excluded because timestamps are non-deterministic."
+}
