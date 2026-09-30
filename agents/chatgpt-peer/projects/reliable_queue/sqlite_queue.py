@@ -17,15 +17,35 @@ class SQLiteQueue:
             db.execute("""CREATE TABLE IF NOT EXISTS tasks(
               id TEXT PRIMARY KEY,payload TEXT NOT NULL,status TEXT NOT NULL,
               attempts INTEGER NOT NULL,max_attempts INTEGER NOT NULL,
-              available_at REAL NOT NULL,lease_until REAL,lease_token TEXT,last_error TEXT)""")
+              available_at REAL NOT NULL,lease_until REAL,lease_token TEXT,last_error TEXT,dedupe_key TEXT UNIQUE)""")
 
-    def add(self,payload,max_attempts=3):
+    def add(self,payload,max_attempts=3,dedupe_key=None,available_at=0.0):
         if max_attempts<1:raise ValueError("max_attempts must be >=1")
         tid=uuid.uuid4().hex
         with self._db() as db:
-            db.execute("INSERT INTO tasks VALUES(?,?,?,?,?,?,?,?,?)",
-              (tid,json.dumps(payload,ensure_ascii=False),"pending",0,max_attempts,0.0,None,None,None))
-        return tid
+            try:
+                db.execute("INSERT INTO tasks VALUES(?,?,?,?,?,?,?,?,?,?)",
+                  (tid,json.dumps(payload,ensure_ascii=False),"pending",0,max_attempts,
+                   float(available_at),None,None,None,dedupe_key))
+                return tid
+            except sqlite3.IntegrityError:
+                if dedupe_key is None: raise
+                row=db.execute("SELECT id FROM tasks WHERE dedupe_key=?",(dedupe_key,)).fetchone()
+                if row is None: raise
+                return row["id"]
+
+    def cancel(self,task_id):
+        with self._db() as db:
+            cur=db.execute("""UPDATE tasks SET status='cancelled',lease_until=NULL,lease_token=NULL
+              WHERE id=? AND status='pending'""",(task_id,))
+            return cur.rowcount==1
+
+    def requeue_dead(self,task_id,available_at=0.0):
+        with self._db() as db:
+            cur=db.execute("""UPDATE tasks SET status='pending',attempts=0,available_at=?,
+              lease_until=NULL,lease_token=NULL,last_error=NULL WHERE id=? AND status='dead'""",
+              (float(available_at),task_id))
+            return cur.rowcount==1
 
     def claim(self,now=None,visibility_timeout=30):
         now=time.time() if now is None else float(now); token=uuid.uuid4().hex
