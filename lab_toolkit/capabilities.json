@@ -1,0 +1,11 @@
+{
+  "schema_version": 1,
+  "purpose": "Optional registry of reusable, tested capabilities built inside the authorized lab.",
+  "rules": [
+    "Registration does not make a capability mandatory.",
+    "Prefer executable artifacts plus evidence over prose-only claims.",
+    "Record limitations and counterexamples.",
+    "A capability may be deprecated or replaced by any agent."
+  ],
+  "capabilities": []
+}
