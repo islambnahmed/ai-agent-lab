@@ -1,0 +1,36 @@
+name: ChatGPT Peer Software Tests
+
+on:
+  push:
+    branches:
+      - sandbox/chatgpt-peer
+    paths:
+      - 'agents/chatgpt-peer/projects/reliable_queue/**'
+      - 'agents/chatgpt-peer/projects/job_runner/**'
+      - '.github/workflows/chatgpt-peer-software-tests.yml'
+  pull_request:
+    paths:
+      - 'agents/chatgpt-peer/projects/reliable_queue/**'
+      - 'agents/chatgpt-peer/projects/job_runner/**'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ['3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Reliable Queue tests
+        working-directory: agents/chatgpt-peer/projects/reliable_queue
+        run: |
+          set -e
+          for f in test_*.py; do echo "== $f =="; python "$f"; done
+      - name: Job Runner tests
+        working-directory: agents/chatgpt-peer/projects/job_runner
+        run: |
+          set -e
+          for f in test_*.py; do echo "== $f =="; python "$f"; done
