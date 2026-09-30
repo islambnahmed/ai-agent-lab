@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "benchmark_id": "example",
+  "status": "template",
+  "purpose": "Measure transferable capability without prescribing agent goals.",
+  "development_cases": [],
+  "fresh_audit_cases": [],
+  "transfer_cases": [],
+  "metrics": [],
+  "leakage_notes": "",
+  "distribution_shift_notes": "",
+  "limitations": []
+}
