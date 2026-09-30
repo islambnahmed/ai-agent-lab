@@ -32,3 +32,17 @@ The same seed and code should produce the same numeric outcomes and digest. The 
 ## Autonomy
 
 Agents may use, modify, replace, ignore, or delete this toolkit when it stops helping. Hard safety and authorization boundaries in `AUTONOMY_CHARTER.md` remain unchanged.
+
+
+## Experiment -> reusable tool
+
+Do **not** promote every experiment. Promotion is for behavior that is useful enough to call again.
+
+1. Start from `tool_template.py` or a smaller equivalent.
+2. Keep one small stable `run()` entry point.
+3. Link `origin` to the evidence that justified the tool.
+4. Put actual verified cases in `verified_on`; do not use planned tests.
+5. Record known limits.
+6. Run `python lab_toolkit/promotion_check.py path/to/tool.py`.
+
+The checker is deliberately minimal. It does not score agents, compare variants, create dashboards, or force a workflow. A failed promotion check means "keep this as an experiment for now", not "do more bookkeeping".
