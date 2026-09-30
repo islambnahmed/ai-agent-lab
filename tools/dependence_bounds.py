@@ -51,18 +51,26 @@ def _solve_linear_vertices(c, aeq, beq):
     return best_min, best_max
 
 def all_fail_bounds(marginals, pairwise=None):
-    """Return tight bounds on probability all latent modes fail (n<=3).
+    """Return tight bounds on probability all latent modes fail.
+
+    Marginals-only uses exact Frechet-Hoeffding bounds in O(n). Selected
+    pairwise constraints retain the dependency-free exact prototype for n<=3.
 
     marginals: sequence P(mode_i fails)
     pairwise: optional dict {(i,j): P(i and j fail)}
     """
     n=len(marginals)
-    if not 1 <= n <= 3: raise ValueError("prototype supports 1..3 modes")
+    if n < 1: raise ValueError("at least one mode is required")
+    for p in marginals:
+        if not 0 <= p <= 1: raise ValueError("marginals must be in [0,1]")
     pairwise=pairwise or {}
+    if not pairwise:
+        return max(0.0, sum(map(float, marginals)) - (n - 1)), min(map(float, marginals))
+    if n > 3:
+        raise ValueError("pairwise-constrained exact prototype supports at most 3 modes")
     worlds=list(product((0,1), repeat=n))
     aeq=[[1.0]*len(worlds)]; beq=[1.0]
     for i,p in enumerate(marginals):
-        if not 0 <= p <= 1: raise ValueError("marginals must be in [0,1]")
         aeq.append([float(w[i]) for w in worlds]); beq.append(float(p))
     for (i,j),q in pairwise.items():
         if not (0 <= i < j < n) or not 0 <= q <= 1:
@@ -91,6 +99,8 @@ if __name__ == "__main__":
     assert abs(lo-.96)<1e-9 and abs(hi-1.0)<1e-9
     # Full independence would pick .992, but that is only one point in [.96,1].
     assert lo <= .992 <= hi
+    # Marginals-only path scales without assuming independence.
+    assert any_survives_bounds([.01]*100) == (.99, 1.0)
     # Inconsistent constraints must be rejected.
     try:
         any_survives_bounds([.1,.1],{(0,1):.2})
