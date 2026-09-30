@@ -77,6 +77,11 @@ class JobRunner:
             self._record(task["id"],"done",result=result,now=now)
             return {"task_id":task["id"],"status":"done","result":result}
         except Exception as e:
-            self.queue.fail(task["id"],task["lease_token"],f"{type(e).__name__}: {e}",now=now)
+            # A handler may run longer than its lease. If another worker has
+            # already recovered the task, this worker must not mutate the new claim.
+            try:
+                self.queue.fail(task["id"],task["lease_token"],f"{type(e).__name__}: {e}",now=now)
+            except ValueError:
+                return {"task_id":task["id"],"status":"stale","error":str(e)}
             self._record_after_failure(task["id"],str(e),now=now)
             return {"task_id":task["id"],"status":"failed","error":str(e)}
