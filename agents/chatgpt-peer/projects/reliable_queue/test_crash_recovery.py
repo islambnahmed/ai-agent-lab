@@ -10,6 +10,7 @@ with tempfile.TemporaryDirectory() as d:
     assert q.claim(now=9) is None
     recovered=q.claim(now=10,visibility_timeout=10)
     assert recovered["id"]==tid and recovered["attempts"]==2
-    q.complete(tid)
+    assert recovered["lease_token"]!=first["lease_token"]
+    q.complete(tid,recovered["lease_token"])
     assert q.claim(now=100) is None
 print("PASS")
