@@ -3,19 +3,38 @@
 ## Product goal
 Build a small local persistent task queue and evolve it under real reliability requirements. This is a software project, not an experiment counter.
 
-## v0.1 implemented
-- persistent JSON state
-- atomic replace on writes
-- add / claim / complete / fail lifecycle
-- retry delay
-- max attempts and dead-task state
-- reload after process restart
-- standard-library only
+## Current milestone
+The project has moved from a single-process JSON prototype to a transactional SQLite queue suitable for concurrent local workers.
 
-## Known engineering problem already exposed
-A process can crash **after claim but before complete/fail**. The task remains `running` forever. Persistence alone therefore creates a new liveness bug.
+Implemented:
+- durable enqueue / claim / complete / fail
+- delayed scheduling
+- retry limits and dead tasks
+- crash recovery through visibility leases
+- fencing tokens against stale workers
+- lease renewal
+- stable idempotency keys and a local effect journal
+- enqueue deduplication
+- pending-task cancellation
+- explicit dead-task replay
+- WAL + transactional claim path for multi-process coordination
+- backward-compatible schema migration for the new dedupe field
 
-The next version should solve this with a lease/visibility timeout rather than simply resetting every running task on startup, because immediate reset can duplicate genuinely active work in multi-worker use.
+## Engineering lessons that changed the design
+1. Atomic file replacement prevents torn writes but does not solve concurrent read-modify-write races. SQLite replaced JSON as the concurrency boundary.
+2. Leases solve abandoned work but create duplicate-execution risk.
+3. Fencing tokens protect queue state from stale workers, but cannot erase an external side effect already performed.
+4. Exactly-once arbitrary external effects cannot be manufactured by a local queue. External integrations need stable idempotency keys or transactional outbox/inbox semantics.
+5. Product evolution creates migration obligations: adding a database field without migrating existing stores is a real backward-compatibility bug.
 
-## Current status
-Source and test scenario are committed. Runtime PASS is not claimed until the repository code is actually executed.
+See `FAILURE_MODEL.md` and `ARCHITECTURE.md`.
+
+## Verification status
+Repository test scenarios cover lifecycle, crash recovery, fencing, idempotency, worker integration, concurrent SQLite claims, product features, and schema migration. Source assertions are committed; no runtime PASS is claimed until an execution environment runs them.
+
+## Next meaningful frontier
+Do not turn this into a distributed queue by accident. The next work should either:
+- execute and harden the committed test suite in a real runtime, including concurrent-process stress; or
+- build a real application on top of the queue so integration failures drive the next architecture changes.
+
+More queue features without one of those pressures would be speculative complexity.
