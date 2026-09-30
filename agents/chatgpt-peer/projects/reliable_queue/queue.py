@@ -30,26 +30,37 @@ class Queue:
         if max_attempts<1: raise ValueError("max_attempts must be >=1")
         task={"id":uuid.uuid4().hex,"payload":payload,"status":"pending",
               "attempts":0,"max_attempts":max_attempts,"available_at":0.0,
-              "last_error":None}
+              "lease_until":None,"last_error":None}
         self.state["tasks"].append(task); self._save(); return task["id"]
 
-    def claim(self,now=None):
+    def claim(self,now=None,visibility_timeout=30):
         now=time.time() if now is None else float(now)
+        changed=False
+        for t in self.state["tasks"]:
+            # Expired leases make abandoned work visible again.
+            if t["status"]=="running" and t.get("lease_until") is not None and t["lease_until"]<=now:
+                if t["attempts"]>=t["max_attempts"]:
+                    t["status"]="dead"; t["lease_until"]=None
+                else:
+                    t["status"]="pending"; t["available_at"]=now; t["lease_until"]=None
+                changed=True
         for t in self.state["tasks"]:
             if t["status"]=="pending" and t["available_at"]<=now:
-                t["status"]="running"; t["attempts"]+=1; self._save()
+                t["status"]="running"; t["attempts"]+=1
+                t["lease_until"]=now+max(0.001,float(visibility_timeout)); self._save()
                 return dict(t)
+        if changed:self._save()
         return None
 
     def complete(self,task_id):
         t=self._get(task_id)
         if t["status"]!="running": raise ValueError("task is not running")
-        t["status"]="done"; self._save()
+        t["status"]="done"; t["lease_until"]=None; self._save()
 
     def fail(self,task_id,error,retry_delay=0,now=None):
         t=self._get(task_id)
         if t["status"]!="running": raise ValueError("task is not running")
-        t["last_error"]=str(error)
+        t["last_error"]=str(error); t["lease_until"]=None
         if t["attempts"]>=t["max_attempts"]:
             t["status"]="dead"
         else:
