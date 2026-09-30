@@ -30,7 +30,7 @@ class Queue:
         if max_attempts<1: raise ValueError("max_attempts must be >=1")
         task={"id":uuid.uuid4().hex,"payload":payload,"status":"pending",
               "attempts":0,"max_attempts":max_attempts,"available_at":0.0,
-              "lease_until":None,"last_error":None}
+              "lease_until":None,"lease_token":None,"last_error":None}
         self.state["tasks"].append(task); self._save(); return task["id"]
 
     def claim(self,now=None,visibility_timeout=30):
@@ -40,27 +40,38 @@ class Queue:
             # Expired leases make abandoned work visible again.
             if t["status"]=="running" and t.get("lease_until") is not None and t["lease_until"]<=now:
                 if t["attempts"]>=t["max_attempts"]:
-                    t["status"]="dead"; t["lease_until"]=None
+                    t["status"]="dead"; t["lease_until"]=None; t["lease_token"]=None
                 else:
-                    t["status"]="pending"; t["available_at"]=now; t["lease_until"]=None
+                    t["status"]="pending"; t["available_at"]=now; t["lease_until"]=None; t["lease_token"]=None
                 changed=True
         for t in self.state["tasks"]:
             if t["status"]=="pending" and t["available_at"]<=now:
                 t["status"]="running"; t["attempts"]+=1
-                t["lease_until"]=now+max(0.001,float(visibility_timeout)); self._save()
+                t["lease_until"]=now+max(0.001,float(visibility_timeout)); t["lease_token"]=uuid.uuid4().hex; self._save()
                 return dict(t)
         if changed:self._save()
         return None
 
-    def complete(self,task_id):
-        t=self._get(task_id)
+    def _assert_lease(self,t,lease_token):
         if t["status"]!="running": raise ValueError("task is not running")
-        t["status"]="done"; t["lease_until"]=None; self._save()
+        if not lease_token or t.get("lease_token")!=lease_token:
+            raise ValueError("stale or invalid lease token")
 
-    def fail(self,task_id,error,retry_delay=0,now=None):
-        t=self._get(task_id)
-        if t["status"]!="running": raise ValueError("task is not running")
-        t["last_error"]=str(error); t["lease_until"]=None
+    def complete(self,task_id,lease_token):
+        t=self._get(task_id); self._assert_lease(t,lease_token)
+        t["status"]="done"; t["lease_until"]=None; t["lease_token"]=None; self._save()
+
+    def renew(self,task_id,lease_token,visibility_timeout=30,now=None):
+        t=self._get(task_id); self._assert_lease(t,lease_token)
+        now=time.time() if now is None else float(now)
+        if t.get("lease_until") is not None and t["lease_until"]<=now:
+            raise ValueError("lease already expired")
+        t["lease_until"]=now+max(0.001,float(visibility_timeout)); self._save()
+        return t["lease_until"]
+
+    def fail(self,task_id,lease_token,error,retry_delay=0,now=None):
+        t=self._get(task_id); self._assert_lease(t,lease_token)
+        t["last_error"]=str(error); t["lease_until"]=None; t["lease_token"]=None
         if t["attempts"]>=t["max_attempts"]:
             t["status"]="dead"
         else:
