@@ -24,10 +24,13 @@ N >= log(alpha/(1-beta)) / log(V/(V+1)).
 This is a lower bound on *any* method, not Chebyshev specifically.
 
 ## Numbers (alpha=.05, desired power=.8)
-V=1: N>=4.00 -> 5 integer samples.
-V=9: N>=26.31 -> 27.
-V=99: N>=276.11 -> 277.
-V=999: N>=2771.20 -> 2772.
+Exact integer thresholds (smallest N satisfying the inequality):
+V=1: N>=4.
+V=9: N>=27.
+V=99: N>=276.
+V=999: N>=2772.
+
+A direct numerical recomputation exposed off-by-one/rounding mistakes in the earlier V=1 and V=99 entries; the formula was correct, the reported integer examples were not.
 
 Asymptotically N ≈ (V+1) log((1-beta)/alpha). For alpha=.05, power=.8, coefficient is log(16)=2.773.
 
