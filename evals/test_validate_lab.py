@@ -1,9 +1,8 @@
-"""Regression tests for tools/validate_lab.py.
+"""Contract tests for tools/validate_lab.py.
 
-These tests execute the validator against a temporary copy of the lab so
-malformed fixtures cannot mutate shared lab state.
+The validator enforces only the non-optional autonomy charter invariants.
+Optional lab infrastructure must not become a validity requirement.
 """
-import json
 import shutil
 import subprocess
 import sys
@@ -11,43 +10,68 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 
-def run_case(tmp_path, mutate):
+
+def run_case(tmp_path, mutate=None):
     lab = tmp_path / "lab"
     shutil.copytree(ROOT, lab, ignore=shutil.ignore_patterns(".git", "__pycache__"))
-    state_path = lab / "shared" / "state.json"
-    heartbeat_path = lab / "shared" / "heartbeat.json"
-    state = json.loads(state_path.read_text())
-    heartbeat = json.loads(heartbeat_path.read_text())
-    mutate(state, heartbeat)
-    state_path.write_text(json.dumps(state))
-    heartbeat_path.write_text(json.dumps(heartbeat))
+    if mutate:
+        mutate(lab)
     return subprocess.run(
         [sys.executable, str(lab / "tools" / "validate_lab.py")],
-        capture_output=True, text=True,
+        capture_output=True,
+        text=True,
+        cwd=lab,
     )
+
 
 def message(result):
     return result.stdout + result.stderr
 
-def test_bool_state_cycle_rejected(tmp_path):
-    result = run_case(tmp_path, lambda s, h: s["agents"]["agent_0"].__setitem__("cycle_count", True))
-    assert result.returncode != 0
-    assert "Invalid state cycle_count: agent_0" in message(result)
 
-def test_bool_heartbeat_total_rejected(tmp_path):
-    result = run_case(tmp_path, lambda s, h: h["agent_0"].__setitem__("total_cycles", True))
-    assert result.returncode != 0
-    assert "Invalid heartbeat total_cycles: agent_0" in message(result)
+def test_valid_charter_passes(tmp_path):
+    result = run_case(tmp_path)
+    assert result.returncode == 0, message(result)
+    assert "AI Agent Lab validation passed" in message(result)
 
-def test_malformed_last_successful_cycle_is_cleanly_rejected(tmp_path):
-    result = run_case(tmp_path, lambda s, h: h["agent_0"].__setitem__("last_successful_cycle", "5"))
-    assert result.returncode != 0
-    assert "Invalid heartbeat last_successful_cycle: agent_0" in message(result)
-    assert "Traceback" not in message(result)
 
-def test_cycle_drift_rejected(tmp_path):
-    def mutate(state, heartbeat):
-        heartbeat["agent_0"]["total_cycles"] = state["agents"]["agent_0"]["cycle_count"] + 1
+def test_missing_charter_rejected(tmp_path):
+    result = run_case(tmp_path, lambda lab: (lab / "AUTONOMY_CHARTER.md").unlink())
+    assert result.returncode != 0
+    assert "Missing required file: AUTONOMY_CHARTER.md" in message(result)
+
+
+def test_missing_hard_boundaries_rejected(tmp_path):
+    def mutate(lab):
+        path = lab / "AUTONOMY_CHARTER.md"
+        path.write_text(path.read_text().replace("## Hard Boundaries", "## Boundaries"))
     result = run_case(tmp_path, mutate)
     assert result.returncode != 0
-    assert "Cycle drift for agent_0" in message(result)
+    assert "missing required section: Hard Boundaries" in message(result)
+
+
+def test_missing_continuity_rejected(tmp_path):
+    def mutate(lab):
+        path = lab / "AUTONOMY_CHARTER.md"
+        path.write_text(path.read_text().replace("## Continuity", "## Recovery"))
+    result = run_case(tmp_path, mutate)
+    assert result.returncode != 0
+    assert "missing required section: Continuity" in message(result)
+
+
+def test_optional_infrastructure_can_be_absent(tmp_path):
+    optional_paths = [
+        "PROTOCOL.md",
+        "shared/heartbeat.json",
+        "shared/state.json",
+        "shared/task_queue.json",
+        "evals/suite.json",
+    ]
+
+    def mutate(lab):
+        for relative in optional_paths:
+            path = lab / relative
+            if path.exists():
+                path.unlink()
+
+    result = run_case(tmp_path, mutate)
+    assert result.returncode == 0, message(result)
