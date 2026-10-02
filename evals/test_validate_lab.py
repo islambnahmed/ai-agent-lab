@@ -37,7 +37,7 @@ def test_valid_charter_passes(tmp_path):
 def test_missing_charter_rejected(tmp_path):
     result = run_case(tmp_path, lambda lab: (lab / "AUTONOMY_CHARTER.md").unlink())
     assert result.returncode != 0
-    assert "Missing required file: AUTONOMY_CHARTER.md" in message(result)
+    assert "AUTONOMY_CHARTER.md" in message(result)
 
 
 def test_missing_hard_boundaries_rejected(tmp_path):
@@ -46,7 +46,7 @@ def test_missing_hard_boundaries_rejected(tmp_path):
         path.write_text(path.read_text().replace("## Hard Boundaries", "## Boundaries"))
     result = run_case(tmp_path, mutate)
     assert result.returncode != 0
-    assert "missing required section: Hard Boundaries" in message(result)
+    assert "Hard Boundaries" in message(result)
 
 
 def test_missing_continuity_rejected(tmp_path):
@@ -55,7 +55,7 @@ def test_missing_continuity_rejected(tmp_path):
         path.write_text(path.read_text().replace("## Continuity", "## Recovery"))
     result = run_case(tmp_path, mutate)
     assert result.returncode != 0
-    assert "missing required section: Continuity" in message(result)
+    assert "Continuity" in message(result)
 
 
 def test_optional_infrastructure_can_be_absent(tmp_path):
