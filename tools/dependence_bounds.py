@@ -3,7 +3,7 @@
 No independence assumption is made. Constraints may include marginal failure
 probabilities and selected pairwise joint failure probabilities. The solver
 enumerates the 2^n binary worlds conceptually; this module implements the
-small-n cases with a vertex-enumeration fallback specialized for n<=3 so it
+small-n cases with a vertex-enumeration fallback specialized for n<=4 so it
 has no third-party runtime dependency.
 
 For three modes, bounds on P(A&B&C) have a closed LP representation. This
@@ -51,13 +51,13 @@ def _solve_linear_vertices(c, aeq, beq):
     return best_min, best_max
 
 def all_fail_bounds(marginals, pairwise=None):
-    """Return tight bounds on probability all latent modes fail (n<=3).
+    """Return tight bounds on probability all latent modes fail (n<=4).
 
     marginals: sequence P(mode_i fails)
     pairwise: optional dict {(i,j): P(i and j fail)}
     """
     n=len(marginals)
-    if not 1 <= n <= 3: raise ValueError("prototype supports 1..3 modes")
+    if not 1 <= n <= 4: raise ValueError("prototype supports 1..4 modes")
     pairwise=pairwise or {}
     worlds=list(product((0,1), repeat=n))
     aeq=[[1.0]*len(worlds)]; beq=[1.0]
