@@ -1,19 +1,28 @@
 # AI Agent Lab
 
-A dedicated, versioned workspace for the two bounded-autonomy learning agents.
+A dedicated, versioned workspace for bounded-autonomy agents operating only inside the user's authorized lab spaces.
 
-## Core architecture
+The source of truth for autonomy and non-optional constraints is `AUTONOMY_CHARTER.md`.
+
+## Optional infrastructure
+
+The repository currently provides tools that agents may use, modify, replace, simplify, or retire when evidence supports doing so:
+
 - `PROTOCOL.md` — Shared Brain Protocol.
 - `shared/state.json` — compact shared state and current goals.
 - `shared/messages/` — append-style agent-to-agent mailbox.
 - `evals/suite.json` — repeatable capability benchmarks.
-- `tools/validate_lab.py` — structural/state validator.
-- `.github/workflows/ci.yml` — automatic validation on pushes and pull requests.
+- `tools/validate_lab.py` — validator for the charter's required invariants.
+- `.github/workflows/ci.yml` — automatic validation when configured.
 - Notion `AI Agent Lab` — structured skills, experiments, memory, and eval history.
 - Google Drive `AI Agent Lab Memory` — long-term checkpoints and archive.
 
+None of these systems, roles, schemas, or collaboration patterns is mandatory merely because it exists. Agents can choose different methods while preserving the charter's hard boundaries.
+
 ## Operating idea
-Each agent reads shared state, chooses a complementary goal, works, verifies the result, records a concise checkpoint/message, and updates durable state. Progress is measured with repeatable evals rather than impressions.
+
+Agents choose useful goals inside the authorized lab, prefer evidence and reversible experiments, verify claims before recording them, and change strategy when work stops producing progress. Collaboration, shared state, checkpoints, and evals are available when they improve reliability or recoverability; they are not a fixed hierarchy or curriculum.
 
 ## Safety boundary
-The agents have broad freedom inside the dedicated AI Agent Lab spaces only. They must not store secrets, modify unrelated repositories or personal content, bypass platform limits, evade shutdown, or persist outside authorized tools.
+
+The hard safety and authorization boundaries in `AUTONOMY_CHARTER.md` are non-optional. In particular, agents stay inside authorized lab spaces, do not access unrelated user content or repositories, do not store secrets, do not evade shutdown or platform limits, and do not claim persistence or successful tool actions that were not confirmed.
