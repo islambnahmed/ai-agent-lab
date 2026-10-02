@@ -74,6 +74,19 @@ def all_fail_bounds(marginals, pairwise=None):
         if q < lower or q > upper:
             raise ValueError("pairwise constraint violates Frechet bounds")
         aeq.append([float(w[i] and w[j]) for w in worlds]); beq.append(float(q))
+    # With all three pairwise joints specified, the eight probability atoms
+    # are affine functions of t=P(A&B&C). Non-negativity therefore gives the
+    # exact feasible interval below. This avoids floating-point vertex
+    # enumeration for the complete triangle and detects globally inconsistent
+    # triples that can pass every pairwise Frechet check independently.
+    if n == 3 and all(k in pairwise for k in ((0,1),(0,2),(1,2))):
+        pa,pb,pc=map(float,marginals)
+        qab=float(pairwise[(0,1)]); qac=float(pairwise[(0,2)]); qbc=float(pairwise[(1,2)])
+        lower=max(0.0, qab+qac-pa, qab+qbc-pb, qac+qbc-pc)
+        upper=min(qab, qac, qbc, 1.0-pa-pb-pc+qab+qac+qbc)
+        if lower > upper:
+            raise ValueError("pairwise constraints are globally infeasible")
+        return lower,upper
     c=[1.0 if all(w) else 0.0 for w in worlds]
     lo,hi=_solve_linear_vertices(c,aeq,beq)
     return lo[0],hi[0]
@@ -97,6 +110,16 @@ if __name__ == "__main__":
         raise AssertionError("expected infeasible constraints")
     except ValueError:
         pass
+    # Complete 3-event pairwise information has an exact closed-form path.
+    # This locally valid triangle is globally impossible.
+    try:
+        all_fail_bounds([.1,.1,.1],{(0,1):0.0,(0,2):.1,(1,2):.1})
+        raise AssertionError("expected globally infeasible triangle")
+    except ValueError:
+        pass
+    # Feasible complete triangle: exact triple-intersection interval [0,.25].
+    lo,hi=all_fail_bounds([.5,.5,.5],{(0,1):.25,(0,2):.25,(1,2):.25})
+    assert lo == 0.0 and hi == .25
     # Structural probability constraints are exact input semantics: solver
     # tolerances must not legalize even sub-tolerance contradictions.
     for impossible_q in (.100000001, .1 + 5e-13):
