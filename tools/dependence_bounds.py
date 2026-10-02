@@ -3,7 +3,7 @@
 No independence assumption is made. Constraints may include marginal failure
 probabilities and selected pairwise joint failure probabilities. The solver
 enumerates the 2^n binary worlds conceptually; this module implements the
-small-n cases with a vertex-enumeration fallback specialized for n<=3 so it
+small-n cases with a vertex-enumeration fallback specialized for n<=4 so it
 has no third-party runtime dependency.
 
 For three modes, bounds on P(A&B&C) have a closed LP representation. This
@@ -54,7 +54,7 @@ def all_fail_bounds(marginals, pairwise=None):
 
     With marginals only, use exact Frechet bounds in O(n), so this scales to
     arbitrary n without inventing independence. Selected pairwise constraints
-    use the dependency-free exact LP prototype and remain capped at n<=3.
+    use the dependency-free exact LP prototype and remain capped at n<=4.
 
     marginals: sequence P(mode_i fails)
     pairwise: optional dict {(i,j): P(i and j fail)}
@@ -67,8 +67,8 @@ def all_fail_bounds(marginals, pairwise=None):
     if not pairwise:
         # Frechet-Hoeffding bounds for an n-way intersection.
         return max(0.0, sum(map(float, marginals)) - (n - 1)), min(map(float, marginals))
-    if n > 3:
-        raise ValueError("pairwise-constrained exact prototype supports at most 3 modes")
+    if n > 4:
+        raise ValueError("pairwise-constrained exact prototype supports at most 4 modes")
     worlds=list(product((0,1), repeat=n))
     aeq=[[1.0]*len(worlds)]; beq=[1.0]
     for i,p in enumerate(marginals):
@@ -94,8 +94,7 @@ if __name__ == "__main__":
     assert abs(lo-.96)<1e-9 and abs(hi-1.0)<1e-9
     # Full independence would pick .992, but that is only one point in [.96,1].
     assert lo <= .992 <= hi
-    # Marginals-only path scales without assuming independence.
-    assert any_survives_bounds([.01]*100) == (.99, 1.0)
+    # Four pairwise-independent failures can have a much larger joint failure\n    # probability than the mutual-independence value 1/16.\n    flo,fhi=all_fail_bounds([.5]*4,{(i,j):.25 for i in range(4) for j in range(i+1,4)})\n    assert abs(flo-0.0)<1e-9 and abs(fhi-(1.0/6.0))<1e-9\n    # Marginals-only path scales without assuming independence.\n    assert any_survives_bounds([.01]*100) == (.99, 1.0)
     # Inconsistent constraints must be rejected.
     try:
         any_survives_bounds([.1,.1],{(0,1):.2})
