@@ -75,3 +75,27 @@ There are two adaptation problems, not one: which agent is best, and whether the
 
 ### Next target
 Stop threshold tuning. Test a small protected exploration budget specifically for representation/relevance learning, separated from exploitation, and measure the dynamic-regret cost. If that remains too expensive, pivot to offline/cross-agent evaluation signals rather than reward-only online routing.
+
+
+## Protected-exploration cycle: a measurable adaptation tax
+
+Tested a separate random probe stream used only to decide whether task context is currently relevant. This avoids the earlier self-starvation failure because relevance evidence is collected independently of exploitation choices.
+
+Paired design: Bernoulli 4-agent/4-context routing, T=1800. A rolling protected-probe window activates contextual routing when cross-context reward heterogeneity clears a fixed margin.
+
+30-seed baseline at 4% protected probes (mean regret ± SE):
+- relevant: pooled 313.4±0.8; contextual 177.1±2.8; protected 268.3±4.3
+- irrelevant: pooled 82.3±1.8; contextual 114.5±1.2; protected 96.9±2.1
+- relevance appears halfway: pooled 205.4±1.4; contextual 141.4±2.1; protected 171.5±3.4
+
+A wider probe-budget sweep exposed a phase transition rather than a smooth free improvement. At 1–2% probes the gate usually failed to collect enough evidence and behaved like pooled routing. Around 6% it adapted reliably.
+
+50-seed confirmation:
+- 4%: relevant 263.1±3.9; irrelevant 99.7±1.5; shift 167.3±2.9
+- 6%: relevant 201.1±1.8; irrelevant 112.1±0.8; shift 139.2±2.5
+- 8%: relevant 188.1±1.6; irrelevant 110.9±0.8; shift 139.6±1.6
+
+### New reusable lesson
+Protected exploration fixes the information-starvation mechanism, but it reveals an explicit adaptation tax. In this benchmark roughly 6% independent exploration is needed before the relevance detector becomes reliably responsive; that budget materially harms the stationary-irrelevant case (regret ~112 vs pooled ~82). Increasing probes beyond that gives diminishing returns.
+
+This falsifies the hope that a tiny protected stream can cheaply solve representation drift. The next higher-value direction is to stop spending live routing budget solely for relevance diagnosis and test whether cross-agent/off-policy evaluation signals already produced by lab work can supply the missing counterfactual evidence.
