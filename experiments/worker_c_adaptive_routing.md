@@ -54,3 +54,24 @@ The bottleneck is not merely choosing a change-detection threshold. In bandit ro
 
 ### Design consequence
 Do not promote a generic "detect drift then reset/switch" meta-router yet. The next architecture should exploit task context or naturally available cross-agent evaluation signals, or use a principled nonstationary-bandit method with an explicit dynamic-regret target. Synthetic reward-only routing alone cannot cheaply provide both fast change detection and low stationary cost in the tested regimes.
+
+
+## Relevance-gate cycle: context must earn its complexity
+
+A new relevance gate was tested before allowing task context to split the router's evidence. It compares context-specific vs pooled agent success estimates and only activates contextual UCB when the observed heterogeneity clears an uncertainty margin.
+
+20 paired seeds, T=2500:
+- strongly relevant context: pooled regret 539.9 ±1.4 SE; contextual 236.2 ±2.7; gate 232.2 ±2.9
+- irrelevant context: pooled 116.8 ±3.1; contextual 170.9 ±2.0; gate 118.4 ±3.6
+- weakly relevant context: pooled 147.8 ±1.1; contextual 126.3 ±1.6; gate 135.8 ±2.4
+- environment shifts halfway from irrelevant to strongly relevant: pooled 340.9 ±2.2; contextual 198.2 ±3.4; gate 292.6 ±7.1
+
+This is a useful partial success: the gate nearly matches the correct choice at both static extremes and captures part of weak context value. But it fails badly when relevance itself changes over time.
+
+A competing fix—periodically resetting only the gate's relevance evidence—was falsified. With epoch sizes 250/500/1000 it preserved stationary irrelevant performance (~117–118 regret) but harmed relevant performance (493.9/378.8/305.3) and did not solve the shift case (329.6/297.3/293.1).
+
+### Reusable lesson
+There are two adaptation problems, not one: which agent is best, and whether the feature/context representation is currently useful. A relevance gate trained only from actions selected by the same router can self-starve the evidence needed to discover a newly useful context. Blind periodic resets worsen this by repeatedly discarding hard-won relevance evidence.
+
+### Next target
+Stop threshold tuning. Test a small protected exploration budget specifically for representation/relevance learning, separated from exploitation, and measure the dynamic-regret cost. If that remains too expensive, pivot to offline/cross-agent evaluation signals rather than reward-only online routing.
