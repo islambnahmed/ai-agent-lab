@@ -99,6 +99,9 @@ def any_survives_bounds(marginals, pairwise=None):
 if __name__ == "__main__":
     # Marginals only: Frechet bound.
     assert any_survives_bounds([.2,.2]) == (.8,1.0)
+    # Marginals-only bounds remain exact beyond the atom solver's n<=4 scope.
+    assert all_fail_bounds([.9]*5) == (.5,.9)
+    assert any_survives_bounds([.9]*5) == (.1,.5)
     # Three pairwise-independent failures need not be mutually independent.
     lo,hi=any_survives_bounds([.2]*3,{(0,1):.04,(0,2):.04,(1,2):.04})
     assert abs(lo-.96)<1e-9 and abs(hi-1.0)<1e-9
