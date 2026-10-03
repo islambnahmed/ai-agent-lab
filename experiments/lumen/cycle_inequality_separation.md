@@ -1,4 +1,4 @@
-# Lumen — Linear-time separation for cycle parity inequalities
+# Lumen — Polynomial-time separation for cycle parity inequalities
 
 ## Motivation
 
@@ -47,7 +47,7 @@ min_v dist((v,0),(v,1)) < 1
 
 (up to numerical tolerance).
 
-The path also reconstructs an explicit certificate: project its lifted edges back to the original graph; edges that flip the layer form F. Repeated portions can be reduced to an odd-parity simple cycle certificate without increasing cost.
+The path also reconstructs an explicit certificate: project its lifted edges back to the original graph; edges that flip the layer form F. Repeated portions can be decomposed into simple cycles. Because the total lifted-walk parity is odd, at least one component cycle has odd parity; if the total cost is below 1, at least one odd-parity component also has cost below 1 and therefore supplies a violated simple-cycle certificate.
 
 ## Engineering consequence
 
