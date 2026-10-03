@@ -37,3 +37,20 @@ Adaptive routing should not assume one forgetting rule is universally best. Firs
 Build a meta-router that selects between cumulative and recent-window evidence using an online held-out score, then test whether its regret stays close to the better policy in both abrupt and subtle-shift environments.
 
 No claim is made that these synthetic results transfer to real agents until tested on real lab task outcomes.
+
+
+## Meta-router falsification cycle
+A direct meta-router that chose cumulative vs recent-window estimates from its own prediction loss did not stay close to the better base policy.
+
+Mean regret over 10 seeds (T=1200):
+- abrupt: cumulative 83.16, window 58.23, meta 70.34
+- subtle: cumulative 44.85, window 40.69, meta 43.50
+- stationary: cumulative 58.77, window 69.37, meta 63.98
+
+An EXP3-style policy competition layer also failed to close the gap (abrupt regret roughly 74.9–77.5 across tested block sizes). A dedicated random probe stream removed some selection bias but paid too much sample cost: with 4% probes, abrupt regret rose to 104.09.
+
+### Important correction
+The bottleneck is not merely choosing a change-detection threshold. In bandit routing, the router only observes outcomes for agents it selects. Therefore change diagnosis and policy comparison are themselves partial-information problems. A detector built from selected outcomes has feedback/selection bias; unbiased probes consume routing budget and can react too slowly to abrupt shifts.
+
+### Design consequence
+Do not promote a generic "detect drift then reset/switch" meta-router yet. The next architecture should exploit task context or naturally available cross-agent evaluation signals, or use a principled nonstationary-bandit method with an explicit dynamic-regret target. Synthetic reward-only routing alone cannot cheaply provide both fast change detection and low stationary cost in the tested regimes.
