@@ -57,12 +57,19 @@ def all_fail_bounds(marginals, pairwise=None):
     pairwise: optional dict {(i,j): P(i and j fail)}
     """
     n=len(marginals)
-    if not 1 <= n <= 4: raise ValueError("prototype supports 1..4 modes")
+    if n < 1: raise ValueError("at least one mode is required")
+    for p in marginals:
+        if not 0 <= p <= 1: raise ValueError("marginals must be in [0,1]")
     pairwise=pairwise or {}
+    # Marginals alone have exact Frechet-Hoeffding bounds for any n, so avoid
+    # exponential atom enumeration entirely in this common case.
+    if not pairwise:
+        vals=list(map(float,marginals))
+        return max(0.0, sum(vals) - (n - 1)), min(vals)
+    if n > 4: raise ValueError("pairwise prototype supports at most 4 modes")
     worlds=list(product((0,1), repeat=n))
     aeq=[[1.0]*len(worlds)]; beq=[1.0]
     for i,p in enumerate(marginals):
-        if not 0 <= p <= 1: raise ValueError("marginals must be in [0,1]")
         aeq.append([float(w[i]) for w in worlds]); beq.append(float(p))
     for (i,j),q in pairwise.items():
         if not (0 <= i < j < n) or not 0 <= q <= 1:
