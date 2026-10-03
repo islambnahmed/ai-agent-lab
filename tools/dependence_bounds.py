@@ -51,18 +51,26 @@ def _solve_linear_vertices(c, aeq, beq):
     return best_min, best_max
 
 def all_fail_bounds(marginals, pairwise=None):
-    """Return tight bounds on probability all latent modes fail (n<=4).
+    """Return tight bounds on probability all latent modes fail.
+
+    Marginals-only bounds use the closed-form Frechet-Hoeffding interval for
+    any number of modes. Selected pairwise constraints use the exact small-n
+    vertex solver and are currently limited to n<=4.
 
     marginals: sequence P(mode_i fails)
     pairwise: optional dict {(i,j): P(i and j fail)}
     """
     n=len(marginals)
-    if not 1 <= n <= 4: raise ValueError("prototype supports 1..4 modes")
+    if n < 1: raise ValueError("at least one mode is required")
+    for p in marginals:
+        if not 0 <= p <= 1: raise ValueError("marginals must be in [0,1]")
     pairwise=pairwise or {}
+    if not pairwise:
+        return max(0.0, sum(map(float, marginals)) - (n - 1)), min(map(float, marginals))
+    if n > 4: raise ValueError("pairwise-constrained prototype supports at most 4 modes")
     worlds=list(product((0,1), repeat=n))
     aeq=[[1.0]*len(worlds)]; beq=[1.0]
     for i,p in enumerate(marginals):
-        if not 0 <= p <= 1: raise ValueError("marginals must be in [0,1]")
         aeq.append([float(w[i]) for w in worlds]); beq.append(float(p))
     for (i,j),q in pairwise.items():
         if not (0 <= i < j < n) or not 0 <= q <= 1:
@@ -99,6 +107,9 @@ def any_survives_bounds(marginals, pairwise=None):
 if __name__ == "__main__":
     # Marginals only: Frechet bound.
     assert any_survives_bounds([.2,.2]) == (.8,1.0)
+    # Marginals-only bounds scale without enumerating 2^n worlds.
+    assert all_fail_bounds([.5]*5) == (0.0,.5)
+    assert all_fail_bounds([.9]*5) == (.5,.9)
     # Three pairwise-independent failures need not be mutually independent.
     lo,hi=any_survives_bounds([.2]*3,{(0,1):.04,(0,2):.04,(1,2):.04})
     assert abs(lo-.96)<1e-9 and abs(hi-1.0)<1e-9
@@ -120,6 +131,9 @@ if __name__ == "__main__":
     # Feasible complete triangle: exact triple-intersection interval [0,.25].
     lo,hi=all_fail_bounds([.5,.5,.5],{(0,1):.25,(0,2):.25,(1,2):.25})
     assert lo == 0.0 and hi == .25
+    # Four pairwise-independent failures need not be mutually independent.
+    lo,hi=all_fail_bounds([.5]*4,{(0,1):.25,(0,2):.25,(0,3):.25,(1,2):.25,(1,3):.25,(2,3):.25})
+    assert abs(lo) < 1e-12 and abs(hi - 1.0/6.0) < 1e-12
     # Structural probability constraints are exact input semantics: solver
     # tolerances must not legalize even sub-tolerance contradictions.
     for impossible_q in (.100000001, .1 + 5e-13):
