@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from heapq import heappop, heappush
-from math import inf
+from math import inf, isfinite
 from typing import Hashable, Iterable
 
 Node = Hashable
@@ -32,6 +32,8 @@ def separate_cycle_inequality(
     edge_list = list(edges)
     adj: dict[Node, list[tuple[Node, float]]] = {}
     for u, v, d in edge_list:
+        if not isfinite(d):
+            return SeparationResult(False, reason=f"invalid disagreement probability: {d}")
         if d < -tol or d > 1.0 + tol:
             return SeparationResult(False, reason=f"invalid disagreement probability: {d}")
         d = min(1.0, max(0.0, d))
@@ -97,6 +99,11 @@ def _self_test() -> None:
     # A soft inconsistent triangle: three d=0.9 edges -> odd cost 0.3.
     r = separate_cycle_inequality([("a","b",.9),("b","c",.9),("c","a",.9)])
     assert r.violated and abs(r.cost - .3) < 1e-12
+
+    # Non-finite probabilities are invalid and must never be silently clamped.
+    for bad in (float("nan"), float("inf"), float("-inf")):
+        r = separate_cycle_inequality([("a","b",bad)])
+        assert not r.violated and r.reason.startswith("invalid disagreement probability")
 
     # Boundary is strict: a two-edge backtrack can attain exactly 1, not violate.
     r = separate_cycle_inequality([("a","b",.2)])
