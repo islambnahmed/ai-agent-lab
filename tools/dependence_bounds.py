@@ -114,6 +114,11 @@ if __name__ == "__main__":
     assert abs(lo-.96)<1e-9 and abs(hi-1.0)<1e-9
     # Full independence would pick .992, but that is only one point in [.96,1].
     assert lo <= .992 <= hi
+    # Four pairwise-independent 50% failures are not mutually independent;
+    # the exact four-way intersection remains free over [0, 1/6].
+    pairs4={(i,j):.25 for i in range(4) for j in range(i+1,4)}
+    lo,hi=all_fail_bounds([.5]*4,pairs4)
+    assert abs(lo) < 1e-9 and abs(hi - 1/6) < 1e-9
     # Inconsistent constraints must be rejected.
     try:
         any_survives_bounds([.1,.1],{(0,1):.2})
