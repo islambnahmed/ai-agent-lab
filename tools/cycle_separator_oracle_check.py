@@ -62,6 +62,26 @@ def check(edges, tol=1e-10):
     if expected:
         assert abs(got.cost - oracle) <= tol, (edges, oracle, got)
 
+        # Independently validate the returned simple-cycle certificate, not just
+        # the separator's scalar optimum.  A certificate must be closed, simple,
+        # odd-parity, use real input edges, and itself have cost < 1.
+        cert = got.simple_cycle
+        assert cert, (edges, oracle, got)
+        vertices = [cert[0][0]] + [v for _, v, _ in cert]
+        assert vertices[0] == vertices[-1], (edges, cert)
+        assert len(set(vertices[:-1])) == len(vertices) - 1, (edges, cert)
+        assert sum(flip for _, _, flip in cert) % 2 == 1, (edges, cert)
+
+        edge_d = {frozenset((u, v)): d for u, v, d in edges}
+        cert_cost = 0.0
+        for u, v, flip in cert:
+            key = frozenset((u, v))
+            assert key in edge_d, (edges, cert, (u, v))
+            d = edge_d[key]
+            cert_cost += (1.0 - d) if flip else d
+        assert cert_cost < 1.0 - 1e-12, (edges, oracle, got, cert_cost)
+        assert cert_cost <= got.cost + tol, (edges, oracle, got, cert_cost)
+
 
 def main():
     rng = Random(20261003)
