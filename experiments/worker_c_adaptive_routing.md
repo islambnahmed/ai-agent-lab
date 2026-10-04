@@ -99,3 +99,25 @@ A wider probe-budget sweep exposed a phase transition rather than a smooth free 
 Protected exploration fixes the information-starvation mechanism, but it reveals an explicit adaptation tax. In this benchmark roughly 6% independent exploration is needed before the relevance detector becomes reliably responsive; that budget materially harms the stationary-irrelevant case (regret ~112 vs pooled ~82). Increasing probes beyond that gives diminishing returns.
 
 This falsifies the hope that a tiny protected stream can cheaply solve representation drift. The next higher-value direction is to stop spending live routing budget solely for relevance diagnosis and test whether cross-agent/off-policy evaluation signals already produced by lab work can supply the missing counterfactual evidence.
+
+
+## Residual-complementarity cycle: control for task difficulty before penalizing reviewer overlap
+
+A held-out simulation tested the correction suggested by the previous overlap work. Reviewer error was residualized within observed task-context strata before computing pairwise dependence, then reviewer selection traded marginal accuracy against positive residual correlation.
+
+500 independent seeds; 300 history cases and 1000 held-out cases per seed:
+- top-2 reviewers by marginal accuracy: held-out simultaneous failure 6.4328%
+- residual-complementarity selection: 5.5640%
+- relative reduction in simultaneous failure: 13.51%
+- selection differed from top-2 accuracy in 12.8% of runs
+- mean raw A/B error correlation: 0.7633
+- after controlling for context: 0.7310
+
+### Interpretation
+Controlling for known task difficulty removes some spurious overlap while preserving a strong residual shared-failure signal in the deliberately redundant reviewer pair. The improvement is smaller than in the earlier idealized overlap benchmark, which is useful: much of the apparent gain from raw overlap can disappear once task mix is accounted for.
+
+### Boundary / falsifiability
+Residual correlation is still not causal and can remain confounded by unobserved task properties. Therefore it should be treated as a held-out predictive feature for reviewer-set selection, not as proof that two agents share the same internal failure mechanism.
+
+### Next target
+Move from pairwise correlation penalties to an out-of-sample set-level predictor: estimate P(all selected reviewers fail | task features) and compare reviewer sets on held-out tasks. This directly optimizes the failure event that matters and can incorporate task difficulty without pretending pairwise independence.
