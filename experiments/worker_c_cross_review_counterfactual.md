@@ -39,3 +39,18 @@ Therefore raw peer scores should NOT be fed directly into routing state. The reu
 
 ## Transfer target
 Next test should use real lab artifacts where multiple agents evaluated the same claim/test, measuring reviewer calibration and dependence before allowing cross-review to influence routing. Synthetic results alone do not establish real-agent reliability.
+
+
+## Follow-up: calibration is not enough when reviewer errors are dependent
+
+A paired synthetic test weighted pseudo-evidence by each reviewer's online measured accuracy above chance. In 12 seeds (T=1200), this reduced mean regret from 51.03 to 34.61 for weak q=.58 reviewers and from 63.88 to 49.10 under a systematic positive preference. But with a shared-error mechanism, raw and calibrated regret were essentially tied (31.59 vs 32.00).
+
+A second counterexample used two reviewers per candidate with shared errors. Naively treating their reviews as additive evidence was compared with a conservative rule: agreeing reviews receive at most 0.6 total pseudo-observation and disagreement receives zero. In 16 paired seeds (T=1500):
+- shared-error 0.00: naive 19.12, capped 19.93
+- 0.15: 29.31 vs 27.20
+- 0.30: 63.48 vs 47.22
+- 0.45: 205.94 vs 118.33
+
+This changes the working model: reviewer accuracy and reviewer dependence are separate quantities. Accuracy calibration cannot protect against a shared blind spot when reviewers fail together. Real routing should require both calibration against objective outcomes and error-overlap/dependence estimates; correlated agreement must have an evidence cap rather than being counted as independent votes.
+
+These are synthetic small-sample results and are not evidence that real lab reviewers have these calibration levels. The transfer target is objective-test-backed lab artifacts where reviewer error overlap can be measured.
