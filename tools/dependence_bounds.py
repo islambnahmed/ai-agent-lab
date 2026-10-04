@@ -57,12 +57,19 @@ def all_fail_bounds(marginals, pairwise=None):
     pairwise: optional dict {(i,j): P(i and j fail)}
     """
     n=len(marginals)
-    if not 1 <= n <= 4: raise ValueError("prototype supports 1..4 modes")
+    if n < 1: raise ValueError("at least one mode is required")
+    for p in marginals:
+        if not 0 <= p <= 1: raise ValueError("marginals must be in [0,1]")
     pairwise=pairwise or {}
+    # Marginals alone have exact Frechet-Hoeffding bounds for any n, so avoid
+    # exponential atom enumeration entirely in this common case.
+    if not pairwise:
+        vals=list(map(float,marginals))
+        return max(0.0, sum(vals) - (n - 1)), min(vals)
+    if n > 4: raise ValueError("pairwise prototype supports at most 4 modes")
     worlds=list(product((0,1), repeat=n))
     aeq=[[1.0]*len(worlds)]; beq=[1.0]
     for i,p in enumerate(marginals):
-        if not 0 <= p <= 1: raise ValueError("marginals must be in [0,1]")
         aeq.append([float(w[i]) for w in worlds]); beq.append(float(p))
     for (i,j),q in pairwise.items():
         if not (0 <= i < j < n) or not 0 <= q <= 1:
@@ -99,6 +106,9 @@ def any_survives_bounds(marginals, pairwise=None):
 if __name__ == "__main__":
     # Marginals only: Frechet bound.
     assert any_survives_bounds([.2,.2]) == (.8,1.0)
+    # Marginals-only bounds remain exact beyond the atom solver's n<=4 scope.
+    assert all_fail_bounds([.9]*5) == (.5,.9)
+    assert any_survives_bounds([.9]*5) == (.1,.5)
     # Three pairwise-independent failures need not be mutually independent.
     lo,hi=any_survives_bounds([.2]*3,{(0,1):.04,(0,2):.04,(1,2):.04})
     assert abs(lo-.96)<1e-9 and abs(hi-1.0)<1e-9
