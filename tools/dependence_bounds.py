@@ -66,11 +66,7 @@ def all_fail_bounds(marginals, pairwise=None):
     if not pairwise:
         vals=list(map(float,marginals))
         return max(0.0, sum(vals) - (n - 1)), min(vals)
-    if n > 4: raise ValueError("pairwise prototype supports at most 4 modes")
-    worlds=list(product((0,1), repeat=n))
-    aeq=[[1.0]*len(worlds)]; beq=[1.0]
-    for i,p in enumerate(marginals):
-        aeq.append([float(w[i]) for w in worlds]); beq.append(float(p))
+    # Validate every supplied edge before choosing a graph-specific solver.
     for (i,j),q in pairwise.items():
         if not (0 <= i < j < n) or not 0 <= q <= 1:
             raise ValueError("invalid pairwise constraint")
@@ -80,6 +76,61 @@ def all_fail_bounds(marginals, pairwise=None):
         upper = min(float(marginals[i]), float(marginals[j]))
         if q < lower or q > upper:
             raise ValueError("pairwise constraint violates Frechet bounds")
+    # A forest admits exact arbitrary-n all-intersection bounds.  For each
+    # connected tree C:
+    #   L_C=max(0, sum_e q_e - sum_v (deg(v)-1)p_v), U_C=min_e q_e.
+    # Isolated vertices have [p_v,p_v].  Different components have no joint
+    # constraints, so their component-intersection events combine by Frechet.
+    parent=list(range(n))
+    def find(x):
+        while parent[x] != x:
+            parent[x]=parent[parent[x]]
+            x=parent[x]
+        return x
+    cyclic=False
+    for i,j in pairwise:
+        ri,rj=find(i),find(j)
+        if ri == rj:
+            cyclic=True
+            break
+        parent[ri]=rj
+    if not cyclic:
+        # Rebuild components after the detection pass (which may have stopped
+        # early only in the cyclic case).
+        parent=list(range(n))
+        for i,j in pairwise:
+            ri,rj=find(i),find(j)
+            parent[ri]=rj
+        comps={}
+        for v in range(n):
+            comps.setdefault(find(v), []).append(v)
+        lowers=[]; uppers=[]
+        for nodes in comps.values():
+            node_set=set(nodes)
+            edges=[(i,j,float(q)) for (i,j),q in pairwise.items()
+                   if i in node_set and j in node_set]
+            if not edges:
+                p=float(marginals[nodes[0]])
+                lowers.append(p); uppers.append(p)
+                continue
+            deg={v:0 for v in nodes}
+            for i,j,_ in edges:
+                deg[i]+=1; deg[j]+=1
+            lo=max(0.0,
+                   sum(q for _,_,q in edges)
+                   - sum((deg[v]-1)*float(marginals[v]) for v in nodes))
+            hi=min(q for _,_,q in edges)
+            lowers.append(lo); uppers.append(hi)
+        k=len(lowers)
+        return max(0.0, sum(lowers)-(k-1)), min(uppers)
+
+    if n > 4:
+        raise ValueError("cyclic pairwise prototype supports at most 4 modes")
+    worlds=list(product((0,1), repeat=n))
+    aeq=[[1.0]*len(worlds)]; beq=[1.0]
+    for i,p in enumerate(marginals):
+        aeq.append([float(w[i]) for w in worlds]); beq.append(float(p))
+    for (i,j),q in pairwise.items():
         aeq.append([float(w[i] and w[j]) for w in worlds]); beq.append(float(q))
     # With all three pairwise joints specified, the eight probability atoms
     # are affine functions of t=P(A&B&C). Non-negativity therefore gives the
@@ -120,6 +171,12 @@ if __name__ == "__main__":
         raise AssertionError("expected infeasible constraints")
     except ValueError:
         pass
+    # Forest pairwise graphs have exact arbitrary-n bounds.
+    lo,hi=all_fail_bounds([.5]*5,{(0,1):.25,(1,2):.25,(2,3):.25,(3,4):.25})
+    assert abs(lo-0.0)<1e-12 and abs(hi-.25)<1e-12
+    # Disconnected forest: one edge plus three isolated .9 vertices.
+    lo,hi=all_fail_bounds([.9]*5,{(0,1):.8})
+    assert abs(lo-.5)<1e-12 and abs(hi-.8)<1e-12
     # Complete 3-event pairwise information has an exact closed-form path.
     # This locally valid triangle is globally impossible.
     try:
