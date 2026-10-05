@@ -79,6 +79,32 @@ def identifiability_oracle(corrections, rows):
             active = [h for h in active if label(x,h) == y]
     return curve, sizes
 
+def transition_oracle(r1, corrections, rows):
+    """Bayes oracle that knows the benchmark's actual post-shift transition prior.
+
+    shifted_rule() yields one polarity flip with probability 1/2, or one of
+    four replacements retaining r1's first feature with probability 1/8 each.
+    This is the appropriate information ceiling for adaptation when the learner
+    is allowed to exploit reusable knowledge about how environments change.
+    """
+    i, j, op = r1
+    weights = {(i, j, 1-op): 0.5}
+    for k in [k for k in range(6) if k not in (i, j)]:
+        h = tuple(sorted((i, k))) + (op,)
+        weights[h] = weights.get(h, 0.0) + 0.125
+    curve, sizes = [], []
+    for step in range(len(corrections) + 1):
+        total = sum(weights.values())
+        acc = 0
+        for x, y in rows:
+            p = sum(w * label(x, h) for h, w in weights.items()) / total
+            acc += ((p >= .5) == bool(y))
+        curve.append(acc / len(rows)); sizes.append(len(weights))
+        if step < len(corrections):
+            x, y = corrections[step]
+            weights = {h:w for h,w in weights.items() if label(x,h) == y}
+    return curve, sizes
+
 def acc_brier(model, rows):
     ps=[model.prob(x) for x,_ in rows]
     acc=sum((p>=.5)==bool(y) for p,(_,y) in zip(ps,rows))/len(rows)
@@ -91,9 +117,9 @@ def run(seed):
     cold=examples(rng,r1,32); train=examples(rng,r1,8)
     transfer=permute_irrelevant(rng, examples(rng,r1,64), r1)
     corrections=examples(rng,r2,4); shifted=examples(rng,r2,64)
-    oracle_curve, oracle_sizes = identifiability_oracle(corrections, shifted)
+    oracle_curve, oracle_sizes = identifiability_oracle(corrections, shifted)\n    trans_curve, trans_sizes = transition_oracle(r1, corrections, shifted)
     result={"seed":seed,"r1":r1,"r2":r2,
-            "identifiability_oracle":{"shift_curve":oracle_curve,"active_hypotheses":oracle_sizes},
+            "identifiability_oracle":{"shift_curve":oracle_curve,"active_hypotheses":oracle_sizes},\n            "transition_oracle":{"shift_curve":trans_curve,"active_hypotheses":trans_sizes},
             "models":{}}
     for name,model in [("stateless_majority",Majority()),("exact_retrieval",Retrieval()),("version_space",VersionSpace())]:
         c,_=acc_brier(model,cold)
