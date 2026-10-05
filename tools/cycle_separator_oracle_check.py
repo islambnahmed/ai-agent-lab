@@ -90,13 +90,22 @@ def main():
     for ds in product(vals, repeat=3):
         check([(0,1,ds[0]), (1,2,ds[1]), (2,0,ds[2])])
 
-    # Random K4/K5 instances exercise overlapping cycles and closed-walk reuse.
+    # Exhaustive weighted K4 subgraphs: each possible edge is absent or has
+    # d in {0, 0.5, 1}. This covers 4^6 = 4096 sparse/dense structures.
+    pairs4 = list(combinations(range(4), 2))
+    choices = (None, 0.0, 0.5, 1.0)
+    for assignment in product(choices, repeat=len(pairs4)):
+        edges = [(u, v, d) for (u, v), d in zip(pairs4, assignment) if d is not None]
+        if edges:
+            check(edges)
+
+    # Random K4/K5 instances exercise non-grid weights and closed-walk reuse.
     for n, trials in ((4, 200), (5, 200)):
         pairs = list(combinations(range(n), 2))
         for _ in range(trials):
             edges = [(u, v, rng.random()) for u, v in pairs]
             check(edges)
-    print("oracle cross-check: 525 small instances passed")
+    print("oracle cross-check: 4620 small instances passed")
 
 
 if __name__ == "__main__":
