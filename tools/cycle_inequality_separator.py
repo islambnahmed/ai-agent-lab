@@ -69,6 +69,9 @@ def separate_cycle_inequality(
     edges: Iterable[Edge], *, tol: float = 1e-12
 ) -> SeparationResult:
     """Return a violated odd-parity walk when minimum lifted cost is < 1."""
+    if not isfinite(tol) or tol < 0.0:
+        return SeparationResult(False, reason=f"invalid tolerance: {tol}")
+
     edge_list = list(edges)
     adj: dict[Node, list[tuple[Node, float]]] = {}
     seen_edges: set[frozenset[Node]] = set()
@@ -173,6 +176,12 @@ def _self_test() -> None:
     assert not r.violated and r.reason == "self-loops are not supported"
     r = separate_cycle_inequality([("a","b",.2),("b","a",.8)])
     assert not r.violated and r.reason == "parallel undirected edges are not supported"
+
+    # Tolerance is part of the numeric contract; invalid values must not alter
+    # comparisons or silently disable validation.
+    for bad_tol in (-1.0, float("nan"), float("inf"), float("-inf")):
+        r = separate_cycle_inequality([("a","b",.2)], tol=bad_tol)
+        assert not r.violated and r.reason.startswith("invalid tolerance")
 
     # Boundary is strict: a two-edge backtrack can attain exactly 1, not violate.
     r = separate_cycle_inequality([("a","b",.2)])
