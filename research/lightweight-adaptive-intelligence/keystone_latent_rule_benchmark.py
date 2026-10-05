@@ -65,6 +65,20 @@ class VersionSpace:
         votes=[label(x,h) for k,h in enumerate(HYPOTHESES) if (self.mask>>k)&1]
         return sum(votes)/len(votes) if votes else 0.5
 
+def identifiability_oracle(corrections, rows):
+    """Best uniform version-space predictor using only post-shift evidence."""
+    active = HYPOTHESES[:]
+    curve, sizes = [], []
+    for k in range(len(corrections) + 1):
+        votes = [[label(x,h) for h in active] for x,_ in rows]
+        acc = sum(((sum(v)/len(v)) >= .5) == bool(y)
+                  for v,(_,y) in zip(votes,rows)) / len(rows)
+        curve.append(acc); sizes.append(len(active))
+        if k < len(corrections):
+            x,y = corrections[k]
+            active = [h for h in active if label(x,h) == y]
+    return curve, sizes
+
 def acc_brier(model, rows):
     ps=[model.prob(x) for x,_ in rows]
     acc=sum((p>=.5)==bool(y) for p,(_,y) in zip(ps,rows))/len(rows)
@@ -77,7 +91,10 @@ def run(seed):
     cold=examples(rng,r1,32); train=examples(rng,r1,8)
     transfer=permute_irrelevant(rng, examples(rng,r1,64), r1)
     corrections=examples(rng,r2,4); shifted=examples(rng,r2,64)
-    result={"seed":seed,"r1":r1,"r2":r2,"models":{}}
+    oracle_curve, oracle_sizes = identifiability_oracle(corrections, shifted)
+    result={"seed":seed,"r1":r1,"r2":r2,
+            "identifiability_oracle":{"shift_curve":oracle_curve,"active_hypotheses":oracle_sizes},
+            "models":{}}
     for name,model in [("stateless_majority",Majority()),("exact_retrieval",Retrieval()),("version_space",VersionSpace())]:
         c,_=acc_brier(model,cold)
         for x,y in train:model.update(x,y)
@@ -100,6 +117,10 @@ def summary(rows):
                 "transfer":statistics.mean(m["transfer"] for m in ms),
                 "shift_curve":[statistics.mean(m["shift_curve"][k] for m in ms) for k in range(5)],
                 "persistent_bytes_mean":statistics.mean(m["persistent_bytes"] for m in ms)}
+    oracle=[r["identifiability_oracle"] for r in rows]
+    out["identifiability_oracle"]={
+        "shift_curve":[statistics.mean(m["shift_curve"][k] for m in oracle) for k in range(5)],
+        "active_hypotheses_mean":[statistics.mean(m["active_hypotheses"][k] for m in oracle) for k in range(5)]}
     return out
 
 def main():
