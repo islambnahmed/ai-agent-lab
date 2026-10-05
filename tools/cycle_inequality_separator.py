@@ -71,7 +71,14 @@ def separate_cycle_inequality(
     """Return a violated odd-parity walk when minimum lifted cost is < 1."""
     edge_list = list(edges)
     adj: dict[Node, list[tuple[Node, float]]] = {}
+    seen_edges: set[frozenset[Node]] = set()
     for u, v, d in edge_list:
+        if u == v:
+            return SeparationResult(False, reason="self-loops are not supported")
+        key = frozenset((u, v))
+        if key in seen_edges:
+            return SeparationResult(False, reason="parallel undirected edges are not supported")
+        seen_edges.add(key)
         if not isfinite(d):
             return SeparationResult(False, reason=f"invalid disagreement probability: {d}")
         if d < -tol or d > 1.0 + tol:
@@ -159,6 +166,13 @@ def _self_test() -> None:
     simple = _odd_simple_cycle(composite)
     assert simple == composite[2:]
     assert sum(f for _,_,f in simple) % 2 == 1
+
+    # Certificates identify edges by endpoints, so ambiguous multigraph inputs
+    # are rejected until the API carries stable edge IDs.
+    r = separate_cycle_inequality([("a","a",.5)])
+    assert not r.violated and r.reason == "self-loops are not supported"
+    r = separate_cycle_inequality([("a","b",.2),("b","a",.8)])
+    assert not r.violated and r.reason == "parallel undirected edges are not supported"
 
     # Boundary is strict: a two-edge backtrack can attain exactly 1, not violate.
     r = separate_cycle_inequality([("a","b",.2)])
