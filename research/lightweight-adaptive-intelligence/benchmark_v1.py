@@ -45,16 +45,34 @@ def make_episode(seed: int, family: str, n_train: int = 6, n_test: int = 12):
     rng = random.Random(seed)
     op = _operator(family, rng)
     vocab = [f"t{rng.randrange(10_000,99_999)}" for _ in range(32)]
-    def sample(rep: str) -> Example:
-        if family == "affine":
-            x = (rng.randint(-8, 8),)
-        else:
-            x = tuple(rng.sample(range(0, 12), 3))
+    # Sample semantic inputs without replacement across the whole episode.
+    # This makes retrieval a strict memorization control: test success cannot
+    # come from seeing the same x during training.
+    total = n_train + 2 * n_test
+    if family == "affine":
+        xs = [(z,) for z in rng.sample(range(-10_000, 10_001), total)]
+    else:
+        xs, seen = [], set()
+        while len(xs) < total:
+            x = tuple(rng.sample(range(0, 64), 3))
+            if x not in seen:
+                seen.add(x)
+                xs.append(x)
+
+    def make(x: tuple[int, ...], rep: str) -> Example:
         y = op(x)
         return Example(family, rep, x, y, _render(x, rep, vocab), _render(y, rep, vocab))
-    train = [sample("A") for _ in range(n_train)]
-    test_a = [sample("A") for _ in range(n_test)]
-    test_b = [sample("B") for _ in range(n_test)]
+
+    train_x = xs[:n_train]
+    test_a_x = xs[n_train:n_train + n_test]
+    test_b_x = xs[n_train + n_test:]
+    assert set(train_x).isdisjoint(test_a_x)
+    assert set(train_x).isdisjoint(test_b_x)
+    assert set(test_a_x).isdisjoint(test_b_x)
+
+    train = [make(x, "A") for x in train_x]
+    test_a = [make(x, "A") for x in test_a_x]
+    test_b = [make(x, "B") for x in test_b_x]
     return train, test_a, test_b
 
 class Stateless:
