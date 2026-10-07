@@ -25,9 +25,11 @@ its bound is not a guarantee under dataset shift or dependent sampling.
 from collections import Counter
 from math import sqrt
 import argparse
+import csv
 
 VALID = {f"{i:03b}" for i in range(8)}
 HEADER_TOKENS = {"vector", "joint_vector", "error_vector", "joint_error_vector"}
+CLUSTER_HEADERS = {"cluster", "cluster_id", "group", "group_id", "incident", "incident_id"}
 Z95 = 1.959963984540054
 
 
@@ -52,6 +54,51 @@ def parse_vectors(path):
     if not out:
         raise ValueError("no valid joint vectors (000..111) found")
     return out
+
+
+def parse_clustered_vectors(path):
+    """Read CSV with a vector column and a cluster/group identifier.
+
+    Returns (vectors, clusters). Unlike parse_vectors(), this requires a header
+    so cluster identity is explicit rather than inferred from row order.
+    """
+    with open(path, "r", encoding="utf-8", newline="") as f:
+        reader = csv.DictReader(row for row in f if row.strip() and not row.lstrip().startswith("#"))
+        if not reader.fieldnames:
+            raise ValueError("cluster-aware input requires a CSV header")
+        fields = {name.strip().lower(): name for name in reader.fieldnames if name is not None}
+        vkey = next((fields[x] for x in HEADER_TOKENS if x in fields), None)
+        ckey = next((fields[x] for x in CLUSTER_HEADERS if x in fields), None)
+        if vkey is None or ckey is None:
+            raise ValueError("cluster-aware CSV requires vector and cluster_id columns")
+        vectors, clusters = [], []
+        for lineno, row in enumerate(reader, start=2):
+            vector = (row.get(vkey) or "").strip()
+            cluster = (row.get(ckey) or "").strip()
+            if vector not in VALID:
+                raise ValueError(f"line {lineno}: invalid joint vector {vector!r}: expected 000..111")
+            if not cluster:
+                raise ValueError(f"line {lineno}: empty cluster identifier")
+            vectors.append(vector)
+            clusters.append(cluster)
+    if not vectors:
+        raise ValueError("no data rows found")
+    return vectors, clusters
+
+
+def cluster_summary(vectors, clusters):
+    """Conservative cluster-level diagnostic; not a confidence bound.
+
+    A cluster is marked failed when any member has a majority failure. This
+    prevents repeated variants of one incident from masquerading as independent
+    evidence. We intentionally do not manufacture an 'effective sample size':
+    cluster independence is still an assumption and unequal cluster sizes matter.
+    """
+    grouped = {}
+    for vector, cluster in zip(vectors, clusters):
+        grouped.setdefault(cluster, []).append(vector)
+    failed = sum(any(v.count("1") >= 2 for v in rows) for rows in grouped.values())
+    return len(grouped), failed
 
 
 def wilson(k, n, z=Z95):
@@ -101,8 +148,15 @@ def analyze(vectors):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("path")
+    ap.add_argument("--cluster-aware", action="store_true",
+                    help="require CSV vector+cluster_id columns and report conservative cluster diagnostics")
     args = ap.parse_args()
-    counts, n, k, rate, lo, hi, ilabel, upper, ulabel = analyze(parse_vectors(args.path))
+    clusters = None
+    if args.cluster_aware:
+        vectors, clusters = parse_clustered_vectors(args.path)
+    else:
+        vectors = parse_vectors(args.path)
+    counts, n, k, rate, lo, hi, ilabel, upper, ulabel = analyze(vectors)
     print(f"n={n}")
     print("joint_counts=" + " ".join(f"{v}:{counts[v]}" for v in sorted(VALID)))
     print(f"majority_wrong={k}/{n} ({rate:.6%})")
@@ -115,6 +169,11 @@ def main():
     if k == 0:
         print("note: zero observed majority failures does not imply zero risk")
     print("warning: confidence bounds do not cover clustered/dependent cases or dataset shift")
+    if clusters is not None:
+        nc, kc = cluster_summary(vectors, clusters)
+        print(f"clusters={nc}")
+        print(f"clusters_with_any_majority_failure={kc}/{nc} ({kc/nc:.6%})")
+        print("cluster_note: this is a conservative diagnostic, not an adjusted confidence bound")
 
 
 if __name__ == "__main__":
