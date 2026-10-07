@@ -101,6 +101,20 @@ def cluster_summary(vectors, clusters):
     return len(grouped), failed
 
 
+def cluster_reliability_upper_bound(vectors, clusters, alpha=0.05):
+    """Worst-case cluster-event upper bound under independent-cluster sampling.
+
+    Collapse each cluster to one Bernoulli event: did this cluster contain any
+    majority failure? This avoids counting repeated variants inside a cluster
+    as independent evidence. The resulting bound is intentionally conservative
+    for per-case risk and still requires clusters themselves to be independent
+    and representative of deployment.
+    """
+    nc, kc = cluster_summary(vectors, clusters)
+    upper, label = reliability_upper_bound(kc, nc, alpha)
+    return nc, kc, upper, label
+
+
 def wilson(k, n, z=Z95):
     p = k / n
     den = 1 + z*z/n
@@ -170,10 +184,15 @@ def main():
         print("note: zero observed majority failures does not imply zero risk")
     print("warning: confidence bounds do not cover clustered/dependent cases or dataset shift")
     if clusters is not None:
-        nc, kc = cluster_summary(vectors, clusters)
+        nc, kc, cupper, clabel = cluster_reliability_upper_bound(vectors, clusters)
         print(f"clusters={nc}")
         print(f"clusters_with_any_majority_failure={kc}/{nc} ({kc/nc:.6%})")
-        print("cluster_note: this is a conservative diagnostic, not an adjusted confidence bound")
+        if cupper is None:
+            print(f"cluster_reliability_upper_bound: unavailable ({clabel})")
+        else:
+            print(f"cluster_reliability_upper_bound ({clabel}): {cupper:.6%}")
+        print("cluster_assumption: clusters, not rows, are independent/exchangeable and representative")
+        print("cluster_note: this bounds the probability a sampled cluster contains any majority failure; it is not a per-case risk bound")
 
 
 if __name__ == "__main__":
