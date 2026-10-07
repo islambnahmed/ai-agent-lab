@@ -1,12 +1,12 @@
-"""Lumen eval 12: correlation boundaries, not raw sample count, carry evidence.
+"""Lumen eval 12: explicit evidence-unit boundaries under correlated noise.
 
-A run of identical observations may be one correlated corruption event.  This
-witness compares naive IID counting with a constant-memory burst-aware rule:
-only the first sample in a same-label run contributes evidence.
+Raw sample count is not evidence count when observations can share a corruption
+cause.  A boundary must be supplied by the environment (or another justified
+mechanism); a label change is not itself evidence of independence.
 
-The rule is deliberately modest: it does NOT solve arbitrary correlation.
-It demonstrates the minimum extra structure required by the counterexample:
-an observable boundary between candidate evidence units.
+This witness uses a constant-memory rule: one contribution per evidence_unit_id.
+It does NOT claim that IDs make units independent; their semantics must justify
+that assumption.
 """
 from math import exp, log
 
@@ -23,51 +23,59 @@ def iid_posterior(observations, prior=0.1, q=0.2):
     return posterior_from_log_odds(lo)
 
 
-def burst_aware_posterior(observations, prior=0.1, q=0.2):
+def unit_aware_posterior(samples, prior=0.1, q=0.2):
+    """samples are (evidence_unit_id, contradiction) pairs, grouped by unit."""
     lo = log(prior / (1 - prior))
     weight = log((1 - q) / q)
-    last = None
-    for contradiction in observations:
-        if contradiction != last:  # a new observable run/boundary
+    last_unit = object()
+    for unit_id, contradiction in samples:
+        if unit_id != last_unit:
             lo += weight if contradiction else -weight
-            last = contradiction
+            last_unit = unit_id
     return posterior_from_log_odds(lo)
 
 
-def test_one_long_burst_does_not_become_128_independent_witnesses():
-    stream = [True] * 128
-    assert iid_posterior(stream) > 0.999999
-    assert abs(burst_aware_posterior(stream) - (4 / 13)) < 1e-12
+def test_one_long_burst_is_one_evidence_unit():
+    observations = [True] * 128
+    samples = [("burst-A", True)] * 128
+    assert iid_posterior(observations) > 0.999999
+    assert abs(unit_aware_posterior(samples) - (4 / 13)) < 1e-12
 
 
-def test_burst_length_invariance():
-    # Once a contradiction burst starts, making it longer adds no independent
-    # evidence under this model.
-    p1 = burst_aware_posterior([True])
+def test_unit_length_invariance():
+    p1 = unit_aware_posterior([("A", True)])
     for n in (2, 6, 32, 128, 4096):
-        assert abs(burst_aware_posterior([True] * n) - p1) < 1e-12
+        assert abs(unit_aware_posterior([("A", True)] * n) - p1) < 1e-12
 
 
-def test_separated_events_can_accumulate():
-    # Alternation supplies observable boundaries. This is intentionally not a
-    # claim that alternation proves independence; the environment must justify
-    # treating these boundaries as fresh evidence units.
-    one = burst_aware_posterior([True])
-    three = burst_aware_posterior([True, False, True, False, True])
+def test_three_justified_units_accumulate():
+    one = unit_aware_posterior([("A", True)])
+    three = unit_aware_posterior([("A", True), ("B", True), ("C", True)])
     assert three > one
 
 
+def test_label_changes_do_not_create_boundaries():
+    # All samples belong to one externally defined unit. Alternation therefore
+    # must not manufacture five independent evidence contributions.
+    samples = [("A", x) for x in (True, False, True, False, True)]
+    assert abs(unit_aware_posterior(samples) - unit_aware_posterior([("A", True)])) < 1e-12
+
+
 def test_state_is_constant_size():
-    # Implementation state is log-odds + last label; it does not grow with the
-    # number of observations.
-    stream = ([True] * 1000) + ([False] * 1000) + ([True] * 1000)
-    p = burst_aware_posterior(stream)
+    # Streaming implementation needs only log-odds + last unit ID.
+    samples = (
+        [("A", True)] * 1000
+        + [("B", False)] * 1000
+        + [("C", True)] * 1000
+    )
+    p = unit_aware_posterior(samples)
     assert 0.0 < p < 1.0
 
 
 if __name__ == "__main__":
-    test_one_long_burst_does_not_become_128_independent_witnesses()
-    test_burst_length_invariance()
-    test_separated_events_can_accumulate()
+    test_one_long_burst_is_one_evidence_unit()
+    test_unit_length_invariance()
+    test_three_justified_units_accumulate()
+    test_label_changes_do_not_create_boundaries()
     test_state_is_constant_size()
-    print("PASS: burst-aware evidence is length-invariant and constant-memory")
+    print("PASS: explicit evidence-unit boundaries prevent burst overcounting")
