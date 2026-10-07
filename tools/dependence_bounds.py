@@ -76,6 +76,28 @@ def all_fail_bounds(marginals, pairwise=None):
         upper = min(float(marginals[i]), float(marginals[j]))
         if q < lower or q > upper:
             raise ValueError("pairwise constraint violates Frechet bounds")
+    # Binary-cardinality precheck. For any fully observed subset S, the
+    # integer-valued count K=sum(X_i) has mean mu and second moment
+    # E[K^2]=sum p_i + 2 sum q_ij. If k=floor(mu), integer support requires
+    # E[K^2] >= k^2 + (mu-k)(2k+1). We bound subset enumeration; passing this
+    # precheck is not treated as proof of feasibility.
+    max_cardinality_subset = min(n, 6)
+    for size in range(3, max_cardinality_subset + 1):
+        for subset in combinations(range(n), size):
+            edges = list(combinations(subset, 2))
+            if not all(edge in pairwise for edge in edges):
+                continue
+            mu = sum(float(marginals[i]) for i in subset)
+            second = mu + 2.0*sum(float(pairwise[edge]) for edge in edges)
+            k = int(mu // 1)
+            integer_lower = k*k + (mu-k)*(2*k+1)
+            if second + FEAS_TOL < integer_lower:
+                raise ValueError(
+                    "pairwise constraints violate binary cardinality bound: "
+                    f"subset={subset}, mu={mu:.12g}, E[K^2]={second:.12g}, "
+                    f"lower={integer_lower:.12g}, violation={integer_lower-second:.12g}"
+                )
+
     # A forest admits exact arbitrary-n all-intersection bounds.  For each
     # connected tree C:
     #   L_C=max(0, sum_e q_e - sum_v (deg(v)-1)p_v), U_C=min_e q_e.
@@ -187,6 +209,14 @@ if __name__ == "__main__":
     # Feasible complete triangle: exact triple-intersection interval [0,.25].
     lo,hi=all_fail_bounds([.5,.5,.5],{(0,1):.25,(0,2):.25,(1,2):.25})
     assert lo == 0.0 and hi == .25
+    # Five-variable case that passes pairwise Frechet and PSD but violates
+    # binary integrality. rho=-.22 with p=.5 gives q=(rho+1)/4=.195.
+    try:
+        all_fail_bounds([.5]*5,{(i,j):.195 for i,j in combinations(range(5),2)})
+        raise AssertionError("expected binary-cardinality infeasibility")
+    except ValueError as exc:
+        assert "binary cardinality" in str(exc)
+
     # Structural probability constraints are exact input semantics: solver
     # tolerances must not legalize even sub-tolerance contradictions.
     for impossible_q in (.100000001, .1 + 5e-13):
