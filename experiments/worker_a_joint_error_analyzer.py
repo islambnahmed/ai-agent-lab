@@ -21,6 +21,7 @@ from math import sqrt
 import argparse
 
 VALID = {f"{i:03b}" for i in range(8)}
+HEADER_TOKENS = {"vector", "joint_vector", "error_vector", "joint_error_vector"}
 Z95 = 1.959963984540054
 
 
@@ -34,6 +35,14 @@ def parse_vectors(path):
             token = line.split(",", 1)[0].strip()
             if token in VALID:
                 out.append(token)
+                continue
+            # Reliability analysis must fail closed: silently dropping a
+            # malformed row can make the observed failure rate look safer.
+            # Only explicit comments/blanks and a small set of documented
+            # header names are ignorable.
+            if token.lower() in HEADER_TOKENS:
+                continue
+            raise ValueError(f"invalid joint vector {token!r}: expected 000..111")
     if not out:
         raise ValueError("no valid joint vectors (000..111) found")
     return out
