@@ -14,6 +14,12 @@ the claim does not change merely because scipy is or is not installed.
 
 This intentionally avoids inferring ensemble reliability from pairwise
 correlations: majority failure is a higher-order event.
+
+IMPORTANT: the binomial confidence bounds treat evaluated cases as independent,
+exchangeable Bernoulli trials for the deployment population. Repeated variants,
+shared incidents, clustered prompts, temporal drift, or benchmark selection can
+break that assumption. The tool therefore prints the assumption explicitly;
+its bound is not a guarantee under dataset shift or dependent sampling.
 """
 
 from collections import Counter
@@ -100,6 +106,7 @@ def main():
     print(f"n={n}")
     print("joint_counts=" + " ".join(f"{v}:{counts[v]}" for v in sorted(VALID)))
     print(f"majority_wrong={k}/{n} ({rate:.6%})")
+    print("assumption: cases are independent/exchangeable draws representative of deployment")
     print(f"estimation_interval ({ilabel}): [{lo:.6%}, {hi:.6%}]")
     if upper is None:
         print(f"reliability_upper_bound: unavailable ({ulabel})")
@@ -107,6 +114,7 @@ def main():
         print(f"reliability_upper_bound ({ulabel}): {upper:.6%}")
     if k == 0:
         print("note: zero observed majority failures does not imply zero risk")
+    print("warning: confidence bounds do not cover clustered/dependent cases or dataset shift")
 
 
 if __name__ == "__main__":
