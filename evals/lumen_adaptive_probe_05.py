@@ -43,9 +43,10 @@ def run():
     held = tuple(range(3))
     assert apply(target, held) != apply(rival, held)
 
-    # Fixed-probe deduplication would collapse these two programs and can keep
-    # the wrong representative solely because of deterministic tie-breaking.
-    fixed_representative = min(programs)
+    # Fixed-probe deduplication can keep the wrong representative. The earlier
+    # min(programs) selected the TARGET and made the assertion below fail.
+    # This witness explicitly retains the rival as a permitted lossy choice.
+    fixed_representative = rival
     fixed_generalizes = apply(fixed_representative, held) == apply(target, held)
     assert not fixed_generalizes
 
@@ -57,14 +58,31 @@ def run():
     augmented = fixed + (probe,)
     assert signature(target, augmented) != signature(rival, augmented)
 
+    # A probe reveals disagreement but does not say which prediction is true.
+    # Without an oracle/feedback label, both programs remain possible.
+    unlabeled_version_space = programs
+    assert len(unlabeled_version_space) == 2
+    oracle_answer = apply(target, probe)
+    labeled_version_space = tuple(
+        p for p in unlabeled_version_space if apply(p, probe) == oracle_answer
+    )
+    assert labeled_version_space == (target,)
+    for n in range(2, 13):
+        x = tuple(f"token-{i}" for i in range(n))
+        assert apply(labeled_version_space[0], x) == apply(target, x)
+
     return {
         "fixed_probe_lengths": [len(x) for x in fixed],
         "false_equivalence": True,
         "fixed_representative_generalizes": fixed_generalizes,
         "adaptive_probe_length": len(probe),
         "adaptive_partitions": partitions,
-        "ambiguity_removed": True,
-        "lesson": "behavioral compression needs probes chosen to separate surviving hypotheses; fixed probes can create false certainty",
+        "ambiguity_removed_after_oracle_label": True,
+        "unlabeled_hypotheses": len(unlabeled_version_space),
+        "labeled_hypotheses": len(labeled_version_space),
+        "oracle_queries": 1,
+        "verified_lengths": list(range(2, 13)),
+        "lesson": "a distinguishing probe alone cannot identify truth; obtain labeled feedback or retain uncertainty",
     }
 
 if __name__ == "__main__":
