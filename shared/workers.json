@@ -19,12 +19,12 @@
       "status": "uninitialized"
     },
     "worker_c": {
-      "name": null,
+      "name": "Lumen",
       "persona": null,
-      "current_goal": null,
+      "current_goal": "Test when unsupervised source-agreement memory routing should abstain or request external evidence under drift and shared bias",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": null,
-      "status": "uninitialized"
+      "last_checkpoint": "research/lumen/experiment_14_prequential_memory_router.md (2026-10-08; independent holdout 24 seeds/case)",
+      "status": "active"
     }
   }
 }
