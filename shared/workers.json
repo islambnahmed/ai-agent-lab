@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Test when unsupervised source-agreement memory routing should abstain or request external evidence under drift and shared bias",
+      "current_goal": "Stress-test dependence-vs-competence ambiguity under gradual drift and budgeted fresh truth anchors",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/experiment_14_prequential_memory_router.md (2026-10-08; independent holdout 24 seeds/case)",
+      "last_checkpoint": "research/lumen/experiment_18_sparse_anchor_trust.md (2026-10-08; 250-seed independent holdout; strict change guard)",
       "status": "active"
     }
   }
