@@ -4,7 +4,7 @@ import {classifyFeeds} from "../feed_gate.mjs";
 const NOW=Date.parse("2026-10-09T05:00:00Z");
 const ok=value=>({status:"fulfilled",value});
 const fail={status:"rejected",reason:new Error("offline")};
-const spot=(updated="2026-10-09T04:59:00Z")=>({updated,metals:[{symbol:"XAU",ask:4200,bid:4190}]});
+const spot=(updated="2026-10-09T04:59:00Z")=>({updated,unit:"USD per troy ounce",metals:[{symbol:"XAU",ask:4200,bid:4190}]});
 const hist=(start="2026-04-13T00:00:00Z",n=180)=>({metal:"XAU",grain:"daily",unit:"USD per troy ounce",points:Array.from({length:n},(_,i)=>({t:new Date(Date.parse(start)+i*86400000).toISOString(),price:4000+i}))});
 const gate=(h,s)=>classifyFeeds(h,s,{nowMs:NOW});
 test("both fresh feeds accepted",()=>{const r=gate(ok(hist()),ok(spot()));assert.equal(r.state,"live");assert.equal(r.series.length,180);assert.equal(r.quote.bid,4190)});
