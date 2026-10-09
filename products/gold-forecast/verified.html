@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0b1120">
+  <meta name="description" content="معمل تجريبي للتنبؤ بسعر الذهب العالمي ومقارنة أخطاء النماذج بخط أساس.">
+  <title>ذَهَب | نسخة التحقق الصارم</title>
+  <style>
+  :root{font-family:system-ui,'Segoe UI',Tahoma,Arial,sans-serif;color:#eef0f5;background:#0a101e}*{box-sizing:border-box}
+  body{margin:0;background:radial-gradient(ellipse at 80% 0%,#27394f 0%,transparent 35%),#0a101e}button,input{font:inherit}
+  .shell{max-width:1300px;margin:auto;padding:0 26px}
+  header{height:82px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #29354a}
+  .brand{font-size:24px;font-weight:800;letter-spacing:.5px}.brand span{color:#d7ae66}
+  .top-right{display:flex;align-items:center;gap:12px}.status{color:#d7c5a5;background:#292d37;padding:9px 13px;border-radius:30px;font-size:12px}
+  .button{border:1px solid #4c5361;border-radius:11px;background:#263248;color:#e9e8e3;cursor:pointer;padding:10px 15px;font-size:12px;font-weight:700}
+  .button.primary,.chosen{background:#d8b577!important;color:#111722!important;border-color:#d8b577!important}
+  h1{font-size:clamp(32px,4vw,54px);margin:10px 0 9px;line-height:1.3}h1 span{color:#e3bf7c}
+  .intro{padding:50px 0 27px}.eyebrow{font-size:11px;letter-spacing:2px;color:#d2ab69;font-weight:800}.intro p{max-width:650px;color:#a6b2c5;line-height:1.9;font-size:14px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:19px}
+  .card{background:#141e2e;border:1px solid #2f3a4b;border-radius:18px;padding:25px}
+  .stat-title{color:#a7b5c6;font-size:12px}.big{font-family:system-ui;direction:ltr;text-align:right;font-size:34px;font-weight:800;margin:17px 0 6px}
+  .subtitle,.tiny{font-size:11px;color:#8d9aaf;line-height:1.9}
+  .layout{display:grid;grid-template-columns:minmax(0,2.2fr) minmax(280px,1fr);gap:18px}
+  .main-col{display:flex;flex-direction:column;gap:18px;min-width:0}
+  .panel-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}h2{margin:7px 0;font-size:21px}h3{font-size:19px;margin:12px 0 20px}
+  .switches{display:flex;gap:5px;padding:4px;background:#091321;border:1px solid #344156;border-radius:12px}
+  .switches button{border:none;background:transparent;color:#b8c3d2;border-radius:9px;padding:10px;cursor:pointer;font-size:12px}
+  .label{color:#90a0b4;font-size:11px}.forecast-price{font-size:49px;font-weight:800;direction:ltr;text-align:right;letter-spacing:-1px}
+  .prediction{display:flex;justify-content:space-between;align-items:center;margin:29px 0 15px}
+  .change{direction:ltr;background:#26384a;border-radius:9px;padding:10px 13px;font-weight:800;font-family:system-ui}
+  .change.up{color:#6eddad;background:#18382e}.change.down{color:#fb9c94;background:#3d2932}
+  svg{width:100%;height:auto;display:block}.legend{font-size:11px;color:#b7c2d0;margin:0 0 17px}
+  .band{border:1px solid #66563f;background:#22232a;border-radius:12px;padding:18px;font-weight:700}
+  .band small{display:block;color:#aab2c0;font-weight:400;font-size:11px;margin-bottom:8px}
+  .metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;margin-top:20px}
+  .metric{border:1px solid #344154;padding:13px;border-radius:11px}.metric strong{display:block;font-size:15px;margin-top:10px;overflow-wrap:anywhere}
+  .report{line-height:1.9;color:#9eabc0;font-size:12px;border-top:1px solid #303b4f;padding-top:14px;margin-top:18px}
+  .step{display:flex;gap:14px;margin:22px 0}.step>b{font:700 13px system-ui;color:#dfbc7b;background:#35302c;padding:5px 8px;border-radius:7px;height:max-content}
+  .step strong{font-size:13px;display:block}.step small{color:#8c9bb0;line-height:2}
+  a{color:#ecc886}.source{line-height:2;color:#9da9b9;font-size:12px}
+  .sidebar .card{margin-bottom:18px}.full{display:block;width:100%;margin:12px 0;text-align:center}.upload{cursor:pointer}
+  .alert{color:#f0bb90;font-size:12px;min-height:18px;margin:16px 0}
+  footer{border-top:1px solid #293548;padding:25px 0 40px;margin-top:20px;color:#8d9bae;font-size:11px;line-height:2}
+  @media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:15px}.sidebar .card{margin:0}}
+  @media(max-width:680px){.shell{padding:0 15px}header{height:auto;padding:15px 0;flex-wrap:wrap;gap:8px}.intro{padding-top:34px}.stats{grid-template-columns:1fr;gap:9px}.card{padding:17px}.big{font-size:28px;margin:9px 0}.panel-heading{flex-direction:column}.switches{width:100%}.switches button{flex:1}.sidebar{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.forecast-price{font-size:37px}}
+  </style>
+</head>
+<body>
+<div class="shell">
+<header><div class="brand"><span>◆</span> ذَهَب <span style="font-size:12px;color:#93a0b5">/ GOLD LAB</span></div><div class="top-right"><span class="status" id="status">جاري الاتصال</span><button class="button" id="refresh">↻ تحديث</button></div></header>
+<main>
+<section class="intro"><div class="eyebrow">AI AGENT LAB · FIRST PRODUCT</div><h1>شوف الاتجاه. <span>واختبر التوقع.</span></h1><p>موقع بحثي للتنبؤ بالذهب العالمي بالدولار. لا يبيع أوهام الأرباح: كل نتيجة لها نموذج واضح، وخط أساس للمقارنة، واختبار على بيانات لم تُستخدم في اختيار النموذج.</p></section>
+<section class="stats"><article class="card"><div class="stat-title">سعر البيع من المزوّد (Ask)</div><div class="big" id="ask">—</div><div class="subtitle">دولار / أونصة تروي</div></article><article class="card"><div class="stat-title">سعر الشراء لدى المزوّد (Bid)</div><div class="big" id="bid">—</div><div class="subtitle">دولار / أونصة تروي</div></article><article class="card"><div class="stat-title">آخر إغلاق تاريخي مستخدم</div><div class="big" id="close">—</div><div class="subtitle" id="close-date">بانتظار التاريخ السعري</div></article></section>
+<section class="layout">
+<div class="main-col">
+<article class="card">
+ <div class="panel-heading"><div><span class="eyebrow">XAU / USD FORECAST</span><h2>توقع السعر القادم</h2></div><div class="switches"><button data-h="1">جلسة</button><button class="chosen" data-h="7">7 جلسات</button><button data-h="30">30 جلسة</button></div></div>
+ <div class="prediction"><div><span class="label">السعر المتوقع (ليس سعر تداول مضمون)</span><div class="forecast-price" id="forecast">—</div><div class="tiny" id="target">—</div></div><div class="change" id="change">—</div></div>
+ <svg id="chart" viewBox="0 0 920 310" role="img" aria-label="مخطط الإغلاقات التاريخية والتوقع"></svg>
+ <div class="legend">━ التاريخ الفعلي　┄ التوقع　<span style="color:#dbb574">▰ نطاق عدم اليقين التجريبي</span></div>
+ <div class="band"><small>نطاق تقديري على أساس أخطاء سابقة (وليس ضمانًا)</small><div id="range">—</div></div>
+</article>
+<article class="card">
+ <span class="eyebrow">HOLDOUT BACKTEST</span><h2>مراجعة أداء النموذج</h2>
+ <div class="metrics"><div class="metric"><span class="label">النموذج المختار</span><strong id="model">—</strong></div><div class="metric"><span class="label">متوسط خطأ النموذج</span><strong id="mae">—</strong></div><div class="metric"><span class="label">متوسط خطأ Baseline</span><strong id="base-mae">—</strong></div><div class="metric"><span class="label">تغطية النطاق الفعلية</span><strong id="coverage">—</strong></div></div>
+ <p class="report" id="report">بنختار النموذج على الجزء الأقدم، وبنراجع نتيجته على أحدث 20% من الأسعار. التفوق غير مضمون.</p>
+</article>
+</div>
+<aside class="sidebar">
+<article class="card"><span class="eyebrow">HOW IT WORKS</span><h3>الذكاء يبدأ من القياس</h3>
+ <div class="step"><b>01</b><div><strong>نجمع تاريخ الأسعار</strong><small>من مصدر معلن، ونحتفظ بالتواريخ.</small></div></div>
+ <div class="step"><b>02</b><div><strong>نختبر 3 نماذج</strong><small>ثبات السعر، الاتجاه المخفّف، العودة للمتوسط.</small></div></div>
+ <div class="step"><b>03</b><div><strong>نعزل آخر 20%</strong><small>علشان نقيس الأداء بعيدًا عن انتقاء النتائج.</small></div></div>
+ <div class="step"><b>04</b><div><strong>نعرض الغلط قبل النجاح</strong><small>ونقارن بتوقع بسيط لا يحتاج AI.</small></div></div>
+</article>
+<article class="card"><span class="eyebrow">DATA SOURCE</span><h3>الأسعار ومصدرها</h3><p class="source" id="source">جارٍ تحميل التاريخ والأسعار من Standard Bullion.</p><p class="source" id="updated">—</p><a href="https://standardbullion.com" target="_blank" rel="noopener noreferrer">Data by Standard Bullion ↗</a>
+<button class="button full" id="demo">جرّب بيانات اصطناعية — DEMO</button><label class="button full upload" for="csv">ارفع ملف أسعار CSV</label><input type="file" id="csv" accept=".csv,text/csv" hidden><div class="tiny">صيغة الملف: date,price. يُقرأ داخل المتصفح ولا يُرفع لخادم.</div>
+</article>
+</aside>
+</section>
+<div class="alert" role="status" aria-live="polite" id="message"></div>
+</main>
+<footer>Gold Lab — مشروع تجريبي مفتوح المصدر. الأسعار بالدولار/أونصة تروي. أسعار Ask/Bid عروض مزوّد وليست مرجعًا رسميًا للسوق المصري.<br>المعلومات ليست توصية استثمارية. التوقعات قد تخطئ، وفروق الأسعار والضرائب والمصنعية غير محسوبة.</footer>
+</div><script type="module" src="./app_verified.mjs"></script>
+</body></html>
