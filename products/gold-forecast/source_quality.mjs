@@ -2,7 +2,13 @@
 const positive = x => typeof x === "number" && Number.isFinite(x) && x > 0;
 const DAY = 86400000;
 function timestamp(value, label) {
-  if (typeof value !== "string" || !/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d/.test(value)) throw Error(label + ": ISO timestamp required");
+  const m = typeof value === "string" && /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.(\d{1,3}))?(Z|[+-](?:(?:0\d|1[0-3]):[0-5]\d|14:00))$/.exec(value);
+  if (!m) throw Error(label + ": explicit timezone ISO timestamp required");
+  const [year,month,day,hour,minute,second] = m.slice(1,7).map(Number);
+  const calendar = new Date(Date.UTC(year, month-1, day, hour, minute, second));
+  if (calendar.getUTCFullYear()!==year || calendar.getUTCMonth()!==month-1 || calendar.getUTCDate()!==day ||
+      calendar.getUTCHours()!==hour || calendar.getUTCMinutes()!==minute || calendar.getUTCSeconds()!==second)
+    throw Error(label + ": invalid calendar date/time");
   const ms = Date.parse(value);
   if (!Number.isFinite(ms)) throw Error(label + ": invalid timestamp");
   return ms;
@@ -21,8 +27,8 @@ export function validateSpot(data, {nowMs=Date.now(), maxAgeMinutes=15}={}) {
 export function validateHistory(data,{nowMs=Date.now(),maxAgeDays=7,minPoints=165}={}) {
   if (!Number.isFinite(nowMs)||!Number.isFinite(maxAgeDays)||maxAgeDays<=0||!Number.isInteger(minPoints)||minPoints<2) throw Error("Invalid history configuration");
   if (data?.metal!=="XAU"||!Array.isArray(data.points)) throw Error("History: expected XAU points");
-  if (data.unit&&data.unit!=="USD per troy ounce") throw Error("History: unexpected unit");
-  if (data.grain&&data.grain!=="daily") throw Error("History: expected daily observations");
+  if (data.unit!=="USD per troy ounce") throw Error("History: explicit USD per troy ounce unit required");
+  if (data.grain!=="daily") throw Error("History: explicit daily grain required");
   if (data.points.length<minPoints) throw Error("History: insufficient observations");
   let previous="";const rows=[];
   for (const p of data.points) {
