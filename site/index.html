@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="لوحة تجريبية لتوقع أسعار الذهب مع عرض مصدر البيانات وحالة التحقق، دون أرقام غير موثقة.">
+  <title>مختبر توقع الذهب | AI Agent Lab</title>
+  <style>
+    :root{font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color-scheme:light;background:#f6f8fc;color:#15233a}
+    body{margin:0}header{background:#10243f;color:#fff;padding:2rem max(1rem,calc((100vw - 900px)/2))}
+    h1{font-size:clamp(1.7rem,4vw,2.6rem);margin:.25rem 0}header p{color:#c7d7ed;max-width:42rem}
+    main{max-width:900px;margin:2rem auto;padding:0 1rem}section{background:white;border:1px solid #dbe3ee;border-radius:18px;padding:1.5rem;margin-bottom:1rem;box-shadow:0 5px 18px #10243f09}
+    .label{color:#596b82;font-size:.92rem}.price{font-size:clamp(2rem,5vw,3.3rem);font-weight:750;margin:.4rem 0}
+    .status{display:inline-block;background:#fff4db;color:#795004;padding:.35rem .75rem;border-radius:50px;font-weight:700}
+    dl{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1rem}dt{color:#52657e;font-size:.85rem}dd{margin:.3rem 0 0;overflow-wrap:anywhere}
+    a{color:#075db1}footer{max-width:900px;margin:0 auto 2rem;padding:0 1rem;color:#52657e;font-size:.9rem}
+  </style>
+</head>
+<body>
+  <header><p>AI Agent Lab · نموذج أولي</p><h1>توقع أسعار الذهب</h1><p>الشفافية أولًا: لا نعرض سعرًا متوقعًا إلا بعد استيفاء شروط النشر الأساسية.</p></header>
+  <main>
+    <section aria-live="polite" aria-atomic="true">
+      <span class="status" id="status">جارٍ التحقق…</span>
+      <p class="label">السعر المتوقع بالدولار لكل أونصة تروي</p>
+      <p class="price" id="price">—</p>
+      <p id="message">جارٍ تحميل بيانات التوقع.</p>
+    </section>
+    <section><h2>تفاصيل التوقع</h2><dl>
+      <div><dt>تاريخ التوقع المستهدف</dt><dd id="target">—</dd></div>
+      <div><dt>المعلومات المتاحة حتى</dt><dd id="asof">—</dd></div>
+      <div><dt>النموذج</dt><dd id="model">—</dd></div>
+      <div><dt>مصدر البيانات</dt><dd id="source">غير متاح</dd></div>
+    </dl></section>
+    <section><h2>كيف نعرض الأرقام؟</h2><p>غياب البيانات، انتهاء صلاحيتها، أو عدم اكتمال حقولها يؤدي لإخفاء التوقع بدل اختراع رقم. هذا الفحص تقني ولا يثبت بمفرده دقة النموذج أو صحة المصدر.</p></section>
+  </main>
+  <footer>هذه أداة بحثية تجريبية وليست نصيحة استثمارية. لا توجد توصية بالشراء أو البيع.</footer>
+  <script type="module" src="./app.mjs"></script>
+</body>
+</html>
