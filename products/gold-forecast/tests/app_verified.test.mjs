@@ -13,7 +13,7 @@ test("verified preview clears old live values on subsequent outage",async()=>{
   const now=Date.now();
   const start=Date.UTC(2026,0,1);
   const history={metal:"XAU",grain:"daily",unit:"USD per troy ounce",points:Array.from({length:180},(_,i)=>({t:new Date(now-(179-i)*86400000).toISOString(),price:4200+i}))};
-  const spot={updated:new Date(now-60000).toISOString(),metals:[{symbol:"XAU",ask:4500,bid:4490}]};
+  const spot={unit:"USD per troy ounce",updated:new Date(now-60000).toISOString(),metals:[{symbol:"XAU",ask:4500,bid:4490}]};
   globalThis.fetch=async url=>{
     if(offline)throw Error("offline");
     return {ok:true,json:async()=>url.includes("history")?history:spot};
