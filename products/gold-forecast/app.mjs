@@ -1,4 +1,5 @@
-import {forecast,normalize,MODEL_NAMES,tradingDate} from "./forecast.mjs";
+import {normalize,MODEL_NAMES,tradingDate} from "./forecast.mjs";
+import {forecastCalibrated} from "./forecast_calibrated.mjs";
 
 const HIST="https://standardbullion.com/api/v1/market/history?metal=XAU&range=1y";
 const SPOT="https://standardbullion.com/spot-prices.json";
@@ -45,7 +46,7 @@ function chart(result){
 function render(){
   if(!state.series)return;
   try{
-    const r=forecast(state.series,state.horizon);
+    const r=forecastCalibrated(state.series,state.horizon);
     r.horizon=state.horizon;
     el("close").textContent=usd(r.latest.price);
     el("close-date").textContent="إغلاق "+r.latest.date+" (غير السعر اللحظي)";
@@ -117,7 +118,7 @@ el("demo").addEventListener("click",demo);
 el("csv").addEventListener("change",async event=>{
   const file=event.target.files?.[0];if(!file)return;
   try{
-    const series=parseCSV(await file.text());forecast(series,30);
+    const series=parseCSV(await file.text());forecastCalibrated(series,30);
     state.series=series;state.mode="csv";
     el("source").textContent="ملف محلي: "+file.name+" — لم يُرفع لخادم خارجي";
     el("ask").textContent="—";el("bid").textContent="—";el("updated").textContent="ملف CSV محلي";
