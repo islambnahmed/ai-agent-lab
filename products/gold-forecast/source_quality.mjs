@@ -3,7 +3,7 @@ const positive = x => typeof x === "number" && Number.isFinite(x) && x > 0;
 const DAY = 86400000;
 function timestamp(value, label) {
   // Explicit timezone prevents host-local Date.parse interpretation.
-  const match = typeof value === "string" && value.match(/^(\\d{4})-(\\d{2})-(\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.\\d{1,9})?(Z|[+-]\\d{2}:\\d{2})$/);
+  const match = typeof value === "string" && value.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2})(?:\.\d{1,9})?(Z|[+-]\d{2}:\d{2})$/);
   if (!match) throw Error(label + ": timezone-qualified ISO timestamp required");
   const [, y, m, d, h, minute, second, zone] = match;
   const year=Number(y), month=Number(m), day=Number(d);
