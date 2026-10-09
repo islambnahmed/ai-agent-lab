@@ -1,0 +1,17 @@
+import test from "node:test";
+import assert from "node:assert/strict";
+import {classifyFeeds} from "../feed_gate.mjs";
+const NOW=Date.parse("2026-10-09T05:00:00Z");
+const ok=value=>({status:"fulfilled",value});
+const fail={status:"rejected",reason:new Error("offline")};
+const spot=(updated="2026-10-09T04:59:00Z")=>({updated,metals:[{symbol:"XAU",ask:4200,bid:4190}]});
+const hist=(start="2026-04-13T00:00:00Z",n=180)=>({metal:"XAU",grain:"daily",unit:"USD per troy ounce",points:Array.from({length:n},(_,i)=>({t:new Date(Date.parse(start)+i*86400000).toISOString(),price:4000+i}))});
+const gate=(h,s)=>classifyFeeds(h,s,{nowMs:NOW});
+test("both fresh feeds accepted",()=>{const r=gate(ok(hist()),ok(spot()));assert.equal(r.state,"live");assert.equal(r.series.length,180);assert.equal(r.quote.bid,4190)});
+test("stale spot hidden",()=>{const r=gate(ok(hist()),ok(spot("2026-10-09T04:30:00Z")));assert.equal(r.state,"history-only");assert.equal(r.quote,null)});
+test("stale history disables forecast",()=>{const r=gate(ok(hist("2026-01-01T00:00:00Z")),ok(spot()));assert.equal(r.state,"spot-only");assert.equal(r.series,null)});
+test("bad quote does not suppress valid history",()=>{const r=gate(ok(hist()),ok({...spot(),metals:[{symbol:"XAU",ask:"4200",bid:4190}]}));assert.equal(r.state,"history-only");assert.equal(r.quote,null)});
+test("bad history does not suppress valid spot",()=>{const h=hist();h.points[4].price=null;const r=gate(ok(h),ok(spot()));assert.equal(r.state,"spot-only");assert.equal(r.series,null)});
+test("total outage never retains old data",()=>{const prior=gate(ok(hist()),ok(spot()));const r=gate(fail,fail);assert.equal(prior.state,"live");assert.equal(r.state,"unavailable");assert.equal(r.quote,null);assert.equal(r.series,null)});
+test("one endpoint failure is not fully live",()=>{assert.equal(gate(fail,ok(spot())).state,"spot-only");assert.equal(gate(ok(hist()),fail).state,"history-only")});
+test("future timestamp rejected",()=>{const r=gate(ok(hist()),ok(spot("2026-10-09T05:06:00Z")));assert.equal(r.quote,null);assert.match(r.problems.join(),/spot_invalid/)});
