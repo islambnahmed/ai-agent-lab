@@ -1,0 +1,27 @@
+{
+  "captured_at_utc": "2026-10-09T10:22:45.223545+00:00",
+  "independent_cross_check": "Investing.com indicative XAU/USD 2026-10-08 close 4144.73, difference $0.02; source data not reproduced",
+  "instrument": "XAU/USD indicative daily closing price USD per troy ounce",
+  "limitations": [
+    "Manually transcribed web excerpts; not original HTML or independently timestamped publisher vintage.",
+    "Future edits of provider history may differ; original provider timestamps not authenticated.",
+    "Weekend quotes are excluded from the 19-weekday drift calculation.",
+    "Forecast only, not a trading signal."
+  ],
+  "observations": [
+    {
+      "close": 4288.41,
+      "date": "2026-09-14"
+    },
+    {
+      "close": 4144.75,
+      "date": "2026-10-08"
+    }
+  ],
+  "source": "StatMuse Money",
+  "source_urls": [
+    "https://www.statmuse.com/money/ask/gold-or-silver",
+    "https://www.statmuse.com/money/ask/gold-past-year"
+  ],
+  "type": "manual_transcription_manifest_not_raw_source_snapshot"
+}
