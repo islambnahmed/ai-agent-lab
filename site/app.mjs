@@ -24,7 +24,11 @@ export function validateForecastManifest(m, now = new Date()) {
   if (typeof m.model_id !== 'string' || !/^[a-zA-Z0-9_.-]{1,80}$/.test(m.model_id)) return invalid('invalid_model');
   const asof = utc(m.as_of_utc), generated = utc(m.generated_at_utc), expires = utc(m.expires_at_utc), target = day(m.target_date);
   if (!asof || !generated || !expires || !target) return invalid('invalid_dates');
-  if (asof > generated || generated > now || expires <= now || target <= asof) return invalid('invalid_timeline');
+  // target_date is a UTC calendar day, not a midnight prediction instant.
+  // Reject completed target days even if the expiry is still in the future.
+  // Allow same-day forecasts while that day is still open.
+  const targetEndExclusive = target.getTime() + 24 * 60 * 60 * 1000;
+  if (asof > generated || generated > now || expires <= now || targetEndExclusive <= asof.getTime() || targetEndExclusive <= now.getTime()) return invalid('invalid_timeline');
   let source;
   try { source = new URL(m.source_url); } catch { return invalid('invalid_source'); }
   if (source.protocol !== 'https:' || !source.hostname || source.username || source.password) return invalid('invalid_source');
