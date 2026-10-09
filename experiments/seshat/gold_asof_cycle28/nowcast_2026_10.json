@@ -1,0 +1,12 @@
+{
+  "issued_at_utc": "2026-10-09T02:16:42+00:00",
+  "target_month": "2026-10",
+  "target_statistic": "World Bank Pink Sheet gold monthly average USD/toz",
+  "forecast_type": "mid-month nowcast; issued October 9, not a forecast before month start",
+  "forecast_status": "PENDING; outcome expected World Bank November release",
+  "as_of_month": "2026-09",
+  "no_change": 4319,
+  "endpoint_drift": 4416.626,
+  "source_known_release": "World Bank October 2 2026 Pink Sheet",
+  "data_sha256": "393793d66847bc4ccbee832424bbda8b9ececb010ca4d2da0c7e090a8b4a04d7"
+}
