@@ -5,7 +5,7 @@ const HIST="https://standardbullion.com/api/v1/market/history?metal=XAU&range=1y
 const SPOT="https://standardbullion.com/spot-prices.json";
 const el=id=>document.getElementById(id);
 const usd=n=>Number.isFinite(n)?"$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—";
-const state={series:null,horizon:7,mode:"live",loading:false};
+const state={series:null,horizon:7,mode:"live",loading:false,selectionEpoch:0};
 
 async function get(url){
   const ctrl=new AbortController(),timeout=setTimeout(()=>ctrl.abort(),12000);
@@ -74,10 +74,12 @@ function clearFeed(){
 }
 async function refresh(){
   if(state.loading)return;
+  const epoch=++state.selectionEpoch;
   state.loading=true;el("refresh").disabled=true;
   clearFeed();status("جاري جلب الأسعار");message("");
   try{
     const [history,spot]=await Promise.allSettled([get(HIST),get(SPOT)]);
+    if(epoch!==state.selectionEpoch)return; // A newer DEMO/CSV selection owns the UI.
     const gate=classifyFeeds(history,spot,{nowMs:Date.now()});
     if(gate.quote){
       el("ask").textContent=usd(gate.quote.ask);
@@ -97,10 +99,12 @@ async function refresh(){
     status(labels[gate.state]);
     if(gate.problems.length)message("تنبيه: "+gate.problems.join(" — ")+". لا نعرض أسعارًا قديمة كأنها مباشرة. يمكنك استخدام DEMO أو CSV.");
   }catch(error){
+    if(epoch!==state.selectionEpoch)return;
     clearFeed();status("فشل تحديث البيانات");message("تعذر تحديث البيانات: "+error.message);
   }finally{state.loading=false;el("refresh").disabled=false}
 }
 function demo(){
+  ++state.selectionEpoch; // Invalidate pending network responses and file reads.
   const base=new Date();base.setUTCHours(12,0,0,0);base.setUTCDate(base.getUTCDate()-530);
   const series=[];let count=0;
   while(series.length<360){if(base.getUTCDay()!==0&&base.getUTCDay()!==6){series.push({date:base.toISOString().slice(0,10),price:2400+count*2.3+Math.sin(count*.13)*40+Math.cos(count*.73)*16});count++}base.setUTCDate(base.getUTCDate()+1)}
@@ -126,14 +130,17 @@ el("refresh").addEventListener("click",refresh);
 el("demo").addEventListener("click",demo);
 el("csv").addEventListener("change",async event=>{
   const file=event.target.files?.[0];if(!file)return;
+  const epoch=++state.selectionEpoch;
   try{
-    const series=parseCSV(await file.text());forecast(series,30);
+    const series=parseCSV(await file.text());
+    if(epoch!==state.selectionEpoch)return;
+    forecast(series,30);
     state.series=series;state.mode="csv";
     el("source").textContent="ملف محلي: "+file.name+" — لم يُرفع لخادم خارجي";
     el("ask").textContent="—";el("bid").textContent="—";el("updated").textContent="ملف CSV محلي";
     status("بيانات CSV محلية");render();
     message("كل النتائج من ملفك المحلي، ومصدره غير موثق من جانب الموقع.");
-  }catch(e){message("مشكلة CSV: "+e.message)}
+  }catch(e){if(epoch===state.selectionEpoch)message("مشكلة CSV: "+e.message)}
   event.target.value="";
 });
 refresh();
