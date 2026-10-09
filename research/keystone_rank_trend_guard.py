@@ -39,7 +39,7 @@ def exact_rank_p(n, successes_positions):
     return min(1.0,2.0*float(_rank_cdf(n,k)[tail]))
 
 class RankTrendGuard:
-    def __init__(self, checkpoints=(32,64,128,192), alpha=.04, initial_state=0):
+    def __init__(self, checkpoints=(48,96,144,192), alpha=.04, initial_state=0):
         if (not isinstance(alpha,(int,float)) or isinstance(alpha,bool)
                 or not isfinite(alpha) or not 0<alpha<1):
             raise ValueError('alpha must be finite and in (0,1)')
