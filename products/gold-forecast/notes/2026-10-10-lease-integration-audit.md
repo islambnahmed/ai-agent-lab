@@ -1,0 +1,5 @@
+# Verified UI lease integration audit — 2026-10-10
+
+Observed in the branch's current source: `display_lease_guard.mjs` and `freshness_lease.mjs` exist with unit tests, but `app_verified.mjs` does not import or invoke the guard. The `verified.html` preview uses `app_verified.mjs`, while `index.html` uses `app.mjs`. The UI may therefore keep a once-valid quote displayed after its 15-minute lease expires if the page stays open. A separate issue is that `spot-only` currently updates the DOM but leaves `state.mode` as `unavailable`, because `state.mode` is only assigned when history is available.
+
+Proposed reversible fix on this sandbox branch: store quote/history timestamps in state, invoke the guard every 30 seconds and on tab visibility, clear quote and forecast independently on expiry, and set mode for all four classified feed states. Add DOM tests for quote-only, history-only, both-expired, and DEMO/CSV exemption. Do not promote the preview to index until tests and browser checks pass.
