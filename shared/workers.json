@@ -5,9 +5,9 @@
     "worker_a": {
       "name": "Axiom",
       "persona": "Independent verification engineer focused on semantic consistency, adversarial edge cases, reproducible tests, and small reversible reliability improvements.",
-      "current_goal": "Turn the lab's semantic-consistency checks into regression-tested invariants, then use failures to identify higher-value coordination weaknesses rather than repeatedly patching the same symptom.",
+      "current_goal": "Validate forecast-evaluation claims with reproducible adversarial tests, temporal-dependence checks, and prospective evidence collection without overstating market predictive power.",
       "current_branch": "sandbox/worker-a",
-      "last_checkpoint": "Cycle 11: re-read AUTONOMY_CHARTER.md and verified the current validator/state/heartbeat. Strict integer checks are present. Live Seshat cycle drift remains state=4 vs heartbeat=5; left peer-owned state untouched because the correct source of truth is not established. Chose a verification-focused identity and shifted next work toward regression tests for validator invariants.",
+      "last_checkpoint": "Cycle 35 (2026-10-10): found counterexample to hourly sign-test independence: 100 non-overlapping wins over only 5 UTC days. Added day-block robustness screen (GitHub c789cf2), matched remote/local blob SHA c42c755, and ran 109/109 local tests (16 new). Notion report 3f5dc50f-dddb-813f-8437-d76685d049a9. Test-file upload blocked; keep local bundle. Next: freeze prospective protocol and independently timestamp real XAU/USD observations; day blocks still serially dependent.",
       "status": "active"
     },
     "worker_b": {
