@@ -1,11 +1,13 @@
 import {forecast,normalize,MODEL_NAMES,tradingDate} from "./forecast.mjs";
 import {classifyFeeds} from "./feed_gate.mjs";
+import {enforceDisplayLease} from "./display_lease_guard.mjs";
 
 const HIST="https://standardbullion.com/api/v1/market/history?metal=XAU&range=1y";
 const SPOT="https://standardbullion.com/spot-prices.json";
 const el=id=>document.getElementById(id);
 const usd=n=>Number.isFinite(n)?"$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—";
-const state={series:null,horizon:7,mode:"live",loading:false,selectionEpoch:0};
+const state={series:null,quote:null,quoteUpdated:null,historyLatestDate:null,horizon:7,mode:"unavailable",loading:false,selectionEpoch:0};
+const FEED_LABELS={live:"الأسعار والتاريخ حديثان بحسب حدود التحديث","history-only":"التاريخ متاح، السعر اللحظي غير موثوق","spot-only":"السعر اللحظي متاح، التوقع متوقف",unavailable:"البيانات غير متاحة"};
 
 async function get(url){
   const ctrl=new AbortController(),timeout=setTimeout(()=>ctrl.abort(),12000);
@@ -64,13 +66,31 @@ function render(){
     }
   }catch(e){message("تعذر التنبؤ: "+e.message)}
 }
-function clearFeed(){
-  state.series=null;state.mode="unavailable";
-  for(const id of ["ask","bid","close","forecast","target","change","range","model","mae","base-mae","coverage","updated"])el(id).textContent="—";
+function clearHistoryView(){
+  for(const id of ["close","forecast","target","change","range","model","mae","base-mae","coverage"])el(id).textContent="—";
   el("close-date").textContent="لا توجد بيانات تاريخية موثوقة";
   el("chart").innerHTML="";el("change").className="change";
   el("report").textContent="لا توجد بيانات كافية لتقييم النموذج.";
+}
+function clearFeed(){
+  state.series=null;state.quote=null;state.quoteUpdated=null;state.historyLatestDate=null;state.mode="unavailable";
+  for(const id of ["ask","bid","updated"])el(id).textContent="—";
+  clearHistoryView();
   el("source").textContent="Standard Bullion — نتحقق من صلاحية كل تحديث قبل عرضه.";
+}
+function checkDisplayLease(){
+  enforceDisplayLease(state,{
+    expireQuote(){
+      el("ask").textContent="—";el("bid").textContent="—";
+      el("updated").textContent="انتهت صلاحية السعر السابق — اضغط تحديث";
+      message("انتهت صلاحية سعر المزوّد؛ تم إخفاؤه تلقائيًا.");
+    },
+    expireHistory(){
+      clearHistoryView();
+      message("انتهت صلاحية التاريخ السعري؛ تم إيقاف التوقع تلقائيًا.");
+    },
+    changeStatus(mode){status(FEED_LABELS[mode]);}
+  });
 }
 async function refresh(){
   if(state.loading)return;
@@ -81,6 +101,10 @@ async function refresh(){
     const [history,spot]=await Promise.allSettled([get(HIST),get(SPOT)]);
     if(epoch!==state.selectionEpoch)return; // A newer DEMO/CSV selection owns the UI.
     const gate=classifyFeeds(history,spot,{nowMs:Date.now()});
+    state.quote=gate.quote;
+    state.quoteUpdated=gate.quote?.updated??null;
+    state.historyLatestDate=gate.series?.at(-1)?.date??null;
+    state.mode=gate.state;
     if(gate.quote){
       el("ask").textContent=usd(gate.quote.ask);
       el("bid").textContent=usd(gate.quote.bid);
@@ -91,12 +115,11 @@ async function refresh(){
         :"السعر اللحظي غير متاح";
     }
     if(gate.series){
-      state.series=gate.series;state.mode=gate.state;
+      state.series=gate.series;
       el("source").textContent="إغلاقات تاريخية يومية وAsk/Bid من Standard Bullion؛ الأسعار عروض مزوّد وليست مرجعًا رسميًا.";
       render();
     }
-    const labels={"live":"الأسعار والتاريخ حديثان بحسب حدود التحديث","history-only":"التاريخ متاح، السعر اللحظي غير موثوق","spot-only":"السعر اللحظي متاح، التوقع متوقف","unavailable":"البيانات غير متاحة"};
-    status(labels[gate.state]);
+    status(FEED_LABELS[gate.state]);
     if(gate.problems.length)message("تنبيه: "+gate.problems.join(" — ")+". لا نعرض أسعارًا قديمة كأنها مباشرة. يمكنك استخدام DEMO أو CSV.");
   }catch(error){
     if(epoch!==state.selectionEpoch)return;
@@ -108,7 +131,7 @@ function demo(){
   const base=new Date();base.setUTCHours(12,0,0,0);base.setUTCDate(base.getUTCDate()-530);
   const series=[];let count=0;
   while(series.length<360){if(base.getUTCDay()!==0&&base.getUTCDay()!==6){series.push({date:base.toISOString().slice(0,10),price:2400+count*2.3+Math.sin(count*.13)*40+Math.cos(count*.73)*16});count++}base.setUTCDate(base.getUTCDate()+1)}
-  state.series=series;state.mode="demo";
+  state.series=series;state.mode="demo";state.quote=null;state.quoteUpdated=null;state.historyLatestDate=null;
   el("ask").textContent="—";el("bid").textContent="—";el("updated").textContent="لا يوجد سعر حي في وضع التجربة";
   el("source").textContent="DEMO: بيانات مولّدة برمجيًا وليست أسعار الذهب الحقيقية";
   status("DEMO — بيانات اصطناعية");render();message("تنبيه: جميع الأرقام التاريخية في هذا العرض وهمية للشرح فقط، ولا تُستخدم في الاستثمار.");
@@ -135,7 +158,7 @@ el("csv").addEventListener("change",async event=>{
     const series=parseCSV(await file.text());
     if(epoch!==state.selectionEpoch)return;
     forecast(series,30);
-    state.series=series;state.mode="csv";
+    state.series=series;state.mode="csv";state.quote=null;state.quoteUpdated=null;state.historyLatestDate=null;
     el("source").textContent="ملف محلي: "+file.name+" — لم يُرفع لخادم خارجي";
     el("ask").textContent="—";el("bid").textContent="—";el("updated").textContent="ملف CSV محلي";
     status("بيانات CSV محلية");render();
@@ -144,3 +167,6 @@ el("csv").addEventListener("change",async event=>{
   event.target.value="";
 });
 refresh();
+const leaseTimer=setInterval(checkDisplayLease,30_000);
+leaseTimer?.unref?.(); // Keep Node test processes free to exit; browser timers remain active.
+document.addEventListener?.("visibilitychange",()=>{if(!document.hidden)checkDisplayLease();});
