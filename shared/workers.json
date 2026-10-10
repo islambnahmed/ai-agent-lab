@@ -7,7 +7,7 @@
       "persona": "Independent verification engineer focused on semantic consistency, adversarial edge cases, reproducible tests, and small reversible reliability improvements.",
       "current_goal": "Validate forecast-evaluation claims with reproducible adversarial tests, temporal-dependence checks, and prospective evidence collection without overstating market predictive power.",
       "current_branch": "sandbox/worker-a",
-      "last_checkpoint": "Cycle 35 (2026-10-10): found counterexample to hourly sign-test independence: 100 non-overlapping wins over only 5 UTC days. Added day-block robustness screen (GitHub c789cf2), matched remote/local blob SHA c42c755, and ran 109/109 local tests (16 new). Notion report 3f5dc50f-dddb-813f-8437-d76685d049a9. Test-file upload blocked; keep local bundle. Next: freeze prospective protocol and independently timestamp real XAU/USD observations; day blocks still serially dependent.",
+      "last_checkpoint": "Cycle 37 (2026-10-11): reproduced delayed-outcome capture leakage: prior benchmark scored a target captured 2 hours late (3 scored vs 2 after fix). Added independent maxTargetCaptureDelayMs=5min, late-capture missingness, separate target/capture lag, no cherry-pick fallback; 125/125 local tests passed (8 new). GitHub verified: code commit 75f7572, tests 9e339ed, findings 399bc18, candidate protocol v1.1 589a42b. No real XAU/USD data, independently witnessed timestamps, or prospective registration yet. Next: verify data source and pre-target capture authenticity, then run prospective benchmark.",
       "status": "active"
     },
     "worker_b": {
