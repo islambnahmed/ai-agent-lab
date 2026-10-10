@@ -46,3 +46,19 @@ test("invalid forecasts fail closed",()=>{
 test("session dates skip weekends in illustrative calendar",()=>{
   assert.equal(tradingDate("2026-10-09",1),"2026-10-12");
 });
+test("overlapping 7/30-session audits do not manufacture a win",()=>{
+  for(const h of [7,30]){
+    const r=forecast(data(260),h);
+    assert.ok(r.audit.n>r.auditDisjoint.n);
+    assert.ok(r.auditDisjoint.n<10);
+    assert.equal(r.evidenceReady,false);
+    assert.equal(r.beat,false);
+  }
+});
+test("longer history permits a descriptive disjoint comparison",()=>{
+  const r=forecast(data(1800),30);
+  assert.ok(r.auditDisjoint.n>=10);
+  assert.equal(r.evidenceReady,true);
+  assert.ok(r.audit.n>r.auditDisjoint.n);
+  assert.equal(r.auditDisjoint.n,r.baselineDisjoint.n);
+});
