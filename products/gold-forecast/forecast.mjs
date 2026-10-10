@@ -51,12 +51,19 @@ export function forecast(raw,h=7){
   candidates.sort((a,b)=>a.validation.mae-b.validation.mae);
   const best=candidates[0],auditRows=sample(prices,h,best.model,split,n-h+1),baselineRows=sample(prices,h,"persistence",split,n-h+1);
   if(auditRows.length<10)throw Error("Not enough audit samples");
+  // Overlapping targets share most of their forecast horizon. Count disjoint
+  // target windows separately; do not mistake overlapping rows for evidence.
+  const disjointRows=sample(prices,h,best.model,split,n-h+1,h);
+  const disjointBaselineRows=sample(prices,h,"persistence",split,n-h+1,h);
+  const auditDisjoint=metric(disjointRows),baselineDisjoint=metric(disjointBaselineRows);
+  const evidenceReady=auditDisjoint.n>=10; // descriptive threshold, NOT significance
   const band=Math.max(0.002,q(best.rows.map(r=>r.mape),0.8));
   const point=predict(prices,h,best.model),audit=metric(auditRows),baseline=metric(baselineRows);
   return {model:best.model,point,lower:Math.max(0,point*(1-band)),upper:point*(1+band),
     band,coverage:100*auditRows.filter(r=>r.mape<=band).length/auditRows.length,
-    audit,baseline,beat:audit.mae<baseline.mae,series:series.slice(-120),
-    latest:series.at(-1),auditedFrom:series[split].date};
+    audit,baseline,auditDisjoint,baselineDisjoint,evidenceReady,
+    beat:evidenceReady&&best.model!=="persistence"&&auditDisjoint.mae<baselineDisjoint.mae,
+    series:series.slice(-120),latest:series.at(-1),auditedFrom:series[split].date};
 }
 export function tradingDate(dateISO,h){
   const d=new Date(dateISO+"T12:00:00Z");
