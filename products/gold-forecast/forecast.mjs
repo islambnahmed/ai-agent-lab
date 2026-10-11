@@ -1,12 +1,31 @@
 // Deterministic gold forecasting baselines; zero network or paid dependencies.
 export const MODEL_NAMES = {persistence:"آخر إغلاق (Baseline)",momentum:"اتجاه مخفّف",mean_reversion:"عودة للمتوسط"};
-export function normalize(raw){
+// Strict timestamps: reject impossible calendar dates and ambiguous timezone-free times.
+function parseQuoteTime(value){
+  if(typeof value!=="string")return NaN;
+  const m=/^(\d{4}-\d{2}-\d{2})(?:T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:\d{2}))?$/.exec(value);
+  if(!m)return NaN;
+  const midnight=Date.parse(m[1]+"T00:00:00Z");
+  if(!Number.isFinite(midnight)||new Date(midnight).toISOString().slice(0,10)!==m[1])return NaN;
+  if(m[2]!==undefined){
+    if(Number(m[2])>23||Number(m[3])>59||Number(m[4])>59)return NaN;
+    if(m[5]!=="Z"){
+      const hours=Number(m[5].slice(1,3)),minutes=Number(m[5].slice(4));
+      if(hours>14||minutes>59||(hours===14&&minutes!==0))return NaN;
+    }
+  }
+  return Date.parse(value);
+}
+export function normalize(raw,{asOf=new Date()}={}){
   if(!Array.isArray(raw)) throw Error("Invalid price series");
+  const todayUTC=new Date(asOf).toISOString().slice(0,10);
   const out=new Map();
   for(const p of raw){
-    const price=Number(p?.price??p?.close),ts=Date.parse(p?.t??p?.date);
+    const price=Number(p?.price??p?.close),ts=parseQuoteTime(p?.t??p?.date);
     if(!Number.isFinite(price)||price<=0||!Number.isFinite(ts))continue;
-    const day=new Date(ts).toISOString().slice(0,10),previous=out.get(day);
+    const day=new Date(ts).toISOString().slice(0,10);
+    if(day>todayUTC)throw Error("Future-dated historical price: "+day);
+    const previous=out.get(day);
     if(!previous||ts>=previous.ts)out.set(day,{date:day,price,ts});
   }
   return [...out.values()].sort((a,b)=>a.date.localeCompare(b.date)).map(({date,price})=>({date,price}));
