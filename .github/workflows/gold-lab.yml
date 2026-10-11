@@ -22,5 +22,8 @@ jobs:
         run: |
           node --check products/gold-forecast/forecast.mjs
           node --check products/gold-forecast/app.mjs
+          node --check products/gold-forecast/app_verified.mjs
+          node --check products/gold-forecast/csv_guard.mjs
+          node --check products/gold-forecast/csv_session_guard.mjs
       - name: Forecast regression tests
         run: node --test products/gold-forecast/tests/*.test.mjs

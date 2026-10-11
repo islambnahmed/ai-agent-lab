@@ -1,6 +1,7 @@
-import {forecast,normalize,MODEL_NAMES,tradingDate} from "./forecast.mjs";
+import {forecast,MODEL_NAMES,tradingDate} from "./forecast.mjs";
 import {classifyFeeds} from "./feed_gate.mjs";
 import {enforceDisplayLease} from "./display_lease_guard.mjs";
+import {parseSessionCsv} from "./csv_session_guard.mjs";
 
 const HIST="https://standardbullion.com/api/v1/market/history?metal=XAU&range=1y";
 const SPOT="https://standardbullion.com/spot-prices.json";
@@ -140,12 +141,6 @@ function demo(){
   el("source").textContent="DEMO: بيانات مولّدة برمجيًا وليست أسعار الذهب الحقيقية";
   status("DEMO — بيانات اصطناعية");render();message("تنبيه: جميع الأرقام التاريخية في هذا العرض وهمية للشرح فقط، ولا تُستخدم في الاستثمار.");
 }
-function parseCSV(text){
-  const rows=text.replace(/^\uFEFF/,"").trim().split(/\r?\n/),header=rows.shift().toLowerCase().split(",").map(s=>s.trim());
-  const di=header.findIndex(s=>["date","t","timestamp"].includes(s)),pi=header.findIndex(s=>["price","close"].includes(s));
-  if(di<0||pi<0)throw Error("CSV must have date,price or Date,Close columns");
-  return normalize(rows.map(line=>{const v=line.split(",");return {date:v[di],price:v[pi]}}));
-}
 for(const button of document.querySelectorAll("[data-h]")){
   button.addEventListener("click",()=>{
     state.horizon=Number(button.dataset.h);
@@ -161,14 +156,14 @@ el("csv").addEventListener("change",async event=>{
   state.loading=false;el("refresh").disabled=false;
   if(state.mode==="unavailable")status("جاري فحص ملف CSV");
   try{
-    const series=parseCSV(await file.text());
+    const {series,weekendRowsExcluded}=parseSessionCsv(await file.text());
     if(epoch!==state.selectionEpoch)return;
     forecast(series,30);
     state.series=series;state.mode="csv";state.quote=null;state.quoteUpdated=null;state.historyLatestDate=null;
     el("source").textContent="ملف محلي: "+file.name+" — لم يُرفع لخادم خارجي";
     el("ask").textContent="—";el("bid").textContent="—";el("updated").textContent="ملف CSV محلي";
     status("بيانات CSV محلية");render();
-    message("كل النتائج من ملفك المحلي، ومصدره غير موثق من جانب الموقع.");
+    message("كل النتائج من ملفك المحلي، ومصدره غير موثق من جانب الموقع. "+(weekendRowsExcluded?"تم استبعاد "+weekendRowsExcluded+" سجلًا من عطلة الأسبوع. ":"")+"الجلسات محسوبة بأيام العمل فقط ولا تشمل العطلات الرسمية.");
   }catch(e){
     if(epoch===state.selectionEpoch){
       if(state.mode==="unavailable")status("ملف CSV غير صالح — لا توجد بيانات");
