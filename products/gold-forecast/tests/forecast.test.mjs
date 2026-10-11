@@ -46,3 +46,24 @@ test("invalid forecasts fail closed",()=>{
 test("session dates skip weekends in illustrative calendar",()=>{
   assert.equal(tradingDate("2026-10-09",1),"2026-10-12");
 });
+
+test("reported audit coverage equals actual inclusion inside the displayed band",()=>{
+  const raw=Array.from({length:360},(_,i)=>({
+    date:new Date(Date.UTC(2025,0,1+i)).toISOString().slice(0,10),
+    price:2000+Math.sin(i*0.13)*230+i*0.8+Math.cos(i*0.53)*65
+  }));
+  const prices=raw.map(p=>p.price),split=Math.floor(prices.length*0.8);
+  for(const h of [1,7,30]){
+    const result=forecast(raw,h);
+    let inside=0,total=0;
+    for(let i=split;i<prices.length-h+1;i++){
+      const predicted=predict(prices.slice(0,i),h,result.model);
+      const actual=prices[i+h-1];
+      if(actual>=predicted*(1-result.band)&&actual<=predicted*(1+result.band))inside++;
+      total++;
+    }
+    assert.equal(total,result.audit.n);
+    assert.ok(Math.abs(result.coverage-100*inside/total)<1e-10,
+      "coverage must measure the same interval shown to the user at horizon "+h);
+  }
+});
