@@ -17,7 +17,8 @@ function message(text){el("message").textContent=text}
 function status(text){el("status").textContent=text}
 function spotData(data){
   const gold=data?.metals?.find(m=>m.symbol==="XAU");
-  if(!gold||!Number.isFinite(Number(gold.ask))||!Number.isFinite(Number(gold.bid)))throw Error("Live quote format changed");
+  const validPrice=v=>(typeof v==="number"||(typeof v==="string"&&v.trim()!==""))&&Number.isFinite(Number(v))&&Number(v)>0;
+  if(!gold||!validPrice(gold.ask)||!validPrice(gold.bid)||Number(gold.bid)>Number(gold.ask))throw Error("Invalid live XAU bid/ask quote");
   el("ask").textContent=usd(Number(gold.ask));el("bid").textContent=usd(Number(gold.bid));
   el("updated").textContent="تاريخ السعر اللحظي UTC: "+(data.updated||"غير معروف");
 }
