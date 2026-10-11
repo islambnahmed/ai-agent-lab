@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "trial_id": "worker-a-cycle56-cross-service-canary-2026-10-11",
+  "kind": "registration_witness_canary",
+  "instrument": null,
+  "market_quote": null,
+  "forecast": null,
+  "outcome": null,
+  "eligible_for_accuracy_metrics": false,
+  "purpose": "Test GitHub immutable commit contents linked to Notion server-created page time; no gold forecast or price data.",
+  "expected_witness": "Notion child page under authorized AI Agent Lab hub, title/body containing exact GitHub commit SHA. Check Notion created time and last edit time; treat edits and API date caveats explicitly.",
+  "limitations": "Neither unsigned Git commits nor editable Notion pages alone prove independent immutable first-publication time."
+}
