@@ -13,9 +13,12 @@ const DAY = 24 * HOUR;
 const assert = (condition, message) => { if (!condition) throw new Error(message); };
 const avg = values => values.reduce((sum, x) => sum + x, 0) / values.length;
 
-export function validateObservations(rows) {
+export function validateObservations(rows, {requireProvenance = false} = {}) {
   assert(Array.isArray(rows) && rows.length >= 2, 'At least two observations required');
+  assert(typeof requireProvenance === 'boolean', 'Invalid provenance requirement');
   let previousUpdated = -Infinity;
+  let datasetSource = null;
+  let datasetBasis = null;
   return rows.map((row, i) => {
     assert(row && typeof row === 'object' && !Array.isArray(row), `row ${i}: invalid object`);
     const updatedMs = parseProviderUtcTimestamp(row.updatedAt);
@@ -24,8 +27,23 @@ export function validateObservations(rows) {
     assert(capturedMs >= updatedMs, `row ${i}: captured before provider observation`);
     assert(typeof row.price === 'number' && Number.isFinite(row.price) && row.price > 0 && row.price <= 1_000_000,
       `row ${i}: invalid price`);
+    const hasSource = Object.hasOwn(row, 'source');
+    const hasBasis = Object.hasOwn(row, 'priceBasis');
+    assert(hasSource === hasBasis, `row ${i}: incomplete provenance`);
+    if (hasSource) {
+      assert(typeof row.source === 'string' && /^[a-z0-9.-]{3,120}$/.test(row.source), `row ${i}: invalid source`);
+      assert(['dealer_mid','spot_mid','dealer_bid','dealer_ask','synthetic'].includes(row.priceBasis), `row ${i}: invalid price basis`);
+    }
+    if (i === 0) {
+      datasetSource = hasSource ? row.source : null;
+      datasetBasis = hasBasis ? row.priceBasis : null;
+    }
+    assert((hasSource ? row.source : null) === datasetSource, `row ${i}: mixed data sources`);
+    assert((hasBasis ? row.priceBasis : null) === datasetBasis, `row ${i}: mixed price bases`);
+    assert(!requireProvenance || hasSource, `row ${i}: missing provenance`);
     previousUpdated = updatedMs;
-    return Object.freeze({updatedMs, capturedMs, price:row.price, updatedAt:row.updatedAt, capturedAt:row.capturedAt});
+    return Object.freeze({updatedMs, capturedMs, price:row.price, updatedAt:row.updatedAt, capturedAt:row.capturedAt,
+      source:datasetSource, priceBasis:datasetBasis});
   });
 }
 
@@ -48,7 +66,7 @@ export function fixedBaselines(known, horizonMs, trendLookback = 3) {
 
 export function walkForwardBenchmark(rows, {
   horizonMs = HOUR, minHistory = 3, trendLookback = 3, maxQuoteAgeMs = HOUR,
-  targetToleranceMs = 0, maxTargetCaptureDelayMs = 5 * 60_000,
+  targetToleranceMs = 0, maxTargetCaptureDelayMs = 5 * 60_000, requireProvenance = false,
 } = {}) {
   assert(Number.isSafeInteger(horizonMs) && horizonMs > 0 && horizonMs <= 30 * DAY, 'Invalid horizon');
   assert(Number.isSafeInteger(minHistory) && minHistory >= 2 && minHistory <= 1000, 'Invalid minimum history');
@@ -56,7 +74,7 @@ export function walkForwardBenchmark(rows, {
   assert(Number.isSafeInteger(maxQuoteAgeMs) && maxQuoteAgeMs >= 0 && maxQuoteAgeMs <= 30 * DAY, 'Invalid quote age');
   assert(Number.isSafeInteger(targetToleranceMs) && targetToleranceMs >= 0 && targetToleranceMs <= HOUR, 'Invalid target tolerance');
   assert(Number.isSafeInteger(maxTargetCaptureDelayMs) && maxTargetCaptureDelayMs >= 0 && maxTargetCaptureDelayMs <= HOUR, 'Invalid target capture delay');
-  const data = validateObservations(rows);
+  const data = validateObservations(rows, {requireProvenance});
   // First provider observation at or after target; never outcome-driven replacement.
   // Both tolerance values must be fixed prospectively.
   const byUpdated = new Map(data.map(row => [row.updatedMs, row]));
@@ -104,9 +122,10 @@ export function walkForwardBenchmark(rows, {
     driftStrictWinRate:forecasts.filter(x=>x.driftAbsoluteError < x.persistenceAbsoluteError).length / forecasts.length,
   }) : Object.freeze({count:0, persistenceMAE:null, driftMAE:null, persistenceRMSE:null, driftRMSE:null, driftStrictWinRate:null});
   return Object.freeze({
-    instrument:'Synthetic or supplied XAU/USD indicative spot (USD per troy ounce)',
+    instrument:'Supplied XAU/USD price series (USD per troy ounce; basis explicitly labeled when known)',
+    source:data[0].source, priceBasis:data[0].priceBasis, requireProvenance,
     horizonMs, minHistory, trendLookback, maxQuoteAgeMs, targetToleranceMs, maxTargetCaptureDelayMs,
     summary, skipped:Object.freeze(skipped), forecasts:Object.freeze(forecasts),
-    caveat:'Historical capturedAt is untrusted without independent as-of evidence. Target matching and capture-delay tolerances must be frozen prospectively. No proof of prospective forecast registration or future performance.',
+    caveat:'Source and price basis labels are self-declared and not independently authenticated; unlabeled legacy data is permitted only when requireProvenance=false. Historical capturedAt is untrusted without independent as-of evidence. Target matching and capture-delay tolerances must be frozen prospectively. No proof of prospective forecast registration or future performance.',
   });
 }
