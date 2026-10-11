@@ -124,10 +124,14 @@ async function refresh(){
   }catch(error){
     if(epoch!==state.selectionEpoch)return;
     clearFeed();status("فشل تحديث البيانات");message("تعذر تحديث البيانات: "+error.message);
-  }finally{state.loading=false;el("refresh").disabled=false}
+  }finally{
+    // A superseded request must not unlock a newer refresh.
+    if(epoch===state.selectionEpoch){state.loading=false;el("refresh").disabled=false;}
+  }
 }
 function demo(){
   ++state.selectionEpoch; // Invalidate pending network responses and file reads.
+  state.loading=false;el("refresh").disabled=false;
   const base=new Date();base.setUTCHours(12,0,0,0);base.setUTCDate(base.getUTCDate()-530);
   const series=[];let count=0;
   while(series.length<360){if(base.getUTCDay()!==0&&base.getUTCDay()!==6){series.push({date:base.toISOString().slice(0,10),price:2400+count*2.3+Math.sin(count*.13)*40+Math.cos(count*.73)*16});count++}base.setUTCDate(base.getUTCDate()+1)}
@@ -154,6 +158,8 @@ el("demo").addEventListener("click",demo);
 el("csv").addEventListener("change",async event=>{
   const file=event.target.files?.[0];if(!file)return;
   const epoch=++state.selectionEpoch;
+  state.loading=false;el("refresh").disabled=false;
+  if(state.mode==="unavailable")status("جاري فحص ملف CSV");
   try{
     const series=parseCSV(await file.text());
     if(epoch!==state.selectionEpoch)return;
@@ -163,7 +169,12 @@ el("csv").addEventListener("change",async event=>{
     el("ask").textContent="—";el("bid").textContent="—";el("updated").textContent="ملف CSV محلي";
     status("بيانات CSV محلية");render();
     message("كل النتائج من ملفك المحلي، ومصدره غير موثق من جانب الموقع.");
-  }catch(e){if(epoch===state.selectionEpoch)message("مشكلة CSV: "+e.message)}
+  }catch(e){
+    if(epoch===state.selectionEpoch){
+      if(state.mode==="unavailable")status("ملف CSV غير صالح — لا توجد بيانات");
+      message("مشكلة CSV: "+e.message);
+    }
+  }
   event.target.value="";
 });
 refresh();
