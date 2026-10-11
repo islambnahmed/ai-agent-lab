@@ -50,7 +50,7 @@ export function validateObservations(rows, {requireProvenance = false} = {}) {
 /** The drift baseline uses ONLY observations available at issue time. */
 export function fixedBaselines(known, horizonMs, trendLookback = 3) {
   assert(Array.isArray(known) && known.length > 0, 'No known observations');
-  assert(Number.isSafeInteger(horizonMs) && horizonMs > 0 && horizonMs <= 30 * DAY, 'Invalid horizon');
+  assert(Number.isSafeInteger(horizonMs) && horizonMs > 0 && horizonMs <= 60 * DAY, 'Invalid projection horizon');
   assert(Number.isSafeInteger(trendLookback) && trendLookback >= 2 && trendLookback <= 100, 'Invalid lookback');
   const last = known.at(-1);
   const prior = known.slice(-trendLookback);
@@ -67,6 +67,7 @@ export function fixedBaselines(known, horizonMs, trendLookback = 3) {
 export function walkForwardBenchmark(rows, {
   horizonMs = HOUR, minHistory = 3, trendLookback = 3, maxQuoteAgeMs = HOUR,
   targetToleranceMs = 0, maxTargetCaptureDelayMs = 5 * 60_000, requireProvenance = false,
+  horizonAnchor = 'observation',
 } = {}) {
   assert(Number.isSafeInteger(horizonMs) && horizonMs > 0 && horizonMs <= 30 * DAY, 'Invalid horizon');
   assert(Number.isSafeInteger(minHistory) && minHistory >= 2 && minHistory <= 1000, 'Invalid minimum history');
@@ -74,6 +75,7 @@ export function walkForwardBenchmark(rows, {
   assert(Number.isSafeInteger(maxQuoteAgeMs) && maxQuoteAgeMs >= 0 && maxQuoteAgeMs <= 30 * DAY, 'Invalid quote age');
   assert(Number.isSafeInteger(targetToleranceMs) && targetToleranceMs >= 0 && targetToleranceMs <= HOUR, 'Invalid target tolerance');
   assert(Number.isSafeInteger(maxTargetCaptureDelayMs) && maxTargetCaptureDelayMs >= 0 && maxTargetCaptureDelayMs <= HOUR, 'Invalid target capture delay');
+  assert(['observation', 'issuance'].includes(horizonAnchor), 'Invalid horizon anchor');
   const data = validateObservations(rows, {requireProvenance});
   // First provider observation at or after target; never outcome-driven replacement.
   // Both tolerance values must be fixed prospectively.
@@ -88,7 +90,8 @@ export function walkForwardBenchmark(rows, {
     const last = known.at(-1);
     if (last !== anchor) { skipped.duplicateAnchor++; continue; }
     if (anchor.capturedMs - last.updatedMs > maxQuoteAgeMs) { skipped.stale++; continue; }
-    const targetMs = last.updatedMs + horizonMs;
+    // Observation anchoring can compress the advertised issue-to-target lead.
+    const targetMs = (horizonAnchor === 'issuance' ? anchor.capturedMs : last.updatedMs) + horizonMs;
     const target = targetToleranceMs === 0 ? byUpdated.get(targetMs) :
       data.find(row => row.updatedMs >= targetMs && row.updatedMs <= targetMs + targetToleranceMs);
     if (!target) { skipped.targetMissing++; continue; }
@@ -101,9 +104,11 @@ export function walkForwardBenchmark(rows, {
       skipped.targetCaptureLate++;
       continue;
     }
-    const prediction = fixedBaselines(known, horizonMs, trendLookback);
+    // Project from the last observation to the nominal target, not from issuance.
+    const prediction = fixedBaselines(known, targetMs - last.updatedMs, trendLookback);
     forecasts.push(Object.freeze({
       issuedAt:anchor.capturedAt, targetAt:target.updatedAt,
+      effectiveLeadMs:target.updatedMs-anchor.capturedMs,
       nominalTargetAt:new Date(targetMs).toISOString(), targetLagMs:target.updatedMs-targetMs,
       targetCaptureDelayMs:target.capturedMs-target.updatedMs,
       trainingThrough:last.updatedAt, trainingCount:known.length,
@@ -124,8 +129,8 @@ export function walkForwardBenchmark(rows, {
   return Object.freeze({
     instrument:'Supplied XAU/USD price series (USD per troy ounce; basis explicitly labeled when known)',
     source:data[0].source, priceBasis:data[0].priceBasis, requireProvenance,
-    horizonMs, minHistory, trendLookback, maxQuoteAgeMs, targetToleranceMs, maxTargetCaptureDelayMs,
+    horizonMs, horizonAnchor, minHistory, trendLookback, maxQuoteAgeMs, targetToleranceMs, maxTargetCaptureDelayMs,
     summary, skipped:Object.freeze(skipped), forecasts:Object.freeze(forecasts),
-    caveat:'Source and price basis labels are self-declared and not independently authenticated; unlabeled legacy data is permitted only when requireProvenance=false. Historical capturedAt is untrusted without independent as-of evidence. Target matching and capture-delay tolerances must be frozen prospectively. No proof of prospective forecast registration or future performance.',
+    caveat:'Source and price basis labels are self-declared and not independently authenticated; unlabeled legacy data is permitted only when requireProvenance=false. Historical capturedAt is untrusted without independent as-of evidence. Target matching and capture-delay tolerances must be frozen prospectively. Observation-anchored horizons can shorten actual lead; set horizonAnchor=issuance for prospective comparisons. No proof of prospective forecast registration or future performance.',
   });
 }
