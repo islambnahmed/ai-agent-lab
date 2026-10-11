@@ -6,6 +6,8 @@ import {normalizeQuote, parseProviderUtcTimestamp} from './quote-core.mjs';
 
 const HOUR_MS = 60 * 60_000;
 const DEFAULT_MAX_OBSERVATION_LAG_MS = 5 * 60_000;
+const DEFAULT_MAX_TARGET_CAPTURE_DELAY_MS = 5 * 60_000;
+const DEFAULT_MAX_INPUT_QUOTE_AGE_MS = 10 * 60_000;
 
 function stamp(s, field) {
   try { return parseProviderUtcTimestamp(s); }
@@ -33,9 +35,15 @@ function quoteEvidence(input, field) {
  * A 'verified' result only means timeline evidence is internally consistent.
  * It does NOT independently authenticate the provider or establish a market close.
  */
-export function evaluateForecastTimeline(forecast, observation = null, {maxObservationLagMs = DEFAULT_MAX_OBSERVATION_LAG_MS} = {}) {
+export function evaluateForecastTimeline(forecast, observation = null, {
+  maxObservationLagMs = DEFAULT_MAX_OBSERVATION_LAG_MS,
+  maxTargetCaptureDelayMs = DEFAULT_MAX_TARGET_CAPTURE_DELAY_MS,
+  maxInputQuoteAgeMs = DEFAULT_MAX_INPUT_QUOTE_AGE_MS,
+} = {}) {
   ensure(forecast && typeof forecast === 'object' && !Array.isArray(forecast), 'forecast: invalid object');
   ensure(Number.isSafeInteger(maxObservationLagMs) && maxObservationLagMs >= 0 && maxObservationLagMs <= HOUR_MS, 'maxObservationLagMs: invalid');
+  ensure(Number.isSafeInteger(maxTargetCaptureDelayMs) && maxTargetCaptureDelayMs >= 0 && maxTargetCaptureDelayMs <= HOUR_MS, 'maxTargetCaptureDelayMs: invalid');
+  ensure(Number.isSafeInteger(maxInputQuoteAgeMs) && maxInputQuoteAgeMs >= 0 && maxInputQuoteAgeMs <= HOUR_MS, 'maxInputQuoteAgeMs: invalid');
   const createdMs = stamp(forecast.createdAt, 'forecast.createdAt');
   const targetMs = stamp(forecast.targetAt, 'forecast.targetAt');
   const trainedMs = stamp(forecast.trainedThrough, 'forecast.trainedThrough');
@@ -45,6 +53,9 @@ export function evaluateForecastTimeline(forecast, observation = null, {maxObser
   const input = quoteEvidence(forecast.inputQuote, 'forecast.inputQuote');
   ensure(input.capturedMs <= createdMs, 'lookahead: input captured after forecast creation');
   ensure(input.providerMs <= createdMs, 'lookahead: input updated after forecast creation');
+  ensure(createdMs - input.providerMs <= maxInputQuoteAgeMs, 'forecast: input quote age exceeds limit');
+  // inputQuote is the latest provider observation represented in the training set.
+  ensure(trainedMs <= input.providerMs, 'lookahead: training cutoff after input observation');
   if (observation === null) {
     return Object.freeze({status:'pending', reason:'missing_evaluation_quote', targetAt:forecast.targetAt});
   }
@@ -53,6 +64,7 @@ export function evaluateForecastTimeline(forecast, observation = null, {maxObser
   ensure(actual.providerMs - targetMs <= maxObservationLagMs, 'observation: too far after target');
   ensure(actual.capturedMs >= targetMs, 'observation: captured before target');
   ensure(actual.capturedMs >= createdMs, 'observation: captured before forecast');
+  ensure(actual.capturedMs - actual.providerMs <= maxTargetCaptureDelayMs, 'observation: capture delay exceeds limit');
   return Object.freeze({
     status:'verified',
     instrument:'XAU/USD indicative spot',
@@ -62,6 +74,7 @@ export function evaluateForecastTimeline(forecast, observation = null, {maxObser
     absoluteErrorUsd:Math.abs(predicted-actual.price),
     absolutePercentageError:Math.abs(predicted-actual.price)/actual.price*100,
     observationLagMs:actual.providerMs-targetMs,
-    warning:'Timeline checks only; provider truth, independent timestamp anchoring, and official settlement are not verified.'
+    targetCaptureDelayMs:actual.capturedMs-actual.providerMs,
+    warning:'Timeline checks only; provider truth, earliest-eligible outcome completeness, independent timestamp anchoring, and official settlement are not verified.'
   });
 }
