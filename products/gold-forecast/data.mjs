@@ -56,9 +56,15 @@ export function prepareCsvHistory(text,asOf=new Date().toISOString()){
 
 export function validatedSpot(data,now=Date.now()){
   if(data?.unit!==UNIT)throw Error('Unexpected spot units');
-  const gold=data?.metals?.find(m=>m.symbol==='XAU');
-  const ask=positivePrice(gold?.ask),bid=positivePrice(gold?.bid);
-  if(ask<bid)throw Error('Crossed dealer quote');
+  const quotes=Array.isArray(data?.metals)?data.metals.filter(m=>m?.symbol==='XAU'):[];
+  if(!quotes.length)throw Error('Missing XAU quote');
+  const validated=quotes.map(g=>{
+    const ask=positivePrice(g?.ask),bid=positivePrice(g?.bid);
+    if(ask<bid)throw Error('Crossed dealer quote');
+    return {ask,bid};
+  });
+  const {ask,bid}=validated[0];
+  if(validated.some(q=>q.ask!==ask||q.bid!==bid))throw Error('Conflicting duplicate XAU quotes');
   const ts=parseInstant(data.updated,'Quote timestamp'),age=now-ts;
   if(age < -120000)throw Error('Future quote timestamp');
   if(age>30*60000)throw Error('Quote older than 30 minutes (may be market closure)');
