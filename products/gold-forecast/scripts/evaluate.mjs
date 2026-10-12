@@ -37,5 +37,6 @@ const report={schemaVersion:1,runAt:new Date().toISOString(),asOf,codeCommit:exe
     'Non-overlapping windows are not independent; no significance or market-edge claim',
     'No matured prospective receipts yet; performance after code changes requires future evaluation']};
 const out=path.join(root,'reports','readiness-20261012.json');
+fs.mkdirSync(path.dirname(out),{recursive:true});
 fs.writeFileSync(out,JSON.stringify(report,null,2)+'\n');
 console.log(JSON.stringify({file:out,rows:report.rows,calendar:report.calendar,sourceCheck,horizons:horizons.map(r=>({h:r.horizon,model:r.model,mae:r.audit.mae,baseline:r.baseline.mae,skillPct:r.skillPct,coverage:r.coverage,disjoint:r.disjoint.candidate.n})),elapsedMs:report.elapsedMs},null,2));

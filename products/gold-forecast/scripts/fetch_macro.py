@@ -68,6 +68,7 @@ def main():
         for future in [pool.submit(fetch,s,f) for s,f in SERIES.items()]:
             rows,meta=future.result();records.extend(rows);manifest.append(meta)
     ROOT.joinpath('data').mkdir(exist_ok=True)
+    ROOT.joinpath('reports').mkdir(exist_ok=True)
     ROOT.joinpath('data/macro.json').write_text(json.dumps(records,indent=2))
     ROOT.joinpath('reports/macro-sources-20261012.json').write_text(json.dumps(manifest,indent=2)+'\n')
     print(json.dumps(manifest,indent=2))
