@@ -22,7 +22,7 @@ function validatedSpot(data,now=Date.now()){
   if(!gold||!Number.isFinite(ask)||!Number.isFinite(bid)||ask<=0||bid<=0||ask<bid)
     throw Error("تنسيق أو قيمة السعر غير صالحة");
   const updated=data?.updated;
-  if(typeof updated!=="string"||!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$/.test(updated))
+  if(typeof updated!=="string"||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(updated))
     throw Error("توقيت تحديث السعر غير صالح");
   const ts=Date.parse(updated);
   if(!Number.isFinite(ts)||new Date(ts).toISOString().slice(0,19)!==updated.slice(0,19))
