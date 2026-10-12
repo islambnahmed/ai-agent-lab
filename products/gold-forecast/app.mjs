@@ -15,12 +15,27 @@ async function get(url){
 }
 function message(text){el("message").textContent=text}
 function status(text){el("status").textContent=text}
-function spotData(data){
+// Fail closed on delayed dealer quotes: a successful HTTP response is not proof of freshness.
+function validatedSpot(data,now=Date.now()){
   const gold=data?.metals?.find(m=>m.symbol==="XAU");
   const ask=Number(gold?.ask),bid=Number(gold?.bid);
-  if(!gold||!Number.isFinite(ask)||!Number.isFinite(bid)||ask<=0||bid<=0||ask<bid)throw Error("Live quote format changed");
-  el("ask").textContent=usd(Number(gold.ask));el("bid").textContent=usd(Number(gold.bid));
-  el("updated").textContent="تاريخ السعر اللحظي UTC: "+(data.updated||"غير معروف");
+  if(!gold||!Number.isFinite(ask)||!Number.isFinite(bid)||ask<=0||bid<=0||ask<bid)
+    throw Error("تنسيق أو قيمة السعر غير صالحة");
+  const updated=data?.updated;
+  if(typeof updated!=="string"||!/^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?Z$/.test(updated))
+    throw Error("توقيت تحديث السعر غير صالح");
+  const ts=Date.parse(updated);
+  if(!Number.isFinite(ts)||new Date(ts).toISOString().slice(0,19)!==updated.slice(0,19))
+    throw Error("توقيت تحديث السعر غير صالح");
+  const age=now-ts;
+  if(age < -120000)throw Error("توقيت السعر في المستقبل");
+  if(age > 30*60000)throw Error("السعر أقدم من 30 دقيقة");
+  return {ask,bid,updated};
+}
+function spotData(data){
+  const {ask,bid,updated}=validatedSpot(data);
+  el("ask").textContent=usd(ask);el("bid").textContent=usd(bid);
+  el("updated").textContent="تاريخ السعر اللحظي UTC: "+updated;
 }
 function chart(result){
   const series=result.series,w=920,h=310,left=65,right=25,top=15,bottom=40;
@@ -83,7 +98,7 @@ async function refresh(){
     el("ask").textContent="—";el("bid").textContent="—";el("updated").textContent="السعر اللحظي غير متاح";
     errors.push("تعذر قراءة السعر اللحظي")
   }}
-  else {el("ask").textContent="—";el("bid").textContent="—";errors.push("السعر اللحظي غير متاح")}
+  else {el("ask").textContent="—";el("bid").textContent="—";el("updated").textContent="السعر اللحظي غير متاح";errors.push("السعر اللحظي غير متاح")}
   if(history.status==="fulfilled"){
     try{
       const raw=history.value;
