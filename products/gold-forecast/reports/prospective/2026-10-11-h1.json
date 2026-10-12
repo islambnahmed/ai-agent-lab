@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "issuedAt": "2026-10-12T17:12:52.272Z",
+  "source": "Standard Bullion",
+  "codeCommit": "4caa8a445b4490e7be098b8dbf742be8e2ae0d7b",
+  "sourceManifest": {
+    "url": "https://standardbullion.com/api/v1/market/history?metal=XAU&range=1y",
+    "requestedAt": "2026-10-12T17:10:48.901Z",
+    "receivedAt": "2026-10-12T17:10:55.750Z",
+    "httpStatus": 200,
+    "cors": "*",
+    "rawSha256": "6d193d96aa6e15bf292e5e9203c0c7538919de6ca39c0a021801d57a8d92e600",
+    "status": "fetched"
+  },
+  "modelVersion": "gold-v2.0.0",
+  "horizon": 1,
+  "calendar": "observations",
+  "originDate": "2026-10-11",
+  "originClose": 4207.98,
+  "historyHash": "bcbfac86e29f02576a584cdab96be7915bce5d23f622f1e0c828964eda513f9f",
+  "historyLength": 324,
+  "targetDate": null,
+  "model": "persistence",
+  "point": 4207.98,
+  "lower": 4111.026817151967,
+  "upper": 4304.933182848032,
+  "baseline": 4207.98,
+  "caveat": "Requires external Git timestamp anchor before target close; not evidence of predictive skill",
+  "id": "77775d6c2105e80ca6a772ba79de13e31779f67f13c741da236a47097869a8c1"
+}

@@ -1,0 +1,78 @@
+[
+  {
+    "series": "DFII10",
+    "sourcePage": "https://fred.stlouisfed.org/series/DFII10",
+    "receivedAt": "2026-10-12T17:11:01.999Z",
+    "rawSha256": "5e0a2c0a673da3bfd97da104e08e93cdcdde1db96769e067c40a9e8a4411bc92",
+    "rows": 1,
+    "latest": {
+      "feature": "real_yield_10y_pct",
+      "value": 2.87,
+      "observedAt": "2026-10-08T00:00:00Z",
+      "availableAt": "2026-10-12T17:11:01.999Z",
+      "source": "FRED:DFII10",
+      "vintage": "2026-10-12T17:11:01.999Z"
+    },
+    "status": "fetched_current_observation",
+    "historicalExportStatus": "unavailable",
+    "historicalExportError": "HTTP Error 404: Not Found",
+    "use": "future/current context only; NOT historical training"
+  },
+  {
+    "series": "DGS10",
+    "sourcePage": "https://fred.stlouisfed.org/series/DGS10",
+    "receivedAt": "2026-10-12T17:11:01.863Z",
+    "rawSha256": "ba385342e6dda988b4e962b8068ba00d86a35cae557269fbaabf24ebd8278c56",
+    "rows": 1,
+    "latest": {
+      "feature": "nominal_yield_10y_pct",
+      "value": 5.22,
+      "observedAt": "2026-10-08T00:00:00Z",
+      "availableAt": "2026-10-12T17:11:01.863Z",
+      "source": "FRED:DGS10",
+      "vintage": "2026-10-12T17:11:01.863Z"
+    },
+    "status": "fetched_current_observation",
+    "historicalExportStatus": "unavailable",
+    "historicalExportError": "HTTP Error 404: Not Found",
+    "use": "future/current context only; NOT historical training"
+  },
+  {
+    "series": "DTWEXBGS",
+    "sourcePage": "https://fred.stlouisfed.org/series/DTWEXBGS",
+    "receivedAt": "2026-10-12T17:11:01.959Z",
+    "rawSha256": "3e1c68117311035b9a99aa8a04be9bfe4327a882b9d75aa3541e1decfe4cbd71",
+    "rows": 1,
+    "latest": {
+      "feature": "broad_dollar_index",
+      "value": 121.3848,
+      "observedAt": "2026-10-02T00:00:00Z",
+      "availableAt": "2026-10-12T17:11:01.959Z",
+      "source": "FRED:DTWEXBGS",
+      "vintage": "2026-10-12T17:11:01.959Z"
+    },
+    "status": "fetched_current_observation",
+    "historicalExportStatus": "unavailable",
+    "historicalExportError": "HTTP Error 404: Not Found",
+    "use": "future/current context only; NOT historical training"
+  },
+  {
+    "series": "CPIAUCSL",
+    "sourcePage": "https://fred.stlouisfed.org/series/CPIAUCSL",
+    "receivedAt": "2026-10-12T17:11:14.279Z",
+    "rawSha256": "5da047f9e4d02b6b01804fa705c1bdf6982ba4f2ac22a80d5d1a412ba2808e56",
+    "rows": 1,
+    "latest": {
+      "feature": "us_cpi_index",
+      "value": 334.131,
+      "observedAt": "2026-08-01T00:00:00Z",
+      "availableAt": "2026-10-12T17:11:14.279Z",
+      "source": "FRED:CPIAUCSL",
+      "vintage": "2026-10-12T17:11:14.279Z"
+    },
+    "status": "fetched_current_observation",
+    "historicalExportStatus": "unavailable",
+    "historicalExportError": "HTTP Error 404: Not Found",
+    "use": "future/current context only; NOT historical training"
+  }
+]
