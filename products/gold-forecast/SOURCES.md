@@ -8,7 +8,7 @@ currency, retail premium, or invented market volume enters the project.
 
 | Input | Actual source / measurement | Accepted use |
 |---|---|---|
-| Multi-year gold | [HistData](https://www.histdata.com/f-a-q/), XAUUSD M1 bid OHLC; fixed EST UTC-5 without DST per provider documentation | Aggregate last observed minute close per completed UTC day, separately from Standard Bullion. Validate bars and requested periods; retain gaps. Ambiguous repeated timestamps quarantine the entire affected UTC day, recorded in the manifest |
+| Multi-year gold | [HistData](https://www.histdata.com/f-a-q/), XAUUSD M1 bid OHLC; fixed EST UTC-5 without DST per provider documentation | Aggregate last observed minute close per completed UTC day, separately from Standard Bullion. Validate bars and requested periods; retain gaps. Identical duplicate minutes are counted and removed; differing/reversed minutes quarantine the affected UTC day. More than two affected days quarantine the entire archive period |
 | Real 10y yield | [DFII10](https://fred.stlouisfed.org/series/DFII10), percent | Current FRED history and historical monthly ALFRED vintages |
 | Nominal 10y yield | [DGS10](https://fred.stlouisfed.org/series/DGS10), percent | Same availability contract |
 | Broad dollar | [DTWEXBGS](https://fred.stlouisfed.org/series/DTWEXBGS), Jan 2006=100; **not ICE DXY** | Current history; only actually returned historical vintages. Earlier failed exports are recorded, not reconstructed from today's values |
@@ -58,7 +58,10 @@ were known at a past origin.
 2. A second authenticated historical price source with matching close definition,
    and frozen historical price vintages. Different publishers may share upstreams.
 3. Fresh daily historical updates for the research archive; the collector only
-   downloads completed local months. Live quotes and a stale archive are distinct.
+   downloads completed local months and conservatively omits the terminal UTC
+   boundary day. June–August 2026 archives had widespread ambiguities and were
+   quarantined; September contained reversed UTC days and was rejected. Live
+   quotes and a stale historical research archive are distinct.
 4. Optional COT/ETF/central-bank demand, futures volume/open interest and news
    inputs require actual public files plus publication-time history before use.
    No complete worldwide spot-volume field exists in these acquired feeds;

@@ -59,8 +59,7 @@
       "status": 200,
       "mime": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
       "bytes": 586099,
-      "sha256": "ea1c350827878ea3bbe30e3cda16a13fd3bd5b409b8458940dc94a36b5a33154",
-      "prefix": "PK\u0003\u0004\u0014\u0000\u0006\u0000\b\u0000\u0000\u0000!\u0000\u000b\ufffd|\ufffd\ufffd\u0001\u0000\u0000\ufffd\t\u0000\u0000\u0013\u0000\b\u0002[Content_Types].xml \ufffd\u0004\u0002(\ufffd\u0000\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+      "sha256": "ea1c350827878ea3bbe30e3cda16a13fd3bd5b409b8458940dc94a36b5a33154"
     },
     {
       "name": "alfred_graph",
@@ -68,8 +67,7 @@
       "status": 200,
       "mime": "application/csv",
       "bytes": 6108,
-      "sha256": "cb51e7939e2811270b334d2251a82fede0bc39b1bb48149e48cdacdd44cfdb23",
-      "prefix": "observation_date,CPIAUCSL_20261012\n2000-01-01,169.300\n2000-02-01,170.000\n2000-03-01,171.000\n2000-04-"
+      "sha256": "cb51e7939e2811270b334d2251a82fede0bc39b1bb48149e48cdacdd44cfdb23"
     },
     {
       "name": "fred_graph",
@@ -77,8 +75,7 @@
       "status": 200,
       "mime": "application/csv",
       "bytes": 99179,
-      "sha256": "0277781c1336527c38275803bfedc0b7f1c264740b9406981edda0d2796ab6ee",
-      "prefix": "observation_date,DFII10\n2003-01-02,2.43\n2003-01-03,2.43\n2003-01-06,2.46\n2003-01-07,2.42\n2003-01-08,2"
+      "sha256": "0277781c1336527c38275803bfedc0b7f1c264740b9406981edda0d2796ab6ee"
     },
     {
       "name": "boe_csv",
@@ -96,8 +93,7 @@
       "status": 200,
       "mime": "text/html; charset=UTF-8",
       "bytes": 1543315,
-      "sha256": "03a2cf7b3941bc1f4a664e092b1b8fe2241daaa0b9de35ae0e5bf051adc4c267",
-      "prefix": "<!doctype html>\n<html lang=\"en\">\n<head >\n<script nonce=\"eDkyaHAwcnBtOHFjdGxhbDNqYWFmcWVlOW15ZWkzdHQ&"
+      "sha256": "03a2cf7b3941bc1f4a664e092b1b8fe2241daaa0b9de35ae0e5bf051adc4c267"
     }
   ]
 }

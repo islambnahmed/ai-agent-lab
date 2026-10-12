@@ -109,7 +109,11 @@ def histdata(period, asof):
         if len(names)!=1 or names[0].filename!=expected_name or names[0].file_size>50_000_000:
             raise ValueError('Unexpected archive contents')
         rows, audit = parse_bars(archive.read(names[0]), period, asof, quarantine_conflicting_days=True)
-    return rows, {'period':period,'url':url,'rawSha256':hashlib.sha256(raw).hexdigest(),**audit,'status':'accepted_bid_research'}
+    meta={'period':period,'url':url,'rawSha256':hashlib.sha256(raw).hexdigest(),**audit,'status':'accepted_bid_research'}
+    if len(audit['quarantinedUtcDays'])>2:
+        meta.update(status='quarantined_period',reason='Conflicting/reversed minutes on more than two UTC days; entire period omitted')
+        return [],meta
+    return rows,meta
 
 def parse_vintages(raw, series, dates, start):
     reader = csv.DictReader(io.StringIO(raw.decode('utf-8-sig')))
@@ -179,7 +183,7 @@ def collect(start_year=2016, end_year=2026):
             return kind, rows, meta
         except Exception as error:
             request_key=item if isinstance(item,str) else list(item)
-            old=next((r for r in previous.get('requests',[]) if r.get('request')==request_key),None)
+            old=next((r for r in previous.get('requests',[]) if r.get('request')==request_key),None) if kind=='macro' and not (CACHE/f'alfred-{item[0]}-{item[1]}.csv').exists() else None
             return kind, [], old or {'request':item,'status':'unavailable','error':str(error)}
     with concurrent.futures.ThreadPoolExecutor(max_workers=2) as pool:
         for kind, rows, meta in pool.map(run,tasks):
