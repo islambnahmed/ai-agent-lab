@@ -22,5 +22,8 @@ jobs:
         run: |
           node --check products/gold-forecast/forecast.mjs
           node --check products/gold-forecast/app.mjs
+          node --check products/gold-forecast/research/prospective_ledger.mjs
       - name: Forecast regression tests
         run: node --test products/gold-forecast/tests/*.test.mjs
+      - name: Prospective receipt integrity regression tests
+        run: node --test products/gold-forecast/research/prospective_ledger.test.mjs
