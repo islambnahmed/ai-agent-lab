@@ -65,7 +65,11 @@ function render(){
       const stale=(Date.now()-Date.parse(r.latest.date+"T23:59:59Z"))/86400000;
       message(stale>7?"تنبيه: التاريخ السعري أقدم من أسبوع؛ التوقع ليس مبنيًا على السعر اللحظي.":"بحث تجريبي فقط: لا توجد أي ضمانات بأن التوقع سيتحقق.");
     }
-  }catch(e){message("تعذر التنبؤ: "+e.message)}
+  }catch(e){
+    // Fail closed: a prior horizon must never remain visible after a new horizon fails.
+    clearHistoryView();
+    message("تعذر التنبؤ: "+e.message);
+  }
 }
 function clearHistoryView(){
   for(const id of ["close","forecast","target","change","range","model","mae","base-mae","coverage"])el(id).textContent="—";
