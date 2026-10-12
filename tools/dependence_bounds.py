@@ -76,6 +76,12 @@ def all_fail_bounds(marginals, pairwise=None):
     for (i,j),q in pairwise.items():
         if not (0 <= i < j < n) or not 0 <= q <= 1:
             raise ValueError("invalid pairwise constraint")
+        # Reject impossible pairwise probabilities before approximate LP feasibility.
+        # The vertex solver's tolerance otherwise admits small contradictions.
+        lower = max(0.0, float(marginals[i]) + float(marginals[j]) - 1.0)
+        upper = min(float(marginals[i]), float(marginals[j]))
+        if q < lower - 1e-12 or q > upper + 1e-12:
+            raise ValueError("pairwise joint probability violates marginal bounds")
         aeq.append([float(w[i] and w[j]) for w in worlds]); beq.append(float(q))
     c=[1.0 if all(w) else 0.0 for w in worlds]
     lo,hi=_solve_linear_vertices(c,aeq,beq)
