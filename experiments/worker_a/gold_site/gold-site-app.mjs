@@ -5,8 +5,9 @@ const statusText={pending:'بانتظار التقييم',expired:'انتهى د
 const MAX_REGISTER_DELAY_MS=15_000;
 let current=null;
 let ledger=[];
-try {ledger=loadLedger(localStorage.getItem('gold-lab-baselines-v1'));} catch { $('message').textContent='سجل المتصفح تالف؛ لم يتم تحميله.'; }
-function save(){try{localStorage.setItem('gold-lab-baselines-v1',JSON.stringify(ledger));return true;}catch{$('message').textContent='تعذر حفظ السجل في المتصفح.';return false;}}
+let storageHealthy=true;
+try {ledger=loadLedger(localStorage.getItem('gold-lab-baselines-v1'));} catch { storageHealthy=false; $('message').textContent='سجل المتصفح تالف؛ تم إيقاف الحفظ لحماية البيانات القديمة.'; }
+function save(){if(!storageHealthy){$('message').textContent='الحفظ متوقف لحماية السجل التالف من الكتابة فوقه.';return false;}try{localStorage.setItem('gold-lab-baselines-v1',JSON.stringify(ledger));return true;}catch{$('message').textContent='تعذر حفظ السجل في المتصفح.';return false;}}
 function render(){
  const tbody=$('rows');tbody.replaceChildren();
  $('evaluated').textContent=String(ledger.filter(x=>x.status==='evaluated').length);
@@ -37,13 +38,14 @@ $('refresh').addEventListener('click',async()=>{
 });
 $('register').addEventListener('click',()=>{
  if(!current)return;
- const delay=Date.now()-current.capturedMs;
+ const issueMs=Date.now();
+ const delay=issueMs-current.capturedMs;
  if(!Number.isFinite(delay)||delay<0||delay>MAX_REGISTER_DELAY_MS){
   $('register').disabled=true;
   $('message').textContent='انتهت مهلة تسجيل التوقع؛ حدّث السعر أولًا.';
   return;
  }
- try{const f=createBaseline(current,current.capturedMs);const before=ledger;ledger=appendIfNew(ledger,f);if(!save()){ledger=before;render();return;}render();$('message').textContent='تم حفظ التوقع في متصفحك فقط.';}
+ try{const f=createBaseline(current,issueMs);const before=ledger;const next=appendIfNew(ledger,f);if(next===before){$('message').textContent='نفس قراءة السعر مسجلة بالفعل؛ لم نكرر التوقع.';return;}ledger=next;if(!save()){ledger=before;render();return;}render();$('targetTime').textContent='وقت الهدف: '+f.targetAt;$('message').textContent='تم حفظ التوقع في متصفحك فقط.';}
  catch(e){$('message').textContent=e.message;}
 });
 render();
