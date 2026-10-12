@@ -43,7 +43,9 @@ export function issue({series,horizon,model,modelRevision,issuedAt,source}) {
   if (typeof modelRevision !== 'string' || !/^[0-9a-f]{40}$/.test(modelRevision)) throw Error('Pinned 40-hex model blob revision required');
   if (typeof source !== 'string' || !/^[a-zA-Z0-9._:-]{1,120}$/.test(source)) throw Error('Source ID required');
   const ts=parseIssuedAt(issuedAt), origin=rows.at(-1);
-  if (dateNumber(origin.date)>ts) throw Error('Cannot issue against future-dated close');
+  // Date-only daily closes have no trustworthy publication timestamp.
+  // Require the next UTC calendar day; provider publication must still be verified.
+  if (origin.date >= issuedAt.slice(0,10)) throw Error('Daily close must predate issue UTC day (no same-day lookahead)');
   const prices=rows.map(r=>r.price);
   const record={version:1,issuedAt,source,horizon,model,modelRevision,originDate:origin.date,
     originClose:origin.price,historyLength:rows.length,historyHash:hash(rows),
@@ -56,6 +58,7 @@ export function verifyReceipt(receipt) {
   if (!Number.isInteger(receipt.historyLength) || receipt.historyLength<42 || ![1,7,30].includes(receipt.horizon)) throw Error('Invalid receipt metadata');
   if (!Object.hasOwn(MODEL_NAMES,receipt.model)) throw Error('Unknown receipt model');
   parseIssuedAt(receipt.issuedAt); dateNumber(receipt.originDate);
+  if (receipt.originDate >= receipt.issuedAt.slice(0,10)) throw Error('Receipt origin must predate issue UTC day');
   if (typeof receipt.modelRevision!=='string' || !/^[0-9a-f]{40}$/.test(receipt.modelRevision)) throw Error('Invalid model revision');
   if (!Number.isFinite(receipt.point) || receipt.point<=0 || !Number.isFinite(receipt.baseline) || receipt.baseline<=0) throw Error('Invalid receipt prediction');
   return true;
