@@ -12,7 +12,8 @@ export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest
   if(typeof source!=='string'||!source.trim())throw Error('Source required');
   const fetched=parseInstant(sourceManifest.receivedAt,'Source receipt time');
   if(fetched>issued||issued-fetched>60*60000)throw Error('Use a snapshot fetched before issue and within one hour');
-  series=prepareHistory(series,{asOf:issuedAt}).series;
+  // A recent fetch manifest does not guarantee recent completed closes.
+  series=prepareHistory(series,{asOf:issuedAt,live:true}).series;
   const result=forecast(series,h,{asOf:issuedAt});
   if(result.targetDate&&result.targetDate<issuedAt.slice(0,10))throw Error('Target date has already passed');
   const record={schemaVersion:1,issuedAt,source,codeCommit,sourceManifest,modelVersion:result.version,
