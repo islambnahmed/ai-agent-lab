@@ -67,15 +67,21 @@ export function settle(receipt,observedSeries) {
   verifyReceipt(receipt);
   const rows=validateSeries(observedSeries);
   if (rows.length<receipt.historyLength) throw Error('Original history missing');
-  const prefix=rows.slice(0,receipt.historyLength);
-  if (hash(prefix)!==receipt.historyHash || prefix.at(-1).date!==receipt.originDate) throw Error('Historical vintage changed: cannot silently settle');
-  const available=rows.length-receipt.historyLength;
+  // Receipts can use a rolling history window. Locate its dated origin in the
+  // supplied full market series instead of assuming the window begins at row 0.
+  // Strict date ordering (validateSeries) makes the origin unambiguous.
+  const originIndex=rows.findIndex(row=>row.date===receipt.originDate);
+  if (originIndex<0 || originIndex+1<receipt.historyLength)
+    throw Error('Original history missing or origin date absent');
+  const prefix=rows.slice(originIndex+1-receipt.historyLength,originIndex+1);
+  if (hash(prefix)!==receipt.historyHash) throw Error('Historical vintage changed: cannot silently settle');
+  const available=rows.length-originIndex-1;
   // Conservative chronology gate: a receipt dated on/after the first future
   // session is not prospective. A Git commit anchor is still required to prove it.
-  if (available>0 && receipt.issuedAt.slice(0,10)>=rows[receipt.historyLength].date)
+  if (available>0 && receipt.issuedAt.slice(0,10)>=rows[originIndex+1].date)
     throw Error('Receipt issued after first subsequent session');
   if (available<receipt.horizon) return {id:receipt.id,status:'pending',remainingSessions:receipt.horizon-available};
-  const target=rows[receipt.historyLength+receipt.horizon-1];
+  const target=rows[originIndex+receipt.horizon];
   const modelAbsError=Math.abs(receipt.point-target.price), baselineAbsError=Math.abs(receipt.baseline-target.price);
   return {id:receipt.id,status:'matured',targetDate:target.date,actual:target.price,
     modelAbsError,baselineAbsError,absoluteErrorImprovement:baselineAbsError-modelAbsError};
