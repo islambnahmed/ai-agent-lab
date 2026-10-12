@@ -4,7 +4,7 @@ const HIST="https://standardbullion.com/api/v1/market/history?metal=XAU&range=1y
 const SPOT="https://standardbullion.com/spot-prices.json";
 const el=id=>document.getElementById(id);
 const usd=n=>Number.isFinite(n)?"$"+Number(n).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2}):"—";
-const state={series:null,horizon:7,mode:"live",loading:false};
+const state={series:null,horizon:7,mode:"live",loading:false,epoch:0};
 
 async function get(url){
   const ctrl=new AbortController(),timeout=setTimeout(()=>ctrl.abort(),12000);
@@ -15,11 +15,27 @@ async function get(url){
 }
 function message(text){el("message").textContent=text}
 function status(text){el("status").textContent=text}
-function spotData(data){
+// Fail closed on delayed dealer quotes: a successful HTTP response is not proof of freshness.
+function validatedSpot(data,now=Date.now()){
   const gold=data?.metals?.find(m=>m.symbol==="XAU");
-  if(!gold||!Number.isFinite(Number(gold.ask))||!Number.isFinite(Number(gold.bid)))throw Error("Live quote format changed");
-  el("ask").textContent=usd(Number(gold.ask));el("bid").textContent=usd(Number(gold.bid));
-  el("updated").textContent="تاريخ السعر اللحظي UTC: "+(data.updated||"غير معروف");
+  const ask=Number(gold?.ask),bid=Number(gold?.bid);
+  if(!gold||!Number.isFinite(ask)||!Number.isFinite(bid)||ask<=0||bid<=0||ask<bid)
+    throw Error("تنسيق أو قيمة السعر غير صالحة");
+  const updated=data?.updated;
+  if(typeof updated!=="string"||!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/.test(updated))
+    throw Error("توقيت تحديث السعر غير صالح");
+  const ts=Date.parse(updated);
+  if(!Number.isFinite(ts)||new Date(ts).toISOString().slice(0,19)!==updated.slice(0,19))
+    throw Error("توقيت تحديث السعر غير صالح");
+  const age=now-ts;
+  if(age < -120000)throw Error("توقيت السعر في المستقبل");
+  if(age > 30*60000)throw Error("السعر أقدم من 30 دقيقة");
+  return {ask,bid,updated};
+}
+function spotData(data){
+  const {ask,bid,updated}=validatedSpot(data);
+  el("ask").textContent=usd(ask);el("bid").textContent=usd(bid);
+  el("updated").textContent="تاريخ السعر اللحظي UTC: "+updated;
 }
 function chart(result){
   const series=result.series,w=920,h=310,left=65,right=25,top=15,bottom=40;
@@ -41,6 +57,10 @@ function chart(result){
   const future='<path d="M '+lastx+" "+y(actual)+" L "+fx+" "+y(result.point)+'" stroke="#edc783" stroke-width="3.5" stroke-dasharray="8 6" fill="none"/><circle cx="'+fx+'" cy="'+y(result.point)+'" r="5" fill="#edc783"/>';
   const labels='<text x="'+left+'" y="'+(h-7)+'" fill="#8999af" font-size="13">'+series[0].date+'</text><text x="'+lastx+'" y="'+(h-7)+'" text-anchor="middle" fill="#9aabc2" font-size="13">'+result.latest.date+'</text><text x="'+fx+'" y="'+(h-7)+'" text-anchor="end" fill="#e2bd7f" font-size="13">'+tradingDate(result.latest.date,result.horizon||state.horizon)+'</text>';
   el("chart").innerHTML=grid.join("")+area+'<path d="'+d+'" fill="none" stroke="#d1d9e7" stroke-width="2.4" stroke-linejoin="round"/>'+future+labels;
+}
+function clearForecast(){
+  for(const id of ["close","close-date","forecast","target","change","range","model","mae","base-mae","coverage","report"])el(id).textContent="—";
+  el("change").className="change";el("chart").innerHTML="";
 }
 function render(){
   if(!state.series)return;
@@ -67,14 +87,18 @@ function render(){
       const stale=(Date.now()-Date.parse(r.latest.date+"T23:59:59Z"))/86400000;
       message(stale>7?"تنبيه: التاريخ السعري أقدم من أسبوع؛ التوقع ليس مبنيًا على السعر اللحظي.":"بحث تجريبي فقط: لا توجد أي ضمانات بأن التوقع سيتحقق.");
     }
-  }catch(e){message("تعذر التنبؤ: "+e.message)}
+  }catch(e){clearForecast();message("تعذر التنبؤ: "+e.message)}
 }
 async function refresh(){
-  if(state.loading)return;state.loading=true;el("refresh").disabled=true;status("جاري جلب الأسعار");message("");
+  if(state.loading)return;const epoch=++state.epoch;state.loading=true;el("refresh").disabled=true;status("جاري جلب الأسعار");message("");
   const [history,spot]=await Promise.allSettled([get(HIST),get(SPOT)]);
+  if(epoch!==state.epoch){state.loading=false;el("refresh").disabled=false;return;}
   const errors=[];
-  if(spot.status==="fulfilled"){try{spotData(spot.value)}catch(e){errors.push("تعذر قراءة السعر اللحظي")}}
-  else {el("ask").textContent="—";el("bid").textContent="—";errors.push("السعر اللحظي غير متاح")}
+  if(spot.status==="fulfilled"){try{spotData(spot.value)}catch(e){
+    el("ask").textContent="—";el("bid").textContent="—";el("updated").textContent="السعر اللحظي غير متاح";
+    errors.push("تعذر قراءة السعر اللحظي")
+  }}
+  else {el("ask").textContent="—";el("bid").textContent="—";el("updated").textContent="السعر اللحظي غير متاح";errors.push("السعر اللحظي غير متاح")}
   if(history.status==="fulfilled"){
     try{
       const raw=history.value;
@@ -91,6 +115,7 @@ async function refresh(){
   el("refresh").disabled=false;state.loading=false;
 }
 function demo(){
+  ++state.epoch;
   const base=new Date();base.setUTCHours(12,0,0,0);base.setUTCDate(base.getUTCDate()-530);
   const series=[];let count=0;
   while(series.length<360){if(base.getUTCDay()!==0&&base.getUTCDay()!==6){series.push({date:base.toISOString().slice(0,10),price:2400+count*2.3+Math.sin(count*.13)*40+Math.cos(count*.73)*16});count++}base.setUTCDate(base.getUTCDate()+1)}
@@ -116,8 +141,11 @@ el("refresh").addEventListener("click",refresh);
 el("demo").addEventListener("click",demo);
 el("csv").addEventListener("change",async event=>{
   const file=event.target.files?.[0];if(!file)return;
+  const epoch=++state.epoch;
   try{
-    const series=parseCSV(await file.text());forecast(series,30);
+    const text=await file.text();
+    if(epoch!==state.epoch){event.target.value="";return;}
+    const series=parseCSV(text);forecast(series,state.horizon);
     state.series=series;state.mode="csv";
     el("source").textContent="ملف محلي: "+file.name+" — لم يُرفع لخادم خارجي";
     el("ask").textContent="—";el("bid").textContent="—";el("updated").textContent="ملف CSV محلي";

@@ -1,12 +1,31 @@
 // Deterministic gold forecasting baselines; zero network or paid dependencies.
 export const MODEL_NAMES = {persistence:"آخر إغلاق (Baseline)",momentum:"اتجاه مخفّف",mean_reversion:"عودة للمتوسط"};
-export function normalize(raw){
+// Strict timestamps: reject impossible calendar dates and ambiguous timezone-free times.
+function parseQuoteTime(value){
+  if(typeof value!=="string")return NaN;
+  const m=/^(\d{4}-\d{2}-\d{2})(?:T(\d{2}):(\d{2}):(\d{2})(?:\.\d+)?(Z|[+-]\d{2}:\d{2}))?$/.exec(value);
+  if(!m)return NaN;
+  const midnight=Date.parse(m[1]+"T00:00:00Z");
+  if(!Number.isFinite(midnight)||new Date(midnight).toISOString().slice(0,10)!==m[1])return NaN;
+  if(m[2]!==undefined){
+    if(Number(m[2])>23||Number(m[3])>59||Number(m[4])>59)return NaN;
+    if(m[5]!=="Z"){
+      const hours=Number(m[5].slice(1,3)),minutes=Number(m[5].slice(4));
+      if(hours>14||minutes>59||(hours===14&&minutes!==0))return NaN;
+    }
+  }
+  return Date.parse(value);
+}
+export function normalize(raw,{asOf=new Date()}={}){
   if(!Array.isArray(raw)) throw Error("Invalid price series");
+  const todayUTC=new Date(asOf).toISOString().slice(0,10);
   const out=new Map();
   for(const p of raw){
-    const price=Number(p?.price??p?.close),ts=Date.parse(p?.t??p?.date);
+    const price=Number(p?.price??p?.close),ts=parseQuoteTime(p?.t??p?.date);
     if(!Number.isFinite(price)||price<=0||!Number.isFinite(ts))continue;
-    const day=new Date(ts).toISOString().slice(0,10),previous=out.get(day);
+    const day=new Date(ts).toISOString().slice(0,10);
+    if(day>todayUTC)throw Error("Future-dated historical price: "+day);
+    const previous=out.get(day);
     if(!previous||ts>=previous.ts)out.set(day,{date:day,price,ts});
   }
   return [...out.values()].sort((a,b)=>a.date.localeCompare(b.date)).map(({date,price})=>({date,price}));
@@ -33,7 +52,7 @@ function sample(prices,h,model,start,end,stride=1){
   for(let i=start;i<end;i+=stride){
     const actual=prices[i+h-1];if(!Number.isFinite(actual))break;
     const expected=predict(prices.slice(0,i),h,model);
-    rows.push({mae:Math.abs(expected-actual),mape:Math.abs(expected-actual)/actual});
+    rows.push({mae:Math.abs(expected-actual),mape:Math.abs(expected-actual)/actual,bandError:Math.abs(expected-actual)/expected});
   }
   return rows;
 }
@@ -51,10 +70,10 @@ export function forecast(raw,h=7){
   candidates.sort((a,b)=>a.validation.mae-b.validation.mae);
   const best=candidates[0],auditRows=sample(prices,h,best.model,split,n-h+1),baselineRows=sample(prices,h,"persistence",split,n-h+1);
   if(auditRows.length<10)throw Error("Not enough audit samples");
-  const band=Math.max(0.002,q(best.rows.map(r=>r.mape),0.8));
+  const band=Math.max(0.002,q(best.rows.map(r=>r.bandError),0.8));
   const point=predict(prices,h,best.model),audit=metric(auditRows),baseline=metric(baselineRows);
   return {model:best.model,point,lower:Math.max(0,point*(1-band)),upper:point*(1+band),
-    band,coverage:100*auditRows.filter(r=>r.mape<=band).length/auditRows.length,
+    band,coverage:100*auditRows.filter(r=>r.bandError<=band).length/auditRows.length,
     audit,baseline,beat:audit.mae<baseline.mae,series:series.slice(-120),
     latest:series.at(-1),auditedFrom:series[split].date};
 }
