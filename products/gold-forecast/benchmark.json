@@ -1,0 +1,15 @@
+{
+  "version": "gold-v2.0.0",
+  "purpose": "Freeze the next prospective cohort; retrospective audit is descriptive and already inspected",
+  "horizons": [1, 7, 30],
+  "horizonUnit": "future observed provider closes",
+  "selectionFraction": 0.6,
+  "calibrationEndFraction": 0.8,
+  "intervalTarget": 0.8,
+  "baseline": "persistence",
+  "primaryLoss": "MAE USD per troy ounce",
+  "ridge": {"alpha": 20, "maxTrainingLabels": 400, "minTrainingLabels": 20, "maxAbsLogReturn": 0.2},
+  "promotion": "No automatic promotion; require prospective Git-anchored outcomes, source integrity and dependence/multiple-comparison review",
+  "macro": "Current snapshots are available only from fetch time; historical release-time vintages required before historical model use",
+  "noMarketEdgeClaim": true
+}

@@ -1,0 +1,749 @@
+{
+  "schemaVersion": 1,
+  "runAt": "2026-10-12T17:12:52.101Z",
+  "asOf": "2026-10-12T17:10:55.750Z",
+  "codeCommit": "4caa8a445b4490e7be098b8dbf742be8e2ae0d7b",
+  "implementationHash": "907a24f670cd3d87ae8610e6f7582ac030ea4a227d460b377af16e0aa8cc404b",
+  "source": "Standard Bullion",
+  "attribution": "Data by Standard Bullion — https://standardbullion.com",
+  "sourceManifest": {
+    "history": {
+      "url": "https://standardbullion.com/api/v1/market/history?metal=XAU&range=1y",
+      "requestedAt": "2026-10-12T17:10:48.901Z",
+      "receivedAt": "2026-10-12T17:10:55.750Z",
+      "httpStatus": 200,
+      "cors": "*",
+      "rawSha256": "6d193d96aa6e15bf292e5e9203c0c7538919de6ca39c0a021801d57a8d92e600",
+      "status": "fetched"
+    },
+    "spot": {
+      "url": "https://standardbullion.com/spot-prices.json",
+      "requestedAt": "2026-10-12T17:10:48.903Z",
+      "receivedAt": "2026-10-12T17:10:55.663Z",
+      "httpStatus": 200,
+      "cors": "*",
+      "rawSha256": "70e347c07c07afb1929185599efabdac03f67ee66517e533dcaff84a91c98ef6",
+      "status": "fetched"
+    },
+    "crosscheck": {
+      "url": "https://api.gold-api.com/price/XAU",
+      "requestedAt": "2026-10-12T17:10:48.904Z",
+      "receivedAt": "2026-10-12T17:11:00.489Z",
+      "httpStatus": 200,
+      "cors": "*",
+      "rawSha256": "a2a55bb0f9087c7e2a4ef823a9b5b0ed3faab02d8e1dfdd24da336a2695dfcf3",
+      "status": "fetched"
+    },
+    "coveragePolicy": {
+      "requestedRange": "1y",
+      "longHistoryStatus": "blocked_by_provider_contract",
+      "reason": "5y downsampling; dated queries did not respect requested bounds in 2026-10-12 probe",
+      "historicalVintage": "current snapshot; no claim of historical release-time availability"
+    }
+  },
+  "historyHash": "bcbfac86e29f02576a584cdab96be7915bce5d23f622f1e0c828964eda513f9f",
+  "rows": 324,
+  "from": "2025-10-12",
+  "to": "2026-10-11",
+  "calendar": "observations",
+  "sourceCheck": {
+    "source": "Gold API",
+    "price": 4169.100098,
+    "updatedAt": "2026-10-12T17:10:41Z",
+    "differencePct": 0.006718879682976464,
+    "status": "consistent_indicative_quotes",
+    "caveat": "Different price products; agreement does not authenticate historical closes or prove upstream independence"
+  },
+  "horizons": [
+    {
+      "version": "gold-v2.0.0",
+      "model": "persistence",
+      "horizon": 1,
+      "horizonUnit": "future observed provider closes",
+      "calendar": "observations",
+      "targetDate": null,
+      "point": 4207.98,
+      "lower": 4111.026817151967,
+      "upper": 4304.933182848032,
+      "band": 0.023040314556635758,
+      "coverage": 90.76923076923077,
+      "audit": {
+        "n": 65,
+        "mae": 39.41323076923082,
+        "rmse": 58.75429945642609,
+        "mape": 0.9068303869512797,
+        "directionAccuracy": 15.384615384615385
+      },
+      "baseline": {
+        "n": 65,
+        "mae": 39.41323076923082,
+        "rmse": 58.75429945642609,
+        "mape": 0.9068303869512797,
+        "directionAccuracy": 15.384615384615385
+      },
+      "beat": false,
+      "skillPct": 0,
+      "candidates": [
+        {
+          "model": "persistence",
+          "validation": {
+            "n": 129,
+            "mae": 63.55581395348835,
+            "rmse": 95.8634909609743,
+            "mape": 1.3211048979825664,
+            "directionAccuracy": 0.7751937984496124
+          }
+        },
+        {
+          "model": "momentum",
+          "validation": {
+            "n": 129,
+            "mae": 64.1542788497729,
+            "rmse": 96.73068204216159,
+            "mape": 1.333770831831357,
+            "directionAccuracy": 53.48837209302325
+          }
+        },
+        {
+          "model": "mean_reversion",
+          "validation": {
+            "n": 129,
+            "mae": 64.93041983756224,
+            "rmse": 95.60395386684141,
+            "mape": 1.3500599530217772,
+            "directionAccuracy": 45.73643410852713
+          }
+        },
+        {
+          "model": "ridge",
+          "validation": {
+            "n": 129,
+            "mae": 69.51297173545952,
+            "rmse": 103.03596877650381,
+            "mape": 1.4431834402589392,
+            "directionAccuracy": 40.310077519379846
+          }
+        }
+      ],
+      "calibration": {
+        "n": 65,
+        "from": "2026-05-05",
+        "to": "2026-08-01"
+      },
+      "disjoint": {
+        "candidate": {
+          "n": 65,
+          "mae": 39.41323076923082,
+          "rmse": 58.75429945642609,
+          "mape": 0.9068303869512797,
+          "directionAccuracy": 15.384615384615385
+        },
+        "baseline": {
+          "n": 65,
+          "mae": 39.41323076923082,
+          "rmse": 58.75429945642609,
+          "mape": 0.9068303869512797,
+          "directionAccuracy": 15.384615384615385
+        },
+        "phases": [
+          {
+            "offset": 0,
+            "n": 65,
+            "coverage": 90.76923076923077
+          }
+        ],
+        "caveat": "Non-overlapping target windows are not statistically independent"
+      },
+      "split": {
+        "selectionEnd": 194,
+        "auditStart": 259,
+        "purgedOriginsPerBoundary": 0
+      },
+      "latest": {
+        "date": "2026-10-11",
+        "price": 4207.98
+      },
+      "auditedFrom": "2026-08-02",
+      "dataQuality": {
+        "rows": 324,
+        "excludedSameDay": 0,
+        "ageDays": 1,
+        "warnings": [
+          "Irregular provider cadence: horizons count observed closes; target date is unknown. No missing prices filled"
+        ]
+      },
+      "evidence": "Retrospective reconstruction from current data vintage; prospective skill is unproven",
+      "exploratoryAuditByModel": [
+        {
+          "model": "persistence",
+          "audit": {
+            "n": 65,
+            "mae": 39.41323076923082,
+            "rmse": 58.75429945642609,
+            "mape": 0.9068303869512797,
+            "directionAccuracy": 15.384615384615385
+          },
+          "skillPct": 0,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        },
+        {
+          "model": "momentum",
+          "audit": {
+            "n": 65,
+            "mae": 40.333977278691,
+            "rmse": 58.87974914578184,
+            "mape": 0.9283962661458246,
+            "directionAccuracy": 38.46153846153847
+          },
+          "skillPct": -2.336135585664767,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        },
+        {
+          "model": "mean_reversion",
+          "audit": {
+            "n": 65,
+            "mae": 39.998052100284816,
+            "rmse": 58.93847891823594,
+            "mape": 0.9198910911321783,
+            "directionAccuracy": 46.15384615384615
+          },
+          "skillPct": -1.483819823039112,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        },
+        {
+          "model": "ridge",
+          "audit": {
+            "n": 65,
+            "mae": 41.18245016791711,
+            "rmse": 59.96854475374625,
+            "mape": 0.9468163754508692,
+            "directionAccuracy": 36.92307692307693
+          },
+          "skillPct": -4.488897165130368,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        }
+      ]
+    },
+    {
+      "version": "gold-v2.0.0",
+      "model": "mean_reversion",
+      "horizon": 7,
+      "horizonUnit": "future observed provider closes",
+      "calendar": "observations",
+      "targetDate": null,
+      "point": 4225.483424799358,
+      "lower": 4043.195347093113,
+      "upper": 4407.771502505602,
+      "band": 0.043140171047979035,
+      "coverage": 77.96610169491525,
+      "audit": {
+        "n": 59,
+        "mae": 122.51526791050635,
+        "rmse": 155.8160484190499,
+        "mape": 2.788185222091425,
+        "directionAccuracy": 45.76271186440678
+      },
+      "baseline": {
+        "n": 59,
+        "mae": 118.88220338983054,
+        "rmse": 151.6237178184362,
+        "mape": 2.7059364728302002,
+        "directionAccuracy": 0
+      },
+      "beat": false,
+      "skillPct": -3.0560205119705808,
+      "candidates": [
+        {
+          "model": "mean_reversion",
+          "validation": {
+            "n": 123,
+            "mae": 184.5461694518369,
+            "rmse": 233.98936956998895,
+            "mape": 3.8600916839339314,
+            "directionAccuracy": 44.71544715447154
+          }
+        },
+        {
+          "model": "persistence",
+          "validation": {
+            "n": 123,
+            "mae": 187.0146341463415,
+            "rmse": 234.85563362873478,
+            "mape": 3.9171537884042373,
+            "directionAccuracy": 0
+          }
+        },
+        {
+          "model": "momentum",
+          "validation": {
+            "n": 123,
+            "mae": 199.3405136455583,
+            "rmse": 245.9889729513708,
+            "mape": 4.180882062515246,
+            "directionAccuracy": 48.78048780487805
+          }
+        },
+        {
+          "model": "ridge",
+          "validation": {
+            "n": 123,
+            "mae": 226.20765263800345,
+            "rmse": 308.59941746507536,
+            "mape": 4.759831677400052,
+            "directionAccuracy": 43.08943089430895
+          }
+        }
+      ],
+      "calibration": {
+        "n": 59,
+        "from": "2026-05-05",
+        "to": "2026-08-01"
+      },
+      "disjoint": {
+        "candidate": {
+          "n": 9,
+          "mae": 115.47093023880507,
+          "rmse": 150.84235425251023,
+          "mape": 2.6303542704299003,
+          "directionAccuracy": 55.55555555555556
+        },
+        "baseline": {
+          "n": 9,
+          "mae": 119.28222222222212,
+          "rmse": 147.17457872276103,
+          "mape": 2.7197196629818654,
+          "directionAccuracy": 0
+        },
+        "phases": [
+          {
+            "offset": 0,
+            "n": 9,
+            "coverage": 77.77777777777779
+          },
+          {
+            "offset": 1,
+            "n": 9,
+            "coverage": 77.77777777777779
+          },
+          {
+            "offset": 2,
+            "n": 9,
+            "coverage": 77.77777777777779
+          },
+          {
+            "offset": 3,
+            "n": 8,
+            "coverage": 50
+          },
+          {
+            "offset": 4,
+            "n": 8,
+            "coverage": 87.5
+          },
+          {
+            "offset": 5,
+            "n": 8,
+            "coverage": 87.5
+          },
+          {
+            "offset": 6,
+            "n": 8,
+            "coverage": 87.5
+          }
+        ],
+        "caveat": "Non-overlapping target windows are not statistically independent"
+      },
+      "split": {
+        "selectionEnd": 194,
+        "auditStart": 259,
+        "purgedOriginsPerBoundary": 6
+      },
+      "latest": {
+        "date": "2026-10-11",
+        "price": 4207.98
+      },
+      "auditedFrom": "2026-08-02",
+      "dataQuality": {
+        "rows": 324,
+        "excludedSameDay": 0,
+        "ageDays": 1,
+        "warnings": [
+          "Irregular provider cadence: horizons count observed closes; target date is unknown. No missing prices filled"
+        ]
+      },
+      "evidence": "Retrospective reconstruction from current data vintage; prospective skill is unproven",
+      "exploratoryAuditByModel": [
+        {
+          "model": "mean_reversion",
+          "audit": {
+            "n": 59,
+            "mae": 122.51526791050635,
+            "rmse": 155.8160484190499,
+            "mape": 2.788185222091425,
+            "directionAccuracy": 45.76271186440678
+          },
+          "skillPct": -3.0560205119705808,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        },
+        {
+          "model": "persistence",
+          "audit": {
+            "n": 59,
+            "mae": 118.88220338983054,
+            "rmse": 151.6237178184362,
+            "mape": 2.7059364728302002,
+            "directionAccuracy": 0
+          },
+          "skillPct": 0,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        },
+        {
+          "model": "momentum",
+          "audit": {
+            "n": 59,
+            "mae": 115.8461107366582,
+            "rmse": 152.75112228715648,
+            "mape": 2.638563346413534,
+            "directionAccuracy": 54.23728813559322
+          },
+          "skillPct": 2.5538664043907255,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        },
+        {
+          "model": "ridge",
+          "audit": {
+            "n": 59,
+            "mae": 130.7115557909565,
+            "rmse": 162.0989649085764,
+            "mape": 2.976250529265943,
+            "directionAccuracy": 25.423728813559322
+          },
+          "skillPct": -9.95048212753591,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        }
+      ]
+    },
+    {
+      "version": "gold-v2.0.0",
+      "model": "momentum",
+      "horizon": 30,
+      "horizonUnit": "future observed provider closes",
+      "calendar": "observations",
+      "targetDate": null,
+      "point": 4183.958131173134,
+      "lower": 3742.384942696793,
+      "upper": 4625.531319649474,
+      "band": 0.10553958109340075,
+      "coverage": 88.88888888888889,
+      "audit": {
+        "n": 36,
+        "mae": 258.77385704368106,
+        "rmse": 307.8302810824444,
+        "mape": 6.093469303522157,
+        "directionAccuracy": 16.666666666666664
+      },
+      "baseline": {
+        "n": 36,
+        "mae": 226.33333333333346,
+        "rmse": 275.51158565072683,
+        "mape": 5.331409174416161,
+        "directionAccuracy": 0
+      },
+      "beat": false,
+      "skillPct": -14.333073804277285,
+      "candidates": [
+        {
+          "model": "momentum",
+          "validation": {
+            "n": 100,
+            "mae": 361.05899070291036,
+            "rmse": 429.58240953041206,
+            "mape": 7.487388591207939,
+            "directionAccuracy": 67
+          }
+        },
+        {
+          "model": "persistence",
+          "validation": {
+            "n": 100,
+            "mae": 367.1465999999998,
+            "rmse": 429.69026124174616,
+            "mape": 7.5901327373174,
+            "directionAccuracy": 0
+          }
+        },
+        {
+          "model": "mean_reversion",
+          "validation": {
+            "n": 100,
+            "mae": 437.9998007231309,
+            "rmse": 475.5649538929749,
+            "mape": 8.962863010377228,
+            "directionAccuracy": 37
+          }
+        },
+        {
+          "model": "ridge",
+          "validation": {
+            "n": 100,
+            "mae": 698.5611224466861,
+            "rmse": 775.2938084335564,
+            "mape": 14.475816497377483,
+            "directionAccuracy": 18
+          }
+        }
+      ],
+      "calibration": {
+        "n": 36,
+        "from": "2026-05-05",
+        "to": "2026-08-01"
+      },
+      "disjoint": {
+        "candidate": {
+          "n": 2,
+          "mae": 350.86574606350086,
+          "rmse": 355.1444794950434,
+          "mape": 8.105094227744953,
+          "directionAccuracy": 0
+        },
+        "baseline": {
+          "n": 2,
+          "mae": 338.7449999999999,
+          "rmse": 343.17375635383297,
+          "mape": 7.823656086185587,
+          "directionAccuracy": 0
+        },
+        "phases": [
+          {
+            "offset": 0,
+            "n": 2,
+            "coverage": 100
+          },
+          {
+            "offset": 1,
+            "n": 2,
+            "coverage": 100
+          },
+          {
+            "offset": 2,
+            "n": 2,
+            "coverage": 100
+          },
+          {
+            "offset": 3,
+            "n": 2,
+            "coverage": 100
+          },
+          {
+            "offset": 4,
+            "n": 2,
+            "coverage": 100
+          },
+          {
+            "offset": 5,
+            "n": 2,
+            "coverage": 100
+          },
+          {
+            "offset": 6,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 7,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 8,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 9,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 10,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 11,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 12,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 13,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 14,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 15,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 16,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 17,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 18,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 19,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 20,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 21,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 22,
+            "n": 1,
+            "coverage": 0
+          },
+          {
+            "offset": 23,
+            "n": 1,
+            "coverage": 0
+          },
+          {
+            "offset": 24,
+            "n": 1,
+            "coverage": 0
+          },
+          {
+            "offset": 25,
+            "n": 1,
+            "coverage": 0
+          },
+          {
+            "offset": 26,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 27,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 28,
+            "n": 1,
+            "coverage": 100
+          },
+          {
+            "offset": 29,
+            "n": 1,
+            "coverage": 100
+          }
+        ],
+        "caveat": "Non-overlapping target windows are not statistically independent"
+      },
+      "split": {
+        "selectionEnd": 194,
+        "auditStart": 259,
+        "purgedOriginsPerBoundary": 29
+      },
+      "latest": {
+        "date": "2026-10-11",
+        "price": 4207.98
+      },
+      "auditedFrom": "2026-08-02",
+      "dataQuality": {
+        "rows": 324,
+        "excludedSameDay": 0,
+        "ageDays": 1,
+        "warnings": [
+          "Irregular provider cadence: horizons count observed closes; target date is unknown. No missing prices filled"
+        ]
+      },
+      "evidence": "Retrospective reconstruction from current data vintage; prospective skill is unproven",
+      "exploratoryAuditByModel": [
+        {
+          "model": "momentum",
+          "audit": {
+            "n": 36,
+            "mae": 258.77385704368106,
+            "rmse": 307.8302810824444,
+            "mape": 6.093469303522157,
+            "directionAccuracy": 16.666666666666664
+          },
+          "skillPct": -14.333073804277285,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        },
+        {
+          "model": "persistence",
+          "audit": {
+            "n": 36,
+            "mae": 226.33333333333346,
+            "rmse": 275.51158565072683,
+            "mape": 5.331409174416161,
+            "directionAccuracy": 0
+          },
+          "skillPct": 0,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        },
+        {
+          "model": "mean_reversion",
+          "audit": {
+            "n": 36,
+            "mae": 189.91844106012397,
+            "rmse": 207.765350332001,
+            "mape": 4.427396607640309,
+            "directionAccuracy": 83.33333333333334
+          },
+          "skillPct": 16.08905402350934,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        },
+        {
+          "model": "ridge",
+          "audit": {
+            "n": 36,
+            "mae": 279.5485512596718,
+            "rmse": 325.51742958953423,
+            "mape": 6.552947082286127,
+            "directionAccuracy": 41.66666666666667
+          },
+          "skillPct": -23.511878317969792,
+          "interpretation": "Exploratory comparison only; cannot change the frozen selector using these outcomes"
+        }
+      ]
+    }
+  ],
+  "elapsedMs": 139,
+  "limitations": [
+    "Current-vintage retrospective reconstruction, not historical point-in-time replay",
+    "Audit period has been inspected by earlier versions; it is not a fresh blind validation of this new implementation",
+    "Live cross-check does not validate historical prices or upstream independence",
+    "Non-overlapping windows are not independent; no significance or market-edge claim",
+    "No matured prospective receipts yet; performance after code changes requires future evaluation"
+  ]
+}
