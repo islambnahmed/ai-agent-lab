@@ -33,7 +33,7 @@ function sample(prices,h,model,start,end,stride=1){
   for(let i=start;i<end;i+=stride){
     const actual=prices[i+h-1];if(!Number.isFinite(actual))break;
     const expected=predict(prices.slice(0,i),h,model);
-    rows.push({mae:Math.abs(expected-actual),mape:Math.abs(expected-actual)/actual});
+    rows.push({mae:Math.abs(expected-actual),mape:Math.abs(expected-actual)/actual,intervalError:Math.abs(expected-actual)/expected});
   }
   return rows;
 }
@@ -51,10 +51,10 @@ export function forecast(raw,h=7){
   candidates.sort((a,b)=>a.validation.mae-b.validation.mae);
   const best=candidates[0],auditRows=sample(prices,h,best.model,split,n-h+1),baselineRows=sample(prices,h,"persistence",split,n-h+1);
   if(auditRows.length<10)throw Error("Not enough audit samples");
-  const band=Math.max(0.002,q(best.rows.map(r=>r.mape),0.8));
+  const band=Math.max(0.002,q(best.rows.map(r=>r.intervalError),0.8));
   const point=predict(prices,h,best.model),audit=metric(auditRows),baseline=metric(baselineRows);
   return {model:best.model,point,lower:Math.max(0,point*(1-band)),upper:point*(1+band),
-    band,coverage:100*auditRows.filter(r=>r.mape<=band).length/auditRows.length,
+    band,coverage:100*auditRows.filter(r=>r.intervalError<=band).length/auditRows.length,
     audit,baseline,beat:audit.mae<baseline.mae,series:series.slice(-120),
     latest:series.at(-1),auditedFrom:series[split].date};
 }
