@@ -22,7 +22,7 @@ function featureAt({logs,sums,r,r2},i){
 }
 export function features(prices,i=prices.length-1){return featureAt(context(prices),i);}
 
-function solve(a,b){
+export function solve(a,b){
   const m=a.map((row,i)=>[...row,b[i]]),n=b.length;
   for(let i=0;i<n;i++){
     let pivot=i;for(let j=i+1;j<n;j++)if(Math.abs(m[j][i])>Math.abs(m[pivot][i]))pivot=j;

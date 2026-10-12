@@ -1,0 +1,984 @@
+{
+  "schemaVersion": 1,
+  "runAt": "2026-10-12T18:18:34.512Z",
+  "baseCommit": "d675363c85b815785f61a69b073e7cee509187ca",
+  "implementationHash": "103a48ee66a5843157de98fb5acde4d6ea6544c477c600a1e006ba2ce827c06f",
+  "source": "HistData XAUUSD bid M1 aggregated UTC",
+  "measurement": "last observed M1 bid close in completed UTC day",
+  "historyHash": "bd0ef6fd9d50ee63bec59bf35f21881df644b14c2771be5e24819517b5b0b35b",
+  "macroHash": "466824e6800b57e4376d4c81c397cbfd4ae0bfcdf9e74e461faf414041384b50",
+  "rows": 3221,
+  "from": "2016-01-03",
+  "to": "2026-05-31",
+  "calendar": "observations",
+  "dataWarnings": [
+    "Irregular provider cadence: horizons count observed closes; target date is unknown. No missing prices filled"
+  ],
+  "sourceManifest": "source-research-20261012.json",
+  "quarantinedDays": [
+    "2026-06-28",
+    "2026-06-29",
+    "2026-06-30",
+    "2026-07-01",
+    "2026-07-02",
+    "2026-07-06",
+    "2026-07-07",
+    "2026-07-08",
+    "2026-07-09",
+    "2026-07-10",
+    "2026-07-13",
+    "2026-07-14",
+    "2026-07-15",
+    "2026-07-16",
+    "2026-07-17",
+    "2026-07-20",
+    "2026-07-21",
+    "2026-07-22",
+    "2026-07-23",
+    "2026-07-29",
+    "2026-07-30",
+    "2026-07-31",
+    "2026-08-03",
+    "2026-08-04",
+    "2026-08-05",
+    "2026-08-06",
+    "2026-08-07",
+    "2026-08-10",
+    "2026-08-11",
+    "2026-08-12",
+    "2026-08-13",
+    "2026-08-14",
+    "2026-08-17",
+    "2026-08-18",
+    "2026-08-19",
+    "2026-08-20",
+    "2026-08-24",
+    "2026-08-25",
+    "2026-08-26",
+    "2026-08-27",
+    "2026-08-28",
+    "2026-08-31"
+  ],
+  "macroContext": {
+    "features": [
+      "real_yield_10y_pct",
+      "nominal_yield_10y_pct",
+      "broad_dollar_index",
+      "us_cpi_yoy_pct",
+      "effective_fed_funds_pct"
+    ],
+    "completeOrigins": 1977,
+    "missingOrStaleByFeature": {
+      "real_yield_10y_pct": 25,
+      "nominal_yield_10y_pct": 25,
+      "broad_dollar_index": 1242,
+      "us_cpi_yoy_pct": 362,
+      "effective_fed_funds_pct": 25
+    },
+    "maxAgeDays": 120,
+    "availability": "Monthly ALFRED as-of snapshots, usable only after conservative UTC end of vintage day"
+  },
+  "fixedDesign": {
+    "window": 400,
+    "penalty": 20,
+    "split": {
+      "selectionEnd": 1932,
+      "auditStart": 2576
+    },
+    "priceFeatureCount": 5,
+    "macroFeatureCount": 5,
+    "policy": "Identical eligible origins and matured training rows for price-only and price+macro ablations. No audit retuning or automatic promotion."
+  },
+  "priceBenchmarks": [
+    {
+      "version": "gold-v2.0.0",
+      "model": "persistence",
+      "horizon": 1,
+      "horizonUnit": "future observed provider closes",
+      "calendar": "observations",
+      "targetDate": null,
+      "point": 4534.765,
+      "lower": 4493.571732575326,
+      "upper": 4575.958267424675,
+      "band": 0.009083881397310516,
+      "coverage": 64.8062015503876,
+      "audit": {
+        "n": 645,
+        "mae": 31.69841395348833,
+        "rmse": 53.94669687148777,
+        "mape": 0.8574274892855052,
+        "directionAccuracy": 0
+      },
+      "baseline": {
+        "n": 645,
+        "mae": 31.69841395348833,
+        "rmse": 53.94669687148777,
+        "mape": 0.8574274892855052,
+        "directionAccuracy": 0
+      },
+      "beat": false,
+      "skillPct": 0,
+      "candidates": [
+        {
+          "model": "persistence",
+          "validation": {
+            "n": 1867,
+            "mae": 8.167689341189083,
+            "rmse": 12.58984364169528,
+            "mape": 0.5363714350280937,
+            "directionAccuracy": 0.16068559185859668
+          }
+        },
+        {
+          "model": "mean_reversion",
+          "validation": {
+            "n": 1867,
+            "mae": 8.192288023791876,
+            "rmse": 12.593205448962241,
+            "mape": 0.5378728779978714,
+            "directionAccuracy": 51.41938939475094
+          }
+        },
+        {
+          "model": "momentum",
+          "validation": {
+            "n": 1867,
+            "mae": 8.235116312398716,
+            "rmse": 12.673484875509144,
+            "mape": 0.5410330132187713,
+            "directionAccuracy": 49.86609534011784
+          }
+        },
+        {
+          "model": "ridge",
+          "validation": {
+            "n": 1867,
+            "mae": 8.30870574410119,
+            "rmse": 12.802664655610874,
+            "mape": 0.546240156208615,
+            "directionAccuracy": 49.81253347616497
+          }
+        }
+      ],
+      "calibration": {
+        "n": 644,
+        "from": "2022-03-22",
+        "to": "2024-05-06"
+      },
+      "disjoint": {
+        "candidate": {
+          "n": 645,
+          "mae": 31.69841395348833,
+          "rmse": 53.94669687148777,
+          "mape": 0.8574274892855052,
+          "directionAccuracy": 0
+        },
+        "baseline": {
+          "n": 645,
+          "mae": 31.69841395348833,
+          "rmse": 53.94669687148777,
+          "mape": 0.8574274892855052,
+          "directionAccuracy": 0
+        },
+        "phases": [
+          {
+            "offset": 0,
+            "n": 645,
+            "coverage": 64.8062015503876
+          }
+        ],
+        "caveat": "Non-overlapping target windows are not statistically independent"
+      },
+      "split": {
+        "selectionEnd": 1932,
+        "auditStart": 2576,
+        "purgedOriginsPerBoundary": 0
+      },
+      "latest": {
+        "date": "2026-05-31",
+        "price": 4534.765
+      },
+      "auditedFrom": "2024-05-07",
+      "dataQuality": {
+        "rows": 3221,
+        "excludedSameDay": 0,
+        "ageDays": 134,
+        "warnings": [
+          "Irregular provider cadence: horizons count observed closes; target date is unknown. No missing prices filled"
+        ]
+      },
+      "evidence": "Retrospective reconstruction from current data vintage; prospective skill is unproven"
+    },
+    {
+      "version": "gold-v2.0.0",
+      "model": "persistence",
+      "horizon": 7,
+      "horizonUnit": "future observed provider closes",
+      "calendar": "observations",
+      "targetDate": null,
+      "point": 4534.765,
+      "lower": 4416.385859170657,
+      "upper": 4653.144140829344,
+      "band": 0.026104801644482933,
+      "coverage": 63.84976525821596,
+      "audit": {
+        "n": 639,
+        "mae": 88.83791862284811,
+        "rmse": 132.96362050397187,
+        "mape": 2.3808355613960925,
+        "directionAccuracy": 0
+      },
+      "baseline": {
+        "n": 639,
+        "mae": 88.83791862284811,
+        "rmse": 132.96362050397187,
+        "mape": 2.3808355613960925,
+        "directionAccuracy": 0
+      },
+      "beat": false,
+      "skillPct": 0,
+      "candidates": [
+        {
+          "model": "persistence",
+          "validation": {
+            "n": 1861,
+            "mae": 23.396090811391716,
+            "rmse": 32.8025826335839,
+            "mape": 1.5432090423156213,
+            "directionAccuracy": 0
+          }
+        },
+        {
+          "model": "mean_reversion",
+          "validation": {
+            "n": 1861,
+            "mae": 23.62821181084787,
+            "rmse": 32.92202107763501,
+            "mape": 1.5615019697852872,
+            "directionAccuracy": 50.67168189145621
+          }
+        },
+        {
+          "model": "momentum",
+          "validation": {
+            "n": 1861,
+            "mae": 23.999572676656506,
+            "rmse": 33.85314949140055,
+            "mape": 1.5820131607843853,
+            "directionAccuracy": 49.2208490059108
+          }
+        },
+        {
+          "model": "ridge",
+          "validation": {
+            "n": 1861,
+            "mae": 25.602766245706693,
+            "rmse": 35.984078266381495,
+            "mape": 1.6950705534240627,
+            "directionAccuracy": 47.232670607200426
+          }
+        }
+      ],
+      "calibration": {
+        "n": 638,
+        "from": "2022-03-22",
+        "to": "2024-05-06"
+      },
+      "disjoint": {
+        "candidate": {
+          "n": 92,
+          "mae": 87.33256521739132,
+          "rmse": 124.09025599547185,
+          "mape": 2.340970357966385,
+          "directionAccuracy": 0
+        },
+        "baseline": {
+          "n": 92,
+          "mae": 87.33256521739132,
+          "rmse": 124.09025599547185,
+          "mape": 2.340970357966385,
+          "directionAccuracy": 0
+        },
+        "phases": [
+          {
+            "offset": 0,
+            "n": 92,
+            "coverage": 65.21739130434783
+          },
+          {
+            "offset": 1,
+            "n": 92,
+            "coverage": 63.04347826086957
+          },
+          {
+            "offset": 2,
+            "n": 91,
+            "coverage": 70.32967032967034
+          },
+          {
+            "offset": 3,
+            "n": 91,
+            "coverage": 67.03296703296702
+          },
+          {
+            "offset": 4,
+            "n": 91,
+            "coverage": 68.13186813186813
+          },
+          {
+            "offset": 5,
+            "n": 91,
+            "coverage": 56.043956043956044
+          },
+          {
+            "offset": 6,
+            "n": 91,
+            "coverage": 57.14285714285714
+          }
+        ],
+        "caveat": "Non-overlapping target windows are not statistically independent"
+      },
+      "split": {
+        "selectionEnd": 1932,
+        "auditStart": 2576,
+        "purgedOriginsPerBoundary": 6
+      },
+      "latest": {
+        "date": "2026-05-31",
+        "price": 4534.765
+      },
+      "auditedFrom": "2024-05-07",
+      "dataQuality": {
+        "rows": 3221,
+        "excludedSameDay": 0,
+        "ageDays": 134,
+        "warnings": [
+          "Irregular provider cadence: horizons count observed closes; target date is unknown. No missing prices filled"
+        ]
+      },
+      "evidence": "Retrospective reconstruction from current data vintage; prospective skill is unproven"
+    },
+    {
+      "version": "gold-v2.0.0",
+      "model": "persistence",
+      "horizon": 30,
+      "horizonUnit": "future observed provider closes",
+      "calendar": "observations",
+      "targetDate": null,
+      "point": 4534.765,
+      "lower": 4250.821790287019,
+      "upper": 4818.708209712981,
+      "band": 0.06261475726150763,
+      "coverage": 68.66883116883116,
+      "audit": {
+        "n": 616,
+        "mae": 183.96860876623361,
+        "rmse": 247.52490947639407,
+        "mape": 4.905204191419192,
+        "directionAccuracy": 0
+      },
+      "baseline": {
+        "n": 616,
+        "mae": 183.96860876623361,
+        "rmse": 247.52490947639407,
+        "mape": 4.905204191419192,
+        "directionAccuracy": 0
+      },
+      "beat": false,
+      "skillPct": 0,
+      "candidates": [
+        {
+          "model": "persistence",
+          "validation": {
+            "n": 1838,
+            "mae": 46.371414036996754,
+            "rmse": 61.62163109632174,
+            "mape": 3.052659337926153,
+            "directionAccuracy": 0
+          }
+        },
+        {
+          "model": "momentum",
+          "validation": {
+            "n": 1838,
+            "mae": 47.00061540921721,
+            "rmse": 62.456771292182474,
+            "mape": 3.088954495044642,
+            "directionAccuracy": 51.305767138193694
+          }
+        },
+        {
+          "model": "mean_reversion",
+          "validation": {
+            "n": 1838,
+            "mae": 49.250583359964175,
+            "rmse": 65.09674412019429,
+            "mape": 3.258516304910348,
+            "directionAccuracy": 48.258977149075086
+          }
+        },
+        {
+          "model": "ridge",
+          "validation": {
+            "n": 1838,
+            "mae": 56.98655275166825,
+            "rmse": 73.03555819050281,
+            "mape": 3.788227983445397,
+            "directionAccuracy": 40.75081610446137
+          }
+        }
+      ],
+      "calibration": {
+        "n": 615,
+        "from": "2022-03-22",
+        "to": "2024-05-06"
+      },
+      "disjoint": {
+        "candidate": {
+          "n": 21,
+          "mae": 180.13585714285713,
+          "rmse": 258.2287710158056,
+          "mape": 4.810157994087049,
+          "directionAccuracy": 0
+        },
+        "baseline": {
+          "n": 21,
+          "mae": 180.13585714285713,
+          "rmse": 258.2287710158056,
+          "mape": 4.810157994087049,
+          "directionAccuracy": 0
+        },
+        "phases": [
+          {
+            "offset": 0,
+            "n": 21,
+            "coverage": 66.66666666666666
+          },
+          {
+            "offset": 1,
+            "n": 21,
+            "coverage": 57.14285714285714
+          },
+          {
+            "offset": 2,
+            "n": 21,
+            "coverage": 61.904761904761905
+          },
+          {
+            "offset": 3,
+            "n": 21,
+            "coverage": 61.904761904761905
+          },
+          {
+            "offset": 4,
+            "n": 21,
+            "coverage": 66.66666666666666
+          },
+          {
+            "offset": 5,
+            "n": 21,
+            "coverage": 66.66666666666666
+          },
+          {
+            "offset": 6,
+            "n": 21,
+            "coverage": 71.42857142857143
+          },
+          {
+            "offset": 7,
+            "n": 21,
+            "coverage": 71.42857142857143
+          },
+          {
+            "offset": 8,
+            "n": 21,
+            "coverage": 66.66666666666666
+          },
+          {
+            "offset": 9,
+            "n": 21,
+            "coverage": 76.19047619047619
+          },
+          {
+            "offset": 10,
+            "n": 21,
+            "coverage": 80.95238095238095
+          },
+          {
+            "offset": 11,
+            "n": 21,
+            "coverage": 76.19047619047619
+          },
+          {
+            "offset": 12,
+            "n": 21,
+            "coverage": 76.19047619047619
+          },
+          {
+            "offset": 13,
+            "n": 21,
+            "coverage": 71.42857142857143
+          },
+          {
+            "offset": 14,
+            "n": 21,
+            "coverage": 66.66666666666666
+          },
+          {
+            "offset": 15,
+            "n": 21,
+            "coverage": 71.42857142857143
+          },
+          {
+            "offset": 16,
+            "n": 20,
+            "coverage": 65
+          },
+          {
+            "offset": 17,
+            "n": 20,
+            "coverage": 75
+          },
+          {
+            "offset": 18,
+            "n": 20,
+            "coverage": 75
+          },
+          {
+            "offset": 19,
+            "n": 20,
+            "coverage": 70
+          },
+          {
+            "offset": 20,
+            "n": 20,
+            "coverage": 70
+          },
+          {
+            "offset": 21,
+            "n": 20,
+            "coverage": 70
+          },
+          {
+            "offset": 22,
+            "n": 20,
+            "coverage": 65
+          },
+          {
+            "offset": 23,
+            "n": 20,
+            "coverage": 70
+          },
+          {
+            "offset": 24,
+            "n": 20,
+            "coverage": 70
+          },
+          {
+            "offset": 25,
+            "n": 20,
+            "coverage": 60
+          },
+          {
+            "offset": 26,
+            "n": 20,
+            "coverage": 70
+          },
+          {
+            "offset": 27,
+            "n": 20,
+            "coverage": 65
+          },
+          {
+            "offset": 28,
+            "n": 20,
+            "coverage": 60
+          },
+          {
+            "offset": 29,
+            "n": 20,
+            "coverage": 65
+          }
+        ],
+        "caveat": "Non-overlapping target windows are not statistically independent"
+      },
+      "split": {
+        "selectionEnd": 1932,
+        "auditStart": 2576,
+        "purgedOriginsPerBoundary": 29
+      },
+      "latest": {
+        "date": "2026-05-31",
+        "price": 4534.765
+      },
+      "auditedFrom": "2024-05-07",
+      "dataQuality": {
+        "rows": 3221,
+        "excludedSameDay": 0,
+        "ageDays": 134,
+        "warnings": [
+          "Irregular provider cadence: horizons count observed closes; target date is unknown. No missing prices filled"
+        ]
+      },
+      "evidence": "Retrospective reconstruction from current data vintage; prospective skill is unproven"
+    }
+  ],
+  "ablation": [
+    {
+      "horizon": 1,
+      "selection": {
+        "n": 669,
+        "from": "2020-01-24",
+        "to": "2022-03-20",
+        "baseline": {
+          "n": 669,
+          "mae": 11.843941704035883,
+          "rmse": 17.532214062909535,
+          "mape": 0.6618628055519193,
+          "directionAccuracy": 0.14947683109118087
+        },
+        "priceRidge": {
+          "n": 669,
+          "mae": 12.192074222460368,
+          "rmse": 18.08578277891437,
+          "mape": 0.6817569869613508,
+          "directionAccuracy": 50.224215246636774
+        },
+        "macroRidge": {
+          "n": 669,
+          "mae": 12.562524194720739,
+          "rmse": 18.43418220961005,
+          "mape": 0.7030115922197171,
+          "directionAccuracy": 49.92526158445441
+        },
+        "macroSkillVsBaselinePct": -6.067089053975971,
+        "macroSkillVsPriceRidgePct": -3.038449122774556
+      },
+      "calibrationPeriod": {
+        "n": 643,
+        "from": "2022-03-22",
+        "to": "2024-05-05",
+        "baseline": {
+          "n": 643,
+          "mae": 10.948723172628311,
+          "rmse": 15.493370450737787,
+          "mape": 0.570020641110657,
+          "directionAccuracy": 0.15552099533437014
+        },
+        "priceRidge": {
+          "n": 643,
+          "mae": 11.05874495286377,
+          "rmse": 15.554123556117245,
+          "mape": 0.5758696720904051,
+          "directionAccuracy": 51.94401244167963
+        },
+        "macroRidge": {
+          "n": 643,
+          "mae": 11.415813560428596,
+          "rmse": 15.822285325052146,
+          "mape": 0.5944182159693601,
+          "directionAccuracy": 47.900466562986004
+        },
+        "macroSkillVsBaselinePct": -4.266163098981313,
+        "macroSkillVsPriceRidgePct": -3.2288348188404647
+      },
+      "audit": {
+        "n": 642,
+        "from": "2024-05-07",
+        "to": "2026-05-29",
+        "baseline": {
+          "n": 642,
+          "mae": 31.75001869158874,
+          "rmse": 54.05203086141161,
+          "mape": 0.8588232552046148,
+          "directionAccuracy": 0
+        },
+        "priceRidge": {
+          "n": 642,
+          "mae": 32.15572187905352,
+          "rmse": 55.069813556094765,
+          "mape": 0.865872031566579,
+          "directionAccuracy": 53.89408099688473
+        },
+        "macroRidge": {
+          "n": 642,
+          "mae": 32.50104910642725,
+          "rmse": 55.40324844519008,
+          "mape": 0.8765981479775701,
+          "directionAccuracy": 52.024922118380054
+        },
+        "macroSkillVsBaselinePct": -2.3654487329088703,
+        "macroSkillVsPriceRidgePct": -1.0739215517306722
+      },
+      "disjoint": {
+        "n": 642,
+        "from": "2024-05-07",
+        "to": "2026-05-29",
+        "baseline": {
+          "n": 642,
+          "mae": 31.75001869158874,
+          "rmse": 54.05203086141161,
+          "mape": 0.8588232552046148,
+          "directionAccuracy": 0
+        },
+        "priceRidge": {
+          "n": 642,
+          "mae": 32.15572187905352,
+          "rmse": 55.069813556094765,
+          "mape": 0.865872031566579,
+          "directionAccuracy": 53.89408099688473
+        },
+        "macroRidge": {
+          "n": 642,
+          "mae": 32.50104910642725,
+          "rmse": 55.40324844519008,
+          "mape": 0.8765981479775701,
+          "directionAccuracy": 52.024922118380054
+        },
+        "macroSkillVsBaselinePct": -2.3654487329088703,
+        "macroSkillVsPriceRidgePct": -1.0739215517306722
+      }
+    },
+    {
+      "horizon": 7,
+      "selection": {
+        "n": 657,
+        "from": "2020-01-31",
+        "to": "2022-03-13",
+        "baseline": {
+          "n": 657,
+          "mae": 33.82564079147636,
+          "rmse": 45.73536005460327,
+          "mape": 1.8857512426822147,
+          "directionAccuracy": 0
+        },
+        "priceRidge": {
+          "n": 657,
+          "mae": 38.34712173495164,
+          "rmse": 52.056710001200784,
+          "mape": 2.1393874304768,
+          "directionAccuracy": 50.2283105022831
+        },
+        "macroRidge": {
+          "n": 657,
+          "mae": 43.48389550526535,
+          "rmse": 65.1509771670901,
+          "mape": 2.4359088723189806,
+          "directionAccuracy": 53.42465753424658
+        },
+        "macroSkillVsBaselinePct": -28.553057644432723,
+        "macroSkillVsPriceRidgePct": -13.39546108784424
+      },
+      "calibrationPeriod": {
+        "n": 637,
+        "from": "2022-03-22",
+        "to": "2024-04-28",
+        "baseline": {
+          "n": 637,
+          "mae": 32.38196860282574,
+          "rmse": 41.89171207953277,
+          "mape": 1.687242436873737,
+          "directionAccuracy": 0
+        },
+        "priceRidge": {
+          "n": 637,
+          "mae": 32.74053188940628,
+          "rmse": 42.262099800594896,
+          "mape": 1.7081495379619605,
+          "directionAccuracy": 44.42700156985872
+        },
+        "macroRidge": {
+          "n": 637,
+          "mae": 38.982850152529295,
+          "rmse": 50.10334573476024,
+          "mape": 2.0323558717873684,
+          "directionAccuracy": 49.60753532182103
+        },
+        "macroSkillVsBaselinePct": -20.384435642765553,
+        "macroSkillVsPriceRidgePct": -19.066025818422382
+      },
+      "audit": {
+        "n": 636,
+        "from": "2024-05-07",
+        "to": "2026-05-22",
+        "baseline": {
+          "n": 636,
+          "mae": 88.76565566037728,
+          "rmse": 133.03392242486012,
+          "mape": 2.3801033381797945,
+          "directionAccuracy": 0
+        },
+        "priceRidge": {
+          "n": 636,
+          "mae": 87.65755025282402,
+          "rmse": 137.91675401710324,
+          "mape": 2.3330972608837808,
+          "directionAccuracy": 61.94968553459119
+        },
+        "macroRidge": {
+          "n": 636,
+          "mae": 96.32551529906469,
+          "rmse": 151.1284991258346,
+          "mape": 2.5691909523090968,
+          "directionAccuracy": 58.80503144654088
+        },
+        "macroSkillVsBaselinePct": -8.516649353227201,
+        "macroSkillVsPriceRidgePct": -9.888440894412764
+      },
+      "disjoint": {
+        "n": 92,
+        "from": "2024-05-07",
+        "to": "2026-05-22",
+        "baseline": {
+          "n": 92,
+          "mae": 86.23839130434781,
+          "rmse": 125.5496675260952,
+          "mape": 2.288241761379412,
+          "directionAccuracy": 0
+        },
+        "priceRidge": {
+          "n": 92,
+          "mae": 82.06572078874694,
+          "rmse": 128.49988567081832,
+          "mape": 2.1802462614969182,
+          "directionAccuracy": 63.04347826086957
+        },
+        "macroRidge": {
+          "n": 92,
+          "mae": 92.34095267880097,
+          "rmse": 143.170235298318,
+          "mape": 2.4646533510307886,
+          "directionAccuracy": 55.434782608695656
+        },
+        "macroSkillVsBaselinePct": -7.0763859136893315,
+        "macroSkillVsPriceRidgePct": -12.520735565711384
+      }
+    },
+    {
+      "horizon": 30,
+      "selection": {
+        "n": 611,
+        "from": "2020-02-27",
+        "to": "2022-02-14",
+        "baseline": {
+          "n": 611,
+          "mae": 63.61419803600653,
+          "rmse": 81.66163375675013,
+          "mape": 3.4655026292183915,
+          "directionAccuracy": 0
+        },
+        "priceRidge": {
+          "n": 611,
+          "mae": 77.90857791267858,
+          "rmse": 99.93432488235892,
+          "mape": 4.2312655967284805,
+          "directionAccuracy": 53.0278232405892
+        },
+        "macroRidge": {
+          "n": 611,
+          "mae": 106.04142475030635,
+          "rmse": 137.9564567874855,
+          "mape": 5.821856687505071,
+          "directionAccuracy": 65.63011456628477
+        },
+        "macroSkillVsBaselinePct": -66.69458709561256,
+        "macroSkillVsPriceRidgePct": -36.110076183343494
+      },
+      "calibrationPeriod": {
+        "n": 614,
+        "from": "2022-03-22",
+        "to": "2024-04-01",
+        "baseline": {
+          "n": 614,
+          "mae": 71.50136156351793,
+          "rmse": 89.62684493089725,
+          "mape": 3.68865883354825,
+          "directionAccuracy": 0
+        },
+        "priceRidge": {
+          "n": 614,
+          "mae": 80.41715971281432,
+          "rmse": 98.36303821025756,
+          "mape": 4.156705927667476,
+          "directionAccuracy": 40.55374592833876
+        },
+        "macroRidge": {
+          "n": 614,
+          "mae": 134.31094611861474,
+          "rmse": 165.0976231287526,
+          "mape": 7.071905857136025,
+          "directionAccuracy": 43.48534201954398
+        },
+        "macroSkillVsBaselinePct": -87.84390000643579,
+        "macroSkillVsPriceRidgePct": -67.01776909090778
+      },
+      "audit": {
+        "n": 613,
+        "from": "2024-05-07",
+        "to": "2026-04-26",
+        "baseline": {
+          "n": 613,
+          "mae": 182.71757585644357,
+          "rmse": 245.31585314594133,
+          "mape": 4.885375164440093,
+          "directionAccuracy": 0
+        },
+        "priceRidge": {
+          "n": 613,
+          "mae": 158.46169262380107,
+          "rmse": 209.91182037106645,
+          "mape": 4.237911495792333,
+          "directionAccuracy": 72.10440456769985
+        },
+        "macroRidge": {
+          "n": 613,
+          "mae": 168.72494850792106,
+          "rmse": 232.54294324624234,
+          "mape": 4.493109042039381,
+          "directionAccuracy": 71.45187601957585
+        },
+        "macroSkillVsBaselinePct": 7.658063151798911,
+        "macroSkillVsPriceRidgePct": -6.476805664625629
+      },
+      "disjoint": {
+        "n": 21,
+        "from": "2024-05-07",
+        "to": "2026-04-09",
+        "baseline": {
+          "n": 21,
+          "mae": 217.86509523809525,
+          "rmse": 320.13132993038965,
+          "mape": 5.50475032273687,
+          "directionAccuracy": 0
+        },
+        "priceRidge": {
+          "n": 21,
+          "mae": 195.22142495904683,
+          "rmse": 274.41750001422486,
+          "mape": 4.961318681141585,
+          "directionAccuracy": 85.71428571428571
+        },
+        "macroRidge": {
+          "n": 21,
+          "mae": 178.46536867305775,
+          "rmse": 264.31739370035876,
+          "mape": 4.618449356425839,
+          "directionAccuracy": 76.19047619047619
+        },
+        "macroSkillVsBaselinePct": 18.084460258298495,
+        "macroSkillVsPriceRidgePct": 8.583103155559968
+      }
+    }
+  ],
+  "limitations": [
+    "Raw archives are current downloaded price vintages, not immutable historical price snapshots",
+    "HistData provides no reliability certification; vendor upstream independence unproven",
+    "Volume field zero means unavailable; it is not measured traded volume",
+    "Current incomplete local month is not downloaded; no claim of freshness",
+    "Raw vendor files are not redistributed; public reports contain provenance and derived metrics",
+    "Observed close horizons; omitted ambiguous days are not reconstructed",
+    "Monthly vintage sampling understates daily information availability; it is not an exact release replay",
+    "Price history is current-vintage research and no prospective macro-model receipts exist",
+    "Audit inspected during this research; improvement here cannot establish future performance"
+  ]
+}

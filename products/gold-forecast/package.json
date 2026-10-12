@@ -9,7 +9,13 @@
     "macro": "python3 scripts/fetch_macro.py",
     "evaluate": "node scripts/evaluate.mjs",
     "issue": "node scripts/journal.mjs issue",
-    "settle": "node scripts/journal.mjs settle"
+    "settle": "node scripts/journal.mjs settle",
+    "research-data": "python3 scripts/collect_research.py",
+    "research-evaluate": "node scripts/evaluate_research.mjs",
+    "calendar": "python3 scripts/fetch_calendar.py",
+    "source-tests": "python3 -m unittest discover -s scripts -p 'test_*.py'"
   },
-  "engines": {"node": ">=22"}
+  "engines": {
+    "node": ">=22"
+  }
 }

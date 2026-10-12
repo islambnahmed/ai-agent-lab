@@ -7,27 +7,33 @@ import datetime as dt
 import hashlib
 import io
 import json
+import math
 import re
 from pathlib import Path
 import urllib.request
 ROOT=Path(__file__).resolve().parents[1]
-SERIES={'DFII10':'real_yield_10y_pct','DGS10':'nominal_yield_10y_pct','DTWEXBGS':'broad_dollar_index','CPIAUCSL':'us_cpi_index'}
+SERIES={'DFII10':'real_yield_10y_pct','DGS10':'nominal_yield_10y_pct','DTWEXBGS':'broad_dollar_index','CPIAUCSL':'us_cpi_index','DFF':'effective_fed_funds_pct'}
 
 def fetch(series,feature):
     # The graph CSV endpoint is a public export, without an API key.
-    url=f'https://fred.stlouisfed.org/graph/graph.csv?id={series}&cosd=2021-10-13'
+    url=f'https://fred.stlouisfed.org/graph/fredgraph.csv?id={series}&cosd=2000-01-01'
     try:
         with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'GoldLab/2.0 research'}),timeout=25) as r:
             raw=r.read(5_000_001)
         if len(raw)>5_000_000: raise ValueError('CSV response too large')
         stamp=dt.datetime.now(dt.timezone.utc).isoformat(timespec='milliseconds').replace('+00:00','Z')
         rows=[]
+        seen=set()
         for row in csv.DictReader(io.StringIO(raw.decode('utf-8-sig'))):
             value=row.get(series)
             if value in (None,'','.'): continue
             day=row.get('observation_date') or row.get('DATE')
             dt.date.fromisoformat(day)
-            rows.append({'feature':feature,'value':float(value),'observedAt':day+'T00:00:00Z',
+            if day>stamp[:10] or day in seen: raise ValueError('Future or duplicate macro observation')
+            numeric=float(value)
+            if not math.isfinite(numeric): raise ValueError('Nonfinite macro observation')
+            seen.add(day)
+            rows.append({'feature':feature,'value':numeric,'observedAt':day+'T00:00:00Z',
                          'availableAt':stamp,'source':'FRED:'+series,'vintage':stamp})
         if not rows: raise ValueError('No parsed observations')
         return rows,{'series':series,'url':url,'sourcePage':'https://fred.stlouisfed.org/series/'+series,

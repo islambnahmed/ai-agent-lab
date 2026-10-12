@@ -1,78 +1,92 @@
 [
   {
     "series": "DFII10",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFII10&cosd=2000-01-01",
     "sourcePage": "https://fred.stlouisfed.org/series/DFII10",
-    "receivedAt": "2026-10-12T17:11:01.999Z",
-    "rawSha256": "5e0a2c0a673da3bfd97da104e08e93cdcdde1db96769e067c40a9e8a4411bc92",
-    "rows": 1,
+    "receivedAt": "2026-10-12T18:02:43.728Z",
+    "rawSha256": "0277781c1336527c38275803bfedc0b7f1c264740b9406981edda0d2796ab6ee",
+    "rows": 5947,
     "latest": {
       "feature": "real_yield_10y_pct",
       "value": 2.87,
       "observedAt": "2026-10-08T00:00:00Z",
-      "availableAt": "2026-10-12T17:11:01.999Z",
+      "availableAt": "2026-10-12T18:02:43.728Z",
       "source": "FRED:DFII10",
-      "vintage": "2026-10-12T17:11:01.999Z"
+      "vintage": "2026-10-12T18:02:43.728Z"
     },
-    "status": "fetched_current_observation",
-    "historicalExportStatus": "unavailable",
-    "historicalExportError": "HTTP Error 404: Not Found",
-    "use": "future/current context only; NOT historical training"
+    "status": "fetched",
+    "use": "current-vintage research / future origins only"
   },
   {
     "series": "DGS10",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DGS10&cosd=2000-01-01",
     "sourcePage": "https://fred.stlouisfed.org/series/DGS10",
-    "receivedAt": "2026-10-12T17:11:01.863Z",
-    "rawSha256": "ba385342e6dda988b4e962b8068ba00d86a35cae557269fbaabf24ebd8278c56",
-    "rows": 1,
+    "receivedAt": "2026-10-12T18:02:43.706Z",
+    "rawSha256": "7b21b04f90c116ee7241246fbb1e93da3870c7cae25449a79d9aba3c474bb291",
+    "rows": 6696,
     "latest": {
       "feature": "nominal_yield_10y_pct",
       "value": 5.22,
       "observedAt": "2026-10-08T00:00:00Z",
-      "availableAt": "2026-10-12T17:11:01.863Z",
+      "availableAt": "2026-10-12T18:02:43.706Z",
       "source": "FRED:DGS10",
-      "vintage": "2026-10-12T17:11:01.863Z"
+      "vintage": "2026-10-12T18:02:43.706Z"
     },
-    "status": "fetched_current_observation",
-    "historicalExportStatus": "unavailable",
-    "historicalExportError": "HTTP Error 404: Not Found",
-    "use": "future/current context only; NOT historical training"
+    "status": "fetched",
+    "use": "current-vintage research / future origins only"
   },
   {
     "series": "DTWEXBGS",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DTWEXBGS&cosd=2000-01-01",
     "sourcePage": "https://fred.stlouisfed.org/series/DTWEXBGS",
-    "receivedAt": "2026-10-12T17:11:01.959Z",
-    "rawSha256": "3e1c68117311035b9a99aa8a04be9bfe4327a882b9d75aa3541e1decfe4cbd71",
-    "rows": 1,
+    "receivedAt": "2026-10-12T18:02:43.742Z",
+    "rawSha256": "75edd28ba1eceade938fa6621edfebc4d4e9cbcc846c6f07be27f8aef0ead321",
+    "rows": 5203,
     "latest": {
       "feature": "broad_dollar_index",
       "value": 121.3848,
       "observedAt": "2026-10-02T00:00:00Z",
-      "availableAt": "2026-10-12T17:11:01.959Z",
+      "availableAt": "2026-10-12T18:02:43.742Z",
       "source": "FRED:DTWEXBGS",
-      "vintage": "2026-10-12T17:11:01.959Z"
+      "vintage": "2026-10-12T18:02:43.742Z"
     },
-    "status": "fetched_current_observation",
-    "historicalExportStatus": "unavailable",
-    "historicalExportError": "HTTP Error 404: Not Found",
-    "use": "future/current context only; NOT historical training"
+    "status": "fetched",
+    "use": "current-vintage research / future origins only"
   },
   {
     "series": "CPIAUCSL",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=CPIAUCSL&cosd=2000-01-01",
     "sourcePage": "https://fred.stlouisfed.org/series/CPIAUCSL",
-    "receivedAt": "2026-10-12T17:11:14.279Z",
-    "rawSha256": "5da047f9e4d02b6b01804fa705c1bdf6982ba4f2ac22a80d5d1a412ba2808e56",
-    "rows": 1,
+    "receivedAt": "2026-10-12T18:02:48.461Z",
+    "rawSha256": "912bb0ded51068ecb3d078ee44f501c7a3eba4bb0e2b3cbcbc1a7257479d5da4",
+    "rows": 319,
     "latest": {
       "feature": "us_cpi_index",
       "value": 334.131,
       "observedAt": "2026-08-01T00:00:00Z",
-      "availableAt": "2026-10-12T17:11:14.279Z",
+      "availableAt": "2026-10-12T18:02:48.461Z",
       "source": "FRED:CPIAUCSL",
-      "vintage": "2026-10-12T17:11:14.279Z"
+      "vintage": "2026-10-12T18:02:48.461Z"
     },
-    "status": "fetched_current_observation",
-    "historicalExportStatus": "unavailable",
-    "historicalExportError": "HTTP Error 404: Not Found",
-    "use": "future/current context only; NOT historical training"
+    "status": "fetched",
+    "use": "current-vintage research / future origins only"
+  },
+  {
+    "series": "DFF",
+    "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFF&cosd=2000-01-01",
+    "sourcePage": "https://fred.stlouisfed.org/series/DFF",
+    "receivedAt": "2026-10-12T18:02:48.679Z",
+    "rawSha256": "d2d5b3e4ec3f008a58240671b51cfe8f2437d3d2768c983314fea385d2b0bbb7",
+    "rows": 9778,
+    "latest": {
+      "feature": "effective_fed_funds_pct",
+      "value": 3.88,
+      "observedAt": "2026-10-08T00:00:00Z",
+      "availableAt": "2026-10-12T18:02:48.679Z",
+      "source": "FRED:DFF",
+      "vintage": "2026-10-12T18:02:48.679Z"
+    },
+    "status": "fetched",
+    "use": "current-vintage research / future origins only"
   }
 ]

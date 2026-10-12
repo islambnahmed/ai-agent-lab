@@ -78,11 +78,35 @@ period was examined by previous implementations, so this is not a fresh blind
 validation of v2. Prospective observations after code/receipt commits are needed.
 
 Macro inputs use `feature-store.mjs`: values join only when `availableAt <=
-originAt`, with explicit source/vintage and staleness. FRED exports failed in this
-session; the collector explicitly falls back to current observations from series
-pages. These current-vintage observations are available from their fetch time;
-they are **not injected into historical training**. A historical macro model
-requires authentic release-time vintages and a preregistered incremental benchmark.
+originAt`, with explicit source/vintage and staleness. The corrected FRED
+`fredgraph.csv` export retrieves full current-vintage history; it stays available
+only from its actual fetch time. ALFRED `alfredgraph.csv` exports supply separate
+historical monthly as-of snapshots, conservatively available at the end of the
+requested vintage day. They are not an intraday release calendar.
+
+The separate research pipeline downloads HistData XAU/USD M1 bid archives,
+aggregates completed UTC days from fixed EST input, and explicitly quarantines
+ambiguous repeated-clock days. It never fills absent prices or concatenates
+unrelated providers. The experimental macro Ridge ablation uses real/nominal
+10-year yields, the broad dollar index (not DXY), same-vintage CPI annual change,
+and effective Fed funds. Training labels must mature before each origin. Its
+price-only comparator uses identical eligible origins and training rows.
+Production model selection is unchanged; the inspected research period cannot
+justify automatic promotion.
+
+```bash
+npm run research-data       # public source downloads; raw cache remains local
+npm run research-evaluate   # multi-year price benchmark + fixed macro ablation
+npm run calendar            # official BLS scheduled releases, known from fetch
+npm run source-tests        # no network access
+# rebuild already downloaded archives without retrying unavailable sources:
+python3 scripts/collect_research.py --offline
+```
+
+Read `SOURCES.md` for accepted, quarantined and unavailable sources, measurement
+changes, optional inputs and the precise remaining gaps. Research data under
+`data/` is ignored by git; reproducible download commands and derived reports
+are committed. Results record source hashes and an implementation hash.
 
 ## Sources and redistribution
 
