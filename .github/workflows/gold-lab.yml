@@ -1,0 +1,26 @@
+name: Gold Lab MVP tests
+on:
+  push:
+    paths:
+      - "products/gold-forecast/**"
+      - ".github/workflows/gold-lab.yml"
+  pull_request:
+    paths:
+      - "products/gold-forecast/**"
+      - ".github/workflows/gold-lab.yml"
+permissions:
+  contents: read
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Syntax checks
+        run: |
+          for file in $(find products/gold-forecast -name '*.mjs'); do node --check "$file"; done
+          python -m py_compile products/gold-forecast/scripts/fetch_data.py products/gold-forecast/scripts/fetch_macro.py
+      - name: Forecast regression tests
+        run: node --test products/gold-forecast/tests/*.test.mjs
