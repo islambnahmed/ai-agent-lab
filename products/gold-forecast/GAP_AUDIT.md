@@ -46,15 +46,14 @@ report uses the native one-year snapshot only.
 
 | Blocker | Why it is unresolved / acceptance criterion |
 |---|---|
-| Multi-year authenticated native daily gold history | Current provider's long/date-window contracts failed. Need a licensed, verifiable second historical source or corrected provider endpoint; no fabricated expansion |
-| Historical macro release-time vintages | FRED CSV export returned 404. Current series-page observations are fetched for current context only; authentic vintages are needed for historical training |
+| Certified multi-year daily gold benchmark | HistData M1 bid archives now support a separate multi-year study with explicit quarantines and UTC aggregation. Vendor certification and historical price vintages remain unverified |
+| Exact historical macro release-time coverage | Corrected fredgraph.csv export; ALFRED monthly as-of snapshots are retrieved separately. Intraday release times and every release/revision remain uncollected |
 | Predictive improvement | Historical results do not beat baseline; collect and evaluate future committed receipts before a performance claim |
 | 7/30-close evidence quantity | Only 9 and 2 disjoint target windows in the retrospective audit, respectively; more data/outcomes required |
 | Historical price authentication / true market calendar | Dealer feed includes weekends and gaps. Count observed closes; don't claim exchange sessions or exact settlement times |
 | Real-browser/mobile end-to-end validation | App source passed DOM/network harness tests. Chromium was absent; download failed, so no successful visual/browser run is claimed |
-| Egypt retail prices | Requires timestamped USD/EGP, karat, local premiums/spreads/taxes and independent local retail source; global USD/troy-ounce output remains clearly labeled |
 | Public hosting | No deployment performed; model-readiness work does not imply a production site |
 
-All feasible local implementation changes are included in this branch. External
+Source expansion and exploratory macro ablation are documented in `SOURCES.md` and the source/benchmark reports. External
 source coverage and future outcomes cannot be supplied by adding code alone.
 No worker lifecycle, schedules, identities or shared task state were changed.

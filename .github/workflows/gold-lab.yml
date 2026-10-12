@@ -21,6 +21,8 @@ jobs:
       - name: Syntax checks
         run: |
           for file in $(find products/gold-forecast -name '*.mjs'); do node --check "$file"; done
-          python -m py_compile products/gold-forecast/scripts/fetch_data.py products/gold-forecast/scripts/fetch_macro.py
+          python -m py_compile products/gold-forecast/scripts/*.py
       - name: Forecast regression tests
         run: node --test products/gold-forecast/tests/*.test.mjs
+      - name: Source parser regression tests
+        run: python -m unittest discover -s products/gold-forecast/scripts -p 'test_*.py'

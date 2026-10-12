@@ -1,0 +1,103 @@
+{
+  "runAt": "2026-10-12T18:11:18.761920+00:00",
+  "scope": "global XAU/USD, USD per troy ounce",
+  "worldBank": {
+    "url": "https://thedocs.worldbank.org/en/doc/74e8be41ceb20fa0da750cda2f6b9e4e-0050012026/related/CMO-Historical-Data-Monthly.xlsx",
+    "rawSha256": "ea1c350827878ea3bbe30e3cda16a13fd3bd5b409b8458940dc94a36b5a33154",
+    "status": "downloaded_valid_workbook",
+    "sheet": "Monthly Prices",
+    "column": "Gold",
+    "unit": "$/troy oz",
+    "rows": 801,
+    "from": "1960M01",
+    "to": "2026M09",
+    "measurementBreak": "Description states spot average of daily rates from June 2025; previously London afternoon fixing average",
+    "use": "monthly context only; not daily training"
+  },
+  "sdBullion": {
+    "url": "https://sdbullion.com/gold-prices-2025",
+    "rawSha256": "03a2cf7b3941bc1f4a664e092b1b8fe2241daaa0b9de35ae0e5bf051adc4c267",
+    "parsedRows": 255,
+    "status": "quarantined_unverified_fixing",
+    "calendarSource": "https://www.ice.com/publicdocs/Gold_Holiday_Calendar_2025.pdf",
+    "closedDayQuotes": [
+      {
+        "date": "2025-08-25",
+        "am": 3334.25,
+        "pm": 3334.25
+      },
+      {
+        "date": "2025-12-26",
+        "am": 4480.8,
+        "pm": 4480.8
+      }
+    ],
+    "reason": "Published AM/PM prices on listed no-auction holidays; no rows used for training"
+  },
+  "unavailable": [
+    {
+      "source": "CFTC disaggregated futures 2026",
+      "url": "https://www.cftc.gov/files/dea/history/fut_disagg_txt_2026.zip",
+      "httpStatus": 403
+    },
+    {
+      "source": "WGC ETF flows Sep 2026",
+      "url": "https://www.gold.org/download/file/21216/ETF_Flows_2026-10-02_1401.xlsx",
+      "httpStatus": 403
+    },
+    {
+      "source": "FOMC direct downloader",
+      "url": "https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm",
+      "httpStatus": 403,
+      "webRetrieval": "official schedule read successfully"
+    }
+  ],
+  "probes": [
+    {
+      "name": "wb_monthly",
+      "url": "https://thedocs.worldbank.org/en/doc/74e8be41ceb20fa0da750cda2f6b9e4e-0050012026/related/CMO-Historical-Data-Monthly.xlsx",
+      "status": 200,
+      "mime": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      "bytes": 586099,
+      "sha256": "ea1c350827878ea3bbe30e3cda16a13fd3bd5b409b8458940dc94a36b5a33154",
+      "prefix": "PK\u0003\u0004\u0014\u0000\u0006\u0000\b\u0000\u0000\u0000!\u0000\u000b\ufffd|\ufffd\ufffd\u0001\u0000\u0000\ufffd\t\u0000\u0000\u0013\u0000\b\u0002[Content_Types].xml \ufffd\u0004\u0002(\ufffd\u0000\u0002\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000\u0000"
+    },
+    {
+      "name": "alfred_graph",
+      "url": "https://alfred.stlouisfed.org/graph/alfredgraph.csv?id=CPIAUCSL&cosd=2000-01-01&vintage_date=2026-10-12",
+      "status": 200,
+      "mime": "application/csv",
+      "bytes": 6108,
+      "sha256": "cb51e7939e2811270b334d2251a82fede0bc39b1bb48149e48cdacdd44cfdb23",
+      "prefix": "observation_date,CPIAUCSL_20261012\n2000-01-01,169.300\n2000-02-01,170.000\n2000-03-01,171.000\n2000-04-"
+    },
+    {
+      "name": "fred_graph",
+      "url": "https://fred.stlouisfed.org/graph/fredgraph.csv?id=DFII10&cosd=2000-01-01",
+      "status": 200,
+      "mime": "application/csv",
+      "bytes": 99179,
+      "sha256": "0277781c1336527c38275803bfedc0b7f1c264740b9406981edda0d2796ab6ee",
+      "prefix": "observation_date,DFII10\n2003-01-02,2.43\n2003-01-03,2.43\n2003-01-06,2.46\n2003-01-07,2.42\n2003-01-08,2"
+    },
+    {
+      "name": "boe_csv",
+      "url": "https://www.bankofengland.co.uk/boeapps/database/_iadb-fromshowcolumns.asp?csv.x=yes&Datefrom=01/Jan/2000&Dateto=31/May/2017&SeriesCodes=XUDLGPD&CSVF=TN&UsingCodes=Y&VPD=Y&VFD=N",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "name": "ice_2026",
+      "url": "https://www.ice.com/publicdocs/Gold_Holiday_Calendar_2026.pdf",
+      "error": "HTTP Error 403: Forbidden"
+    },
+    {
+      "name": "sd_2025",
+      "url": "https://sdbullion.com/gold-prices-2025",
+      "status": 200,
+      "mime": "text/html; charset=UTF-8",
+      "bytes": 1543315,
+      "sha256": "03a2cf7b3941bc1f4a664e092b1b8fe2241daaa0b9de35ae0e5bf051adc4c267",
+      "prefix": "<!doctype html>\n<html lang=\"en\">\n<head >\n<script nonce=\"eDkyaHAwcnBtOHFjdGxhbDNqYWFmcWVlOW15ZWkzdHQ&"
+    }
+  ]
+}
