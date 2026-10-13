@@ -2,6 +2,7 @@
 
 CSV columns: date,close (ISO date, positive finite close). Standard library only.
 Usage: python tools/gold_walkforward.py prices.csv --horizon 7 --train-min 120
+Disjoint target intervals do not imply statistically independent forecast errors.
 This is evaluation infrastructure, not a trading recommendation.
 """
 import argparse
@@ -39,39 +40,40 @@ def backtest(rows, horizon=7, train_min=120, stride=None):
     if horizon < 1 or train_min < 2:
         raise ValueError("Invalid horizon or train_min")
     if stride is None:
-        stride = horizon  # disjoint target intervals, avoids overlap inflation
+        stride = horizon  # disjoint target intervals; dependence may remain
     if stride < horizon:
-        raise ValueError("stride must be >= horizon for independent target windows")
+        raise ValueError("stride must be >= horizon for disjoint target intervals")
     prices = [p for _, p in rows]
     results = []
     for origin in range(train_min - 1, len(rows) - horizon, stride):
         train = prices[:origin + 1]
         actual = prices[origin + horizon]
+        candidate = predict_drift(train, horizon)
         results.append({
             "origin_date": rows[origin][0].isoformat(),
             "target_date": rows[origin + horizon][0].isoformat(),
             "baseline": train[-1],
-            "candidate": predict_drift(train, horizon),
+            "candidate": candidate,
             "actual": actual,
             "baseline_abs_error": abs(train[-1] - actual),
-            "candidate_abs_error": abs(predict_drift(train, horizon) - actual),
+            "candidate_abs_error": abs(candidate - actual),
             "baseline_direction_correct": False,  # flat forecast has no direction
-            "candidate_direction_correct": (predict_drift(train, horizon) - train[-1]) * (actual - train[-1]) > 0,
+            "candidate_direction_correct": (candidate - train[-1]) * (actual - train[-1]) > 0,
         })
     if not results:
-        return {"status": "insufficient_holdout", "independent_windows": 0, "results": []}
+        return {"status": "insufficient_holdout", "disjoint_windows": 0, "results": []}
     base = statistics.mean(x["baseline_abs_error"] for x in results)
     cand = statistics.mean(x["candidate_abs_error"] for x in results)
     return {
         "status": "descriptive_only" if len(results) < 20 else "evaluation_ready",
         "horizon_sessions": horizon,
-        "independent_windows": len(results),
+        "disjoint_windows": len(results),
         "baseline_mae": base,
         "candidate_mae": cand,
         "mae_improvement_pct": (base - cand) / base * 100 if base else None,
         "candidate_rmse": math.sqrt(statistics.mean((x["candidate"] - x["actual"]) ** 2 for x in results)),
         "candidate_direction_accuracy": statistics.mean(x["candidate_direction_correct"] for x in results),
-        "warning": "Model choice must not be tuned on these test windows; validate on a later untouched period.",
+        "warning": "Disjoint target intervals do not imply independent forecast errors; model choice must not be tuned on these test windows. Validate on a later untouched period.",
         "results": results,
     }
 
