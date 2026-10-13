@@ -1,0 +1,14 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { wilson95, countFromRoundedCoverage, auditReport } from './calibration_uncertainty.mjs';
+const near=(a,b)=>assert.ok(Math.abs(a-b)<1e-10);
+test('Wilson 2/2',()=>{const [lo,hi]=wilson95(2,2);near(lo,0.34238022750665303);near(hi,1)});
+test('Wilson 7/9',()=>{const [lo,hi]=wilson95(7,9);near(lo,0.45258896910698887);near(hi,0.9367748928821533)});
+test('Wilson 59/65',()=>{const [lo,hi]=wilson95(59,65);near(lo,0.8128799948403962);near(hi,0.9570049103886591)});
+test('zero successes',()=>{const [lo,hi]=wilson95(0,1);near(lo,0);assert.ok(hi>0.79)});
+test('invalid counts',()=>{for(const [k,n] of [[-1,2],[3,2],[0,0],[1.5,2]])assert.throws(()=>wilson95(k,n))});
+test('rounded counts',()=>{assert.equal(countFromRoundedCoverage(65,90.76923076923077),59);assert.equal(countFromRoundedCoverage(36,88.88888888888889),32)});
+test('invalid coverage',()=>assert.throws(()=>countFromRoundedCoverage(2,33.3)));
+test('valid phase partition',()=>{const x=auditReport({horizons:[{horizon:7,model:'mean_reversion',audit:{n:3},coverage:66.66666666666667,skillPct:-3,disjoint:{candidate:{n:2},phases:[{offset:0,n:2,coverage:50},{offset:1,n:1,coverage:100}]}}]});assert.equal(x[0].phase0.covered,1);assert.equal(x[0].overallOverlapping.covered,2)});
+test('bad phase total',()=>assert.throws(()=>auditReport({horizons:[{horizon:1,audit:{n:4},coverage:50,disjoint:{candidate:{n:2},phases:[{offset:0,n:2,coverage:50}]}}]})));
+test('bad disjoint count',()=>assert.throws(()=>auditReport({horizons:[{horizon:1,audit:{n:2},coverage:50,disjoint:{candidate:{n:1},phases:[{offset:0,n:2,coverage:50}]}}]})));
