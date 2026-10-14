@@ -1,0 +1,231 @@
+{
+  "schema_version": 1,
+  "dataset": "BLS Employment Situation 2024 first and within-year monthly revisions; seasonally adjusted total nonfarm payroll change, thousands",
+  "scope": "12 releases for January-December 2024 reference months (published 2024-02-02 through 2025-01-10). Values beyond these releases, including February 2025 annual benchmark revisions, are not represented.",
+  "source_index": "https://www.bls.gov/bls/news-release/empsit.htm",
+  "releases": [
+    {
+      "release_date": "2024-02-02",
+      "subject_month": "2024-01",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02022024.htm",
+      "values_k": {
+        "2024-01": 353
+      }
+    },
+    {
+      "release_date": "2024-03-08",
+      "subject_month": "2024-02",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03082024.htm",
+      "values_k": {
+        "2024-01": 229,
+        "2024-02": 275
+      },
+      "revision_claims": {
+        "2024-01": {
+          "from_k": 353,
+          "to_k": 229
+        }
+      }
+    },
+    {
+      "release_date": "2024-04-05",
+      "subject_month": "2024-03",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04052024.htm",
+      "values_k": {
+        "2024-01": 256,
+        "2024-02": 270,
+        "2024-03": 303
+      },
+      "revision_claims": {
+        "2024-01": {
+          "from_k": 229,
+          "to_k": 256
+        },
+        "2024-02": {
+          "from_k": 275,
+          "to_k": 270
+        }
+      }
+    },
+    {
+      "release_date": "2024-05-03",
+      "subject_month": "2024-04",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05032024.htm",
+      "values_k": {
+        "2024-02": 236,
+        "2024-03": 315,
+        "2024-04": 175
+      },
+      "revision_claims": {
+        "2024-02": {
+          "from_k": 270,
+          "to_k": 236
+        },
+        "2024-03": {
+          "from_k": 303,
+          "to_k": 315
+        }
+      }
+    },
+    {
+      "release_date": "2024-06-07",
+      "subject_month": "2024-05",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06072024.htm",
+      "values_k": {
+        "2024-03": 310,
+        "2024-04": 165,
+        "2024-05": 272
+      },
+      "revision_claims": {
+        "2024-03": {
+          "from_k": 315,
+          "to_k": 310
+        },
+        "2024-04": {
+          "from_k": 175,
+          "to_k": 165
+        }
+      }
+    },
+    {
+      "release_date": "2024-07-05",
+      "subject_month": "2024-06",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07052024.htm",
+      "values_k": {
+        "2024-04": 108,
+        "2024-05": 218,
+        "2024-06": 206
+      },
+      "revision_claims": {
+        "2024-04": {
+          "from_k": 165,
+          "to_k": 108
+        },
+        "2024-05": {
+          "from_k": 272,
+          "to_k": 218
+        }
+      }
+    },
+    {
+      "release_date": "2024-08-02",
+      "subject_month": "2024-07",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08022024.htm",
+      "values_k": {
+        "2024-05": 216,
+        "2024-06": 179,
+        "2024-07": 114
+      },
+      "revision_claims": {
+        "2024-05": {
+          "from_k": 218,
+          "to_k": 216
+        },
+        "2024-06": {
+          "from_k": 206,
+          "to_k": 179
+        }
+      }
+    },
+    {
+      "release_date": "2024-09-06",
+      "subject_month": "2024-08",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09062024.htm",
+      "values_k": {
+        "2024-06": 118,
+        "2024-07": 89,
+        "2024-08": 142
+      },
+      "revision_claims": {
+        "2024-06": {
+          "from_k": 179,
+          "to_k": 118
+        },
+        "2024-07": {
+          "from_k": 114,
+          "to_k": 89
+        }
+      }
+    },
+    {
+      "release_date": "2024-10-04",
+      "subject_month": "2024-09",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10042024.htm",
+      "values_k": {
+        "2024-07": 144,
+        "2024-08": 159,
+        "2024-09": 254
+      },
+      "revision_claims": {
+        "2024-07": {
+          "from_k": 89,
+          "to_k": 144
+        },
+        "2024-08": {
+          "from_k": 142,
+          "to_k": 159
+        }
+      }
+    },
+    {
+      "release_date": "2024-11-01",
+      "subject_month": "2024-10",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_11012024.htm",
+      "values_k": {
+        "2024-08": 78,
+        "2024-09": 223,
+        "2024-10": 12
+      },
+      "revision_claims": {
+        "2024-08": {
+          "from_k": 159,
+          "to_k": 78
+        },
+        "2024-09": {
+          "from_k": 254,
+          "to_k": 223
+        }
+      }
+    },
+    {
+      "release_date": "2024-12-06",
+      "subject_month": "2024-11",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_12062024.htm",
+      "values_k": {
+        "2024-09": 255,
+        "2024-10": 36,
+        "2024-11": 227
+      },
+      "revision_claims": {
+        "2024-09": {
+          "from_k": 223,
+          "to_k": 255
+        },
+        "2024-10": {
+          "from_k": 12,
+          "to_k": 36
+        }
+      }
+    },
+    {
+      "release_date": "2025-01-10",
+      "subject_month": "2024-12",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_01102025.htm",
+      "values_k": {
+        "2024-10": 43,
+        "2024-11": 212,
+        "2024-12": 256
+      },
+      "revision_claims": {
+        "2024-10": {
+          "from_k": 36,
+          "to_k": 43
+        },
+        "2024-11": {
+          "from_k": 227,
+          "to_k": 212
+        }
+      }
+    }
+  ]
+}
