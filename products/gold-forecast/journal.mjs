@@ -14,7 +14,7 @@ export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest
   if(fetched>issued||issued-fetched>60*60000)throw Error('Use a snapshot fetched before issue and within one hour');
   series=prepareHistory(series,{asOf:issuedAt}).series;
   const result=forecast(series,h,{asOf:issuedAt});
-  if(result.targetDate&&result.targetDate<issuedAt.slice(0,10))throw Error('Target date has already passed');
+  if(result.targetDate&&result.targetDate<new Date(issued).toISOString().slice(0,10))throw Error('Target date has already passed');
   const record={schemaVersion:1,issuedAt,source,codeCommit,sourceManifest,modelVersion:result.version,
     horizon:h,calendar:result.calendar,originDate:result.latest.date,originClose:result.latest.price,
     historyHash:hash(series),historyLength:series.length,targetDate:result.targetDate,
@@ -33,7 +33,11 @@ export function verifyReceipt(receipt){
 }
 export function settleReceipt(receipt,series,{asOf}={}){
   verifyReceipt(receipt);
-  if(parseInstant(asOf)<=parseInstant(receipt.issuedAt))throw Error('Settlement must occur after issue');
+  const asOfMs=parseInstant(asOf,'Settlement timestamp');
+  const issuedMs=parseInstant(receipt.issuedAt,'Issue timestamp');
+  if(asOfMs<=issuedMs)throw Error('Settlement must occur after issue');
+  const asOfUtcDay=new Date(asOfMs).toISOString().slice(0,10);
+  const issuedUtcDay=new Date(issuedMs).toISOString().slice(0,10);
   series=prepareHistory(series,{asOf}).series;
   const prefix=series.slice(0,receipt.historyLength);
   if(hash(prefix)!==receipt.historyHash)throw Error('Historical vintage revised / prefix missing: quarantine receipt');
@@ -44,8 +48,8 @@ export function settleReceipt(receipt,series,{asOf}={}){
     return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate:receipt.targetDate};
   }
   const targetDate=series[index].date;
-  if(targetDate<receipt.issuedAt.slice(0,10))throw Error('Outcome predates issue');
-  if(targetDate>=asOf.slice(0,10))return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
+  if(targetDate<issuedUtcDay)throw Error('Outcome predates issue');
+  if(targetDate>=asOfUtcDay)return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
   if(index!==receipt.historyLength+receipt.horizon-1)throw Error('Horizon / calendar mismatch');
   const actual=series[index].price;
   return {id:receipt.id,horizon:receipt.horizon,status:'matured',targetDate,actual,
