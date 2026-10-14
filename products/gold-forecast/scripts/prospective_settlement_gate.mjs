@@ -64,6 +64,7 @@ export function assessProspectiveSettlement(receipt, series, {anchorAt, asOf, ta
   else prospectiveStatus='later_target_date_conditional';
   if(targetFirstPublishedAt!==null){
     const published=instant(targetFirstPublishedAt);
+    if(targetFirstPublishedAt.slice(0,10)<target.date)throw Error('Target publication predates observation date');
     if(published>now)throw Error('Target publication after settlement snapshot');
     if(published<=anchor)prospectiveStatus='target_already_available_at_anchor';
     else if(target.date>=anchorDay)prospectiveStatus='post_anchor_publication_conditional_on_external_authentication';
