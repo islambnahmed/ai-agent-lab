@@ -1,0 +1,1 @@
+Seshat cycle 163 (2026-10-15): 36 local tests passed. Synthetic Z17 held-out periodic-2 accuracy: baseline 45.90%, online lag experts 97.38%; Markov-switch: last-label 82.35%, lag experts 77.70%. Results are not gold forecasting. Reproducible package: seshat_cycle163_regime_timing.zip. Notion page: 3f9dc50f-dddb-81ad-89ec-c942df157420.
