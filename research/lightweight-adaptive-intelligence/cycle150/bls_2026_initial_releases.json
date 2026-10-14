@@ -1,0 +1,80 @@
+{
+  "schema_version": 1,
+  "source_index": "https://www.bls.gov/bls/news-release/empsit.htm",
+  "retrieved_asof": "2026-10-14",
+  "scope": "First-published 2026-01 to 2026-09 BLS total nonfarm monthly change, thousands of jobs, seasonally adjusted",
+  "releases": [
+    {
+      "release_date": "2026-02-11",
+      "subject_month": "2026-01",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_02112026.htm",
+      "values_k": {
+        "2026-01": 130
+      }
+    },
+    {
+      "release_date": "2026-03-06",
+      "subject_month": "2026-02",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_03062026.htm",
+      "values_k": {
+        "2026-02": -92
+      }
+    },
+    {
+      "release_date": "2026-04-03",
+      "subject_month": "2026-03",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_04032026.htm",
+      "values_k": {
+        "2026-03": 178
+      }
+    },
+    {
+      "release_date": "2026-05-08",
+      "subject_month": "2026-04",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_05082026.htm",
+      "values_k": {
+        "2026-04": 115
+      }
+    },
+    {
+      "release_date": "2026-06-05",
+      "subject_month": "2026-05",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_06052026.htm",
+      "values_k": {
+        "2026-05": 172
+      }
+    },
+    {
+      "release_date": "2026-07-02",
+      "subject_month": "2026-06",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_07022026.htm",
+      "values_k": {
+        "2026-06": 57
+      }
+    },
+    {
+      "release_date": "2026-08-07",
+      "subject_month": "2026-07",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_08072026.htm",
+      "values_k": {
+        "2026-07": -23
+      }
+    },
+    {
+      "release_date": "2026-09-04",
+      "subject_month": "2026-08",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_09042026.htm",
+      "values_k": {
+        "2026-08": 162
+      }
+    },
+    {
+      "release_date": "2026-10-02",
+      "subject_month": "2026-09",
+      "source_url": "https://www.bls.gov/news.release/archives/empsit_10022026.htm",
+      "values_k": {
+        "2026-09": 29
+      }
+    }
+  ]
+}
