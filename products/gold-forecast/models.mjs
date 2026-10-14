@@ -65,6 +65,8 @@ export function predict(history,h,model='persistence'){
     const anchor=mean(history.slice(-40).map(Math.log));
     return Math.exp(Math.log(last)+(anchor-Math.log(last))*Math.min(0.6,h*0.025));
   }
-  if(model==='ridge')return history.length<61?last:ridge(history,h);
+  // Ridge uses at most 400 matured origins, h target offsets and 60 lagged closes.
+  // Keep full-history validation above; only bound the fitting context.
+  if(model==='ridge')return history.length<61?last:ridge(history.length>h+460?history.slice(-(h+460)):history,h);
   throw Error('Unknown model');
 }
