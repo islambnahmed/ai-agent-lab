@@ -1,0 +1,10 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {quantile80,rng,runTrial,benchmark,sigmaFor,rollingBoundAt} from './interval_stress.mjs';
+test('quantile is finite-sample order statistic and does not mutate input',()=>{const x=[3,1,2,4];assert.equal(quantile80(x),4);assert.deepEqual(x,[3,1,2,4]);});
+test('reject malformed errors',()=>{for(const x of [[],[-1,2],[NaN],[Infinity]])assert.throws(()=>quantile80(x));});
+test('random generator deterministic and advancing',()=>{const a=rng(1),b=rng(1);const xs=Array.from({length:10},()=>a());assert.deepEqual(xs,Array.from({length:10},()=>b()));assert.ok(new Set(xs).size>1);});
+test('scenario contract',()=>{assert.equal(sigmaFor('step',399),1);assert.equal(sigmaFor('step',400),3);assert.equal(sigmaFor('alternating',220),1);assert.equal(sigmaFor('spike',410),1);});
+test('trial only evaluates after 200 training errors and late after 500',()=>{const s=runTrial('step',123);for(const v of Object.values(s)){assert.equal(v.n,400);assert.equal(v.lateN,100);assert.ok(v.hits<=v.n);}});
+test('rolling bound cannot see present or future errors',()=>{const a=Array.from({length:200},(_,i)=>1+(i%17));const b=a.slice();for(let i=100;i<200;i++)b[i]=1e9;assert.equal(rollingBoundAt(a,100,50),rollingBoundAt(b,100,50));assert.notEqual(rollingBoundAt(a,150,50),rollingBoundAt(b,150,50));assert.throws(()=>rollingBoundAt(a,10,50));});
+test('benchmark deterministic and plausible',()=>{const a=benchmark({trials:25,seed:123}),b=benchmark({trials:25,seed:123});assert.deepEqual(a,b);assert.ok(a.results.step.frozen.lateCoveragePct<50);assert.ok(a.results.step.rolling50.lateCoveragePct>65);});
