@@ -9,7 +9,9 @@ import concurrent.futures
 import datetime as dt
 import hashlib
 import json
+import os
 from pathlib import Path
+import tempfile
 import urllib.request
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -21,6 +23,22 @@ URLS = {
 
 def timestamp():
     return dt.datetime.now(dt.timezone.utc).isoformat(timespec='milliseconds').replace('+00:00', 'Z')
+
+def atomic_write_text(dest, text):
+    """Replace a complete file; an interrupted write must not truncate the cache."""
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    tmp = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=dest.parent,
+                                         prefix='.' + dest.name + '.', delete=False) as out:
+            tmp = Path(out.name)
+            out.write(text)
+            out.flush()
+            os.fsync(out.fileno())
+        os.replace(tmp, dest)
+    finally:
+        if tmp is not None:
+            tmp.unlink(missing_ok=True)
 
 def fetch(name, url):
     requested_at = timestamp()
@@ -47,15 +65,19 @@ def main():
             result[name] = meta
             dest = ROOT / 'data' / (name + '.json')
             if payload is not None:
-                dest.write_text(json.dumps(payload, ensure_ascii=False), encoding='utf-8')
+                serialized = json.dumps(payload, ensure_ascii=False)
+                atomic_write_text(dest, serialized)
+                meta['snapshotSha256'] = hashlib.sha256(serialized.encode('utf-8')).hexdigest()
             else:
-                dest.unlink(missing_ok=True)  # never pass an old failed-fetch snapshot
+                # Preserve the last good bytes for recovery. Consumers must
+                # reject this snapshot because the new manifest says unavailable.
+                meta['cachedSnapshotPreserved'] = dest.exists()
     result['coveragePolicy'] = {
         'requestedRange': '1y', 'longHistoryStatus': 'blocked_by_provider_contract',
         'reason': '5y downsampling; dated queries did not respect requested bounds in 2026-10-12 probe',
         'historicalVintage': 'current snapshot; no claim of historical release-time availability',
     }
-    ROOT.joinpath('data/fetch-manifest.json').write_text(json.dumps(result, indent=2), encoding='utf-8')
+    atomic_write_text(ROOT / 'data/fetch-manifest.json', json.dumps(result, indent=2))
     print(json.dumps(result, indent=2))
     if result['history']['status'] != 'fetched':
         raise SystemExit(1)
