@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "kind": "frozen_receipt_skill_boundaries",
+  "createdForCycle": "worker-a-116",
+  "reportDate": "2026-10-14",
+  "anchor": {
+    "githubActionsRun": 38282833039,
+    "runCreatedAt": "2026-10-12T17:13:55Z",
+    "commit": "11b3026467cc26c4659f5f07d8836608d38e026f",
+    "runUrl": "https://github.com/islambnahmed/ai-agent-lab/actions/runs/38282833039",
+    "evidence": "All three receipt blobs were read at this exact anchored commit. GitHub run time does not authenticate provider target availability."
+  },
+  "method": "For point p and baseline b, |p-actual|<|b-actual| iff actual>(p+b)/2 when p>b; iff actual<(p+b)/2 when p<b. If p=b, errors always tie.",
+  "receipts": [
+    {
+      "horizon": 1,
+      "receiptId": "77775d6c2105e80ca6a772ba79de13e31779f67f13c741da236a47097869a8c1",
+      "receiptBlobSha": "78d31625703e4563f38c460420c26134d885dff3",
+      "model": "persistence",
+      "originDate": "2026-10-11",
+      "issuedAt": "2026-10-12T17:12:52.272Z",
+      "originClose": 4207.98,
+      "point": 4207.98,
+      "baseline": 4207.98,
+      "breakEvenActualUsd": 4207.98,
+      "strictImprovementCondition": "never_ties_at_all_actual_prices",
+      "modelMinusBaselineUsd": 0,
+      "observationUnit": "future_observed_provider_closes",
+      "targetDate": "unknown_until_observed",
+      "outcome": "not_scored"
+    },
+    {
+      "horizon": 7,
+      "receiptId": "d5424cb833363c66b51e342afa99dcef56c0ab1e569f102a17877bb2ae2a8daf",
+      "receiptBlobSha": "5dbce37a27fe53d950dc4984e3522e9db3620f86",
+      "model": "mean_reversion",
+      "originDate": "2026-10-11",
+      "issuedAt": "2026-10-12T17:12:52.272Z",
+      "originClose": 4207.98,
+      "point": 4225.483424799358,
+      "baseline": 4207.98,
+      "breakEvenActualUsd": 4216.731712399678,
+      "strictImprovementCondition": "actual_gt_break_even",
+      "modelMinusBaselineUsd": 17.503424799358072,
+      "observationUnit": "future_observed_provider_closes",
+      "targetDate": "unknown_until_observed",
+      "outcome": "not_scored"
+    },
+    {
+      "horizon": 30,
+      "receiptId": "7173dd43e1883634a6b4b80ea2245f0711e05665234387c6387722288254814d",
+      "receiptBlobSha": "61ce82063472b0385e1a81c4e9137c503db6d61f",
+      "model": "momentum",
+      "originDate": "2026-10-11",
+      "issuedAt": "2026-10-12T17:12:52.272Z",
+      "originClose": 4207.98,
+      "point": 4183.958131173134,
+      "baseline": 4207.98,
+      "breakEvenActualUsd": 4195.969065586567,
+      "strictImprovementCondition": "actual_lt_break_even",
+      "modelMinusBaselineUsd": -24.02186882686601,
+      "observationUnit": "future_observed_provider_closes",
+      "targetDate": "unknown_until_observed",
+      "outcome": "not_scored"
+    }
+  ],
+  "validation": {
+    "deterministicOutcomeGridTests": 30003,
+    "rangeUsd": [
+      3500,
+      5000
+    ],
+    "stepUsd": 0.15,
+    "passed": true,
+    "limitation": "Mathematical property tests only; not model-performance or provider-data validation."
+  },
+  "restrictions": [
+    "No observed target prices supplied; none scored or claimed matured.",
+    "Horizon 1 is identical to persistence; cannot outperform it in point MAE.",
+    "Horizon 7 and 30 thresholds were fixed using existing receipts without observing their outcomes in this cycle.",
+    "Do not pool horizons or select a winner after outcome inspection.",
+    "Source vintage, target publication timestamps and close definition remain unauthenticated.",
+    "This report does not prove any forecast was prospective or profitable."
+  ]
+}
