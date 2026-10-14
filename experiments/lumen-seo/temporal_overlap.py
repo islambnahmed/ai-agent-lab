@@ -74,11 +74,15 @@ def audit(grouped, min_daily_total=20, min_daily_page=5, min_daily_share=0.10, m
         if not eligible:
             continue
         overlap = sum(co for _, _, co in eligible)
-        switches = sum(a[1] != b[1] for a, b in zip(eligible, eligible[1:]) if b[0] - a[0] == timedelta(days=1))
+        adjacent_pairs = [(a, b) for a, b in zip(eligible, eligible[1:]) if b[0] - a[0] == timedelta(days=1)]
+        switches = sum(a[1] != b[1] for a, b in adjacent_pairs)
+        gaps = sum(b[0] - a[0] != timedelta(days=1) for a, b in zip(eligible, eligible[1:]))
         fraction = overlap / len(eligible)
         if len(eligible) < min_days:
             category = 'insufficient_days'
-        elif overlap == 0 and switches:
+        elif overlap == 0 and switches >= 2:
+            category = 'repeated_dominance_reversals'
+        elif overlap == 0 and switches == 1:
             category = 'sequential_handoff_possible'
         elif overlap >= 2 and fraction >= 0.5:
             category = 'persistent_co_visibility'
@@ -86,13 +90,16 @@ def audit(grouped, min_daily_total=20, min_daily_page=5, min_daily_share=0.10, m
             category = 'mixed_or_sparse'
         results.append({'query': query, 'classification': category, 'eligible_days': len(eligible),
                         'co_visible_days': overlap, 'co_visible_day_fraction': round(fraction, 4),
-                        'adjacent_dominant_page_switches': switches, 'total_page_impressions': sum(totals.values()),
+                        'adjacent_dominant_page_switches': switches, 'adjacent_day_pairs': len(adjacent_pairs),
+                        'eligible_day_gaps': gaps, 'total_page_impressions': sum(totals.values()),
                         'distinct_pages': len(totals)})
     results.sort(key=lambda r: (-r['total_page_impressions'], r['query']))
     return {'status': 'ok', 'queries_with_multiple_pages': len(results), 'results': results, 'caveats': [
         'GSC may omit/anonymize query-page rows; absent days are unknown, not zero.',
         'Same-day visibility does not prove simultaneous SERP ranking or SEO harm.',
-        'A handoff can be intentional; inspect URLs, intent, canonicalization and changes manually.']}
+        'A handoff can be intentional; inspect URLs, intent, canonicalization and changes manually.',
+        'Repeated observed dominance reversals warrant review but do not prove cannibalization.',
+        'Adjacent switches ignore missing days; gaps limit certainty about continuity.']}
 
 
 def main(argv=None):
