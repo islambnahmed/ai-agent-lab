@@ -1,0 +1,23 @@
+{
+  "target_month": "2026-10",
+  "prepared_date": "2026-10-14",
+  "scheduled_release_at": "2026-11-06T08:30:00-05:00",
+  "scheduled_release_source": "https://www.bls.gov/schedule/news_release/empSit.htm",
+  "target_definition": "First-published US BLS seasonally adjusted total nonfarm payroll month-over-month change (thousands of jobs)",
+  "latest_training_label": "2026-09",
+  "n_prior_labels": 45,
+  "primary_method": "mean12 selected on 2024 validation in cycle149, frozen before 2026 evaluation",
+  "primary_forecast_k": 61.416666666666664,
+  "secondary_hedge_forecast_k": 68.7759994577527,
+  "all_frozen_predictions_k": {
+    "last": 29,
+    "mean3": 56,
+    "mean6": 85.33333333333333,
+    "mean12": 61.416666666666664,
+    "ewma30": 71.65953287797728,
+    "hedge": 68.7759994577527
+  },
+  "no_target_observed": true,
+  "source_2026": "https://www.bls.gov/bls/news-release/empsit.htm",
+  "limitations": "Prospective forecast of initial announcement only. 2023-2025 data partially hand transcribed. No gold-market validation. Do not revise this record."
+}
