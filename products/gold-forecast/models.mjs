@@ -39,7 +39,7 @@ function ridge(prices,h){
   // Labels must have matured before the last available close. 400-row window;
   // regularization and features are frozen, not chosen on the audit set.
   for(let i=Math.max(60,prices.length-h-400);i+h<prices.length;i++)
-    rows.push({x:featureAt(ctx,i),y:Math.log(prices[i+h]/prices[i])});
+    rows.push({x:featureAt(ctx,i),y:(Math.log(prices[i+h])-Math.log(prices[i]))});
   if(rows.length<20)return prices.at(-1); // explicit warmup fallback
   const centers=rows[0].x.map((_,j)=>mean(rows.map(r=>r.x[j])));
   const scales=centers.map((c,j)=>Math.max(1e-8,Math.sqrt(mean(rows.map(r=>(r.x[j]-c)**2)))));
@@ -58,7 +58,7 @@ export function predict(history,h,model='persistence'){
   const last=history.at(-1);
   if(model==='persistence')return last;
   if(model==='momentum'){
-    const t=history.slice(-21),r=mean(t.slice(1).map((p,i)=>Math.log(p/t[i])));
+    const t=history.slice(-21),r=mean(t.slice(1).map((p,i)=>(Math.log(p)-Math.log(t[i]))));
     return last*Math.exp(cap(r,0.012)*h*0.45*Math.exp(-h/20));
   }
   if(model==='mean_reversion'){
