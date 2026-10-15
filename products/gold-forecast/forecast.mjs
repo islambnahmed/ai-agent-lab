@@ -22,10 +22,22 @@ export function normalize(raw,{asOf=new Date()}={}){
 const mean=xs=>xs.reduce((a,b)=>a+b,0)/xs.length;
 export function metrics(rows){
   if(!rows.length)throw Error('No evaluation rows');
+  // Zero forecast move is an abstention, not a directional hit. In particular,
+  // a persistence baseline must not receive directional credit for flat actuals.
+  const calls=rows.filter(r=>Math.sign(r.point-r.originClose)!==0);
+  const hits=calls.filter(r=>Math.sign(r.point-r.originClose)===Math.sign(r.actual-r.originClose)).length;
+  const directionalAccuracy=calls.length?100*hits/calls.length:null;
   return {n:rows.length,mae:mean(rows.map(r=>Math.abs(r.point-r.actual))),
     rmse:Math.sqrt(mean(rows.map(r=>(r.point-r.actual)**2))),
     mape:100*mean(rows.map(r=>Math.abs(r.point-r.actual)/r.actual)),
-    directionAccuracy:100*mean(rows.map(r=>Math.sign(r.point-r.originClose)===Math.sign(r.actual-r.originClose)?1:0))};
+    // Compatibility field now has conditional-on-call semantics. Null means
+    // the model never predicted a direction; it does not mean 0% accuracy.
+    directionAccuracy:directionalAccuracy,
+    directionAccuracyOnCallsPct:directionalAccuracy,
+    directionParticipationPct:100*calls.length/rows.length,
+    directionCallCount:calls.length,directionAbstentionCount:rows.length-calls.length,
+    directionHitCount:hits,directionMissCount:calls.length-hits,
+    directionFlatActualCount:rows.filter(r=>r.actual===r.originClose).length};
 }
 export function sample(series,h,model,start,end,stride=1){
   const prices=series.map(r=>r.price),rows=[];
