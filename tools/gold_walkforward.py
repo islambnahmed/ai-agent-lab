@@ -36,27 +36,39 @@ def predict_drift(train, horizon):
 
 
 def backtest(rows, horizon=7, train_min=120, stride=None):
-    if horizon < 1 or train_min < 2:
-        raise ValueError("Invalid horizon or train_min")
+    if not isinstance(horizon, int) or isinstance(horizon, bool) or horizon < 1:
+        raise ValueError("horizon must be a positive integer")
+    if not isinstance(train_min, int) or isinstance(train_min, bool) or train_min < 2:
+        raise ValueError("train_min must be an integer >= 2")
     if stride is None:
-        stride = horizon  # disjoint target intervals, avoids overlap inflation
-    if stride < horizon:
-        raise ValueError("stride must be >= horizon for independent target windows")
+        stride = horizon  # disjoint target intervals; dependence may remain
+    if not isinstance(stride, int) or isinstance(stride, bool) or stride < horizon:
+        raise ValueError("stride must be an integer >= horizon (non-overlap, not independence)")
+    if len(rows) < 3:
+        raise ValueError("Need at least 3 dated prices")
+    for index, (day, price) in enumerate(rows):
+        if not isinstance(day, dt.date) or isinstance(day, dt.datetime):
+            raise ValueError("Each row must contain a date (not datetime)")
+        if not isinstance(price, (int, float)) or isinstance(price, bool) or not math.isfinite(price) or price <= 0:
+            raise ValueError("Prices must be positive finite numbers")
+        if index and not rows[index - 1][0] < day:
+            raise ValueError("Dates must be strictly increasing and unique")
     prices = [p for _, p in rows]
     results = []
     for origin in range(train_min - 1, len(rows) - horizon, stride):
         train = prices[:origin + 1]
         actual = prices[origin + horizon]
+        candidate = predict_drift(train, horizon)
         results.append({
             "origin_date": rows[origin][0].isoformat(),
             "target_date": rows[origin + horizon][0].isoformat(),
             "baseline": train[-1],
-            "candidate": predict_drift(train, horizon),
+            "candidate": candidate,
             "actual": actual,
             "baseline_abs_error": abs(train[-1] - actual),
-            "candidate_abs_error": abs(predict_drift(train, horizon) - actual),
-            "baseline_direction_correct": False,  # flat forecast has no direction
-            "candidate_direction_correct": (predict_drift(train, horizon) - train[-1]) * (actual - train[-1]) > 0,
+            "candidate_abs_error": abs(candidate - actual),
+            "baseline_direction_correct": False,
+            "candidate_direction_correct": (candidate - train[-1]) * (actual - train[-1]) > 0,
         })
     if not results:
         return {"status": "insufficient_holdout", "independent_windows": 0, "results": []}
@@ -65,7 +77,9 @@ def backtest(rows, horizon=7, train_min=120, stride=None):
     return {
         "status": "descriptive_only" if len(results) < 20 else "evaluation_ready",
         "horizon_sessions": horizon,
-        "independent_windows": len(results),
+        "independent_windows": len(results),  # legacy field retained for compatibility; see caveat
+        "nonoverlapping_windows": len(results),
+        "dependence_caveat": "Non-overlapping target intervals do not imply statistically independent forecast errors.",
         "baseline_mae": base,
         "candidate_mae": cand,
         "mae_improvement_pct": (base - cand) / base * 100 if base else None,
