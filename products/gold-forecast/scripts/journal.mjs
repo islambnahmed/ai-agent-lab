@@ -2,7 +2,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import {issueReceipt,settleReceipt,hash} from '../journal.mjs';
+import {issueReceipt,settleReceipt} from '../journal.mjs';
+import {reconcileVintage} from '../vintage-reconcile.mjs';
 import {prepareProviderHistory} from '../data.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -32,14 +33,16 @@ if(command==='issue'){
   const outcomes=fs.readdirSync(dir).filter(f=>f.endsWith('.json')).map(f=>{
     const receipt=JSON.parse(fs.readFileSync(path.join(dir,f),'utf8'));
     try{
-      const frozen=JSON.parse(fs.readFileSync(path.join(vintages,receipt.historyHash+'.json'),'utf8'));
-      if(hash(frozen)!==receipt.historyHash)throw Error('Original local vintage corrupted');
-      const frozenDates=new Map(frozen.map(r=>[r.date,r.price]));
-      if(!prepared.series.some(r=>r.date===receipt.originDate))throw Error('Origin missing from refreshed source');
-      for(const row of prepared.series)if(frozenDates.has(row.date)&&frozenDates.get(row.date)!==row.price)
-        throw Error('Provider revised historical vintage: '+row.date);
-      const appended=frozen.concat(prepared.series.filter(r=>r.date>receipt.originDate));
-      return settleReceipt(receipt,appended,{asOf});
+      let frozen=null;
+      try{
+        frozen=JSON.parse(fs.readFileSync(path.join(vintages,receipt.historyHash+'.json'),'utf8'));
+      }catch(e){
+        if(e.code!=='ENOENT')throw e; // malformed or inaccessible snapshots must not be ignored
+      }
+      // Missing local cache is not an automatic failure when the current source
+      // reproduces the original signed receipt history exactly.
+      const reconciled=reconcileVintage(receipt,prepared.series,frozen);
+      return settleReceipt(receipt,reconciled,{asOf});
     }
     catch(e){return {id:receipt.id,status:'quarantined',error:e.message};}
   });
