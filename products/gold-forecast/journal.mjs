@@ -14,7 +14,10 @@ export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest
   if(fetched>issued||issued-fetched>60*60000)throw Error('Use a snapshot fetched before issue and within one hour');
   series=prepareHistory(series,{asOf:issuedAt}).series;
   const result=forecast(series,h,{asOf:issuedAt});
-  if(result.targetDate&&result.targetDate<issuedAt.slice(0,10))throw Error('Target date has already passed');
+  // Without a verified intraday close/publication timestamp, a same-UTC-day target
+  // might already be known when the receipt is issued. Fail closed.
+  if(result.targetDate&&result.targetDate<=issuedAt.slice(0,10))
+    throw Error('Target UTC day must be after issue UTC day (close time unverified)');
   const record={schemaVersion:1,issuedAt,source,codeCommit,sourceManifest,modelVersion:result.version,
     horizon:h,calendar:result.calendar,originDate:result.latest.date,originClose:result.latest.price,
     historyHash:hash(series),historyLength:series.length,targetDate:result.targetDate,
@@ -44,7 +47,9 @@ export function settleReceipt(receipt,series,{asOf}={}){
     return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate:receipt.targetDate};
   }
   const targetDate=series[index].date;
-  if(targetDate<receipt.issuedAt.slice(0,10))throw Error('Outcome predates issue');
+  // A same-day close may predate issuance; dates alone cannot prove otherwise.
+  if(targetDate<=receipt.issuedAt.slice(0,10))
+    throw Error('Target UTC day must be after issue UTC day (close time unverified)');
   if(targetDate>=asOf.slice(0,10))return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
   if(index!==receipt.historyLength+receipt.horizon-1)throw Error('Horizon / calendar mismatch');
   const actual=series[index].price;
