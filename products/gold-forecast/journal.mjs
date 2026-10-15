@@ -5,6 +5,7 @@ import {forecast} from './forecast.mjs';
 import {parseInstant} from './historical-integrity.mjs';
 import {prepareHistory} from './data.mjs';
 export const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+const utcDay=instant=>new Date(parseInstant(instant)).toISOString().slice(0,10);
 
 export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest}){
   const issued=parseInstant(issuedAt,'Issue timestamp');
@@ -12,9 +13,10 @@ export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest
   if(typeof source!=='string'||!source.trim())throw Error('Source required');
   const fetched=parseInstant(sourceManifest.receivedAt,'Source receipt time');
   if(fetched>issued||issued-fetched>60*60000)throw Error('Use a snapshot fetched before issue and within one hour');
-  series=prepareHistory(series,{asOf:issuedAt}).series;
+  // A newly fetched snapshot can still contain stale completed market closes.
+  series=prepareHistory(series,{asOf:issuedAt,live:true}).series;
   const result=forecast(series,h,{asOf:issuedAt});
-  if(result.targetDate&&result.targetDate<issuedAt.slice(0,10))throw Error('Target date has already passed');
+  if(result.targetDate&&result.targetDate<utcDay(issuedAt))throw Error('Target date has already passed');
   const record={schemaVersion:1,issuedAt,source,codeCommit,sourceManifest,modelVersion:result.version,
     horizon:h,calendar:result.calendar,originDate:result.latest.date,originClose:result.latest.price,
     historyHash:hash(series),historyLength:series.length,targetDate:result.targetDate,
@@ -44,8 +46,8 @@ export function settleReceipt(receipt,series,{asOf}={}){
     return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate:receipt.targetDate};
   }
   const targetDate=series[index].date;
-  if(targetDate<receipt.issuedAt.slice(0,10))throw Error('Outcome predates issue');
-  if(targetDate>=asOf.slice(0,10))return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
+  if(targetDate<utcDay(receipt.issuedAt))throw Error('Outcome predates issue');
+  if(targetDate>=utcDay(asOf))return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
   if(index!==receipt.historyLength+receipt.horizon-1)throw Error('Horizon / calendar mismatch');
   const actual=series[index].price;
   return {id:receipt.id,horizon:receipt.horizon,status:'matured',targetDate,actual,
