@@ -2,6 +2,8 @@ export const MODEL_NAMES={persistence:'آخر إغلاق (Baseline)',momentum:'�
 export const MODEL_VERSION='gold-v2.0.0';
 const mean=xs=>xs.reduce((a,b)=>a+b,0)/xs.length;
 const cap=(x,b)=>Math.max(-b,Math.min(b,x));
+// Fail closed if a valid input scale causes overflow/underflow in the prediction.
+const checkedPrediction=value=>{if(!Number.isFinite(value)||value<=0)throw Error('Non-finite or non-positive model prediction');return value;};
 
 // Every feature uses information at or before its origin. No macro/news inputs
 // are invented; adding those requires release timestamps and vintage data.
@@ -59,12 +61,12 @@ export function predict(history,h,model='persistence'){
   if(model==='persistence')return last;
   if(model==='momentum'){
     const t=history.slice(-21),r=mean(t.slice(1).map((p,i)=>(Math.log(p)-Math.log(t[i]))));
-    return last*Math.exp(cap(r,0.012)*h*0.45*Math.exp(-h/20));
+    return checkedPrediction(last*Math.exp(cap(r,0.012)*h*0.45*Math.exp(-h/20)));
   }
   if(model==='mean_reversion'){
     const anchor=mean(history.slice(-40).map(Math.log));
-    return Math.exp(Math.log(last)+(anchor-Math.log(last))*Math.min(0.6,h*0.025));
+    return checkedPrediction(Math.exp(Math.log(last)+(anchor-Math.log(last))*Math.min(0.6,h*0.025)));
   }
-  if(model==='ridge')return history.length<61?last:ridge(history,h);
+  if(model==='ridge')return checkedPrediction(history.length<61?last:ridge(history,h));
   throw Error('Unknown model');
 }
