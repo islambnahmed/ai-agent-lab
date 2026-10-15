@@ -43,5 +43,45 @@ class GoldWalkForwardTests(unittest.TestCase):
         self.assertTrue(math.isclose(predict_drift([100, 110, 121], 2), 146.41))
 
 
+    def test_reject_invalid_numeric_parameters(self):
+        cases = (
+            {"stride": 7.5},
+            {"stride": True},
+            {"horizon": 1.5},
+            {"horizon": True},
+            {"train_min": False},
+            {"train_min": 1},
+        )
+        for kwargs in cases:
+            with self.subTest(kwargs=kwargs), self.assertRaises(ValueError):
+                backtest(self.make_rows(), **kwargs)
+
+    def test_reject_invalid_direct_prices_and_dates(self):
+        rows = self.make_rows()
+        invalid = (
+            rows[:130] + [rows[130]] + rows[130:],  # duplicate date
+            rows[:130] + [(rows[130][0], float("nan"))] + rows[131:],
+            rows[:130] + [(rows[130][0], float("inf"))] + rows[131:],
+            rows[:130] + [(rows[130][0], -1)] + rows[131:],
+            rows[:130] + [(rows[130][0], True)] + rows[131:],
+            rows[:130] + [(dt.datetime(2025, 5, 11), 2000)] + rows[131:],
+            rows[:130] + [("2025-05-11", 2000)] + rows[131:],
+            rows[:130] + [(rows[129][0], 2000)] + rows[131:],  # out of order
+        )
+        for index, bad in enumerate(invalid):
+            with self.subTest(index=index), self.assertRaises(ValueError):
+                backtest(bad)
+
+    def test_nonoverlap_does_not_claim_independence(self):
+        result = backtest(self.make_rows())
+        self.assertEqual(result["independent_windows"], result["nonoverlapping_windows"])
+        self.assertIn("do not imply statistically independent", result["dependence_caveat"])
+        self.assertEqual(
+            result["results"][0]["candidate"],
+            predict_drift([price for _, price in self.make_rows()[:120]], 7),
+        )
+
+
+
 if __name__ == "__main__":
     unittest.main()
