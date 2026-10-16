@@ -14,6 +14,12 @@ export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest
   if(fetched>issued||issued-fetched>60*60000)throw Error('Use a snapshot fetched before issue and within one hour');
   series=prepareHistory(series,{asOf:issuedAt}).series;
   const result=forecast(series,h,{asOf:issuedAt});
+  // Irregular cadence has no defensible target calendar date. If the last
+  // completed observation is older than yesterday, the first unobserved close
+  // might already have happened before issuance. Fail closed instead of
+  // labeling a potentially retrospective forecast as prospective.
+  if(result.calendar==='observations'&&result.dataQuality.ageDays>1)
+    throw Error('Cannot issue prospective receipt from stale irregular close');
   if(result.targetDate&&result.targetDate<issuedAt.slice(0,10))throw Error('Target date has already passed');
   const record={schemaVersion:1,issuedAt,source,codeCommit,sourceManifest,modelVersion:result.version,
     horizon:h,calendar:result.calendar,originDate:result.latest.date,originClose:result.latest.price,
