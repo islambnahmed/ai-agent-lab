@@ -1,7 +1,7 @@
 """Reproducible synthetic stress test for the AI Agent Lab gold walk-forward evaluator.
 
 No historical market data or live predictions are used. Stdlib only.
-Run from repository root: python research/keystone/gold_regime_stress_20261016.py
+Run from repository root: python -m research.keystone.gold_regime_stress_20261016
 """
 import datetime as dt
 import json
@@ -57,7 +57,7 @@ def run():
         for _ in range(TRIALS):
             rows = synthetic_prices(rng, regime)
             score = backtest(rows, horizon=HORIZON, train_min=TRAIN_MIN)
-            windows = score['nonoverlapping_windows']
+            windows = score['independent_windows']  # evaluator's actual result field
             pct = score['mae_improvement_pct']
             improvements.append(pct)
             win_count += pct > 0
