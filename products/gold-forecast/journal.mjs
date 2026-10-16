@@ -3,7 +3,7 @@
 import {createHash} from 'node:crypto';
 import {forecast} from './forecast.mjs';
 import {parseInstant} from './historical-integrity.mjs';
-import {prepareHistory} from './data.mjs';
+import {prepareHistory,targetDate} from './data.mjs';
 export const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
 export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest}){
@@ -14,13 +14,20 @@ export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest
   if(fetched>issued||issued-fetched>60*60000)throw Error('Use a snapshot fetched before issue and within one hour');
   series=prepareHistory(series,{asOf:issuedAt}).series;
   const result=forecast(series,h,{asOf:issuedAt});
-  // Irregular cadence has no defensible target calendar date. If the last
-  // completed observation is older than yesterday, the first unobserved close
-  // might already have happened before issuance. Fail closed instead of
-  // labeling a potentially retrospective forecast as prospective.
-  if(result.calendar==='observations'&&result.dataQuality.ageDays>1)
-    throw Error('Cannot issue prospective receipt from stale irregular close');
-  if(result.targetDate&&result.targetDate<issuedAt.slice(0,10))throw Error('Target date has already passed');
+  // A horizon-30 target can still be in the future even when earlier provider
+  // closes have been missed. Require the *next* expected close to be no
+  // earlier than the UTC issuance day, independent of the forecast horizon.
+  // Same-day closes are excluded by prepareHistory, so equality is allowed.
+  // Unknown/irregular cadence cannot establish a next close; fail closed
+  // when the origin is older than the previous UTC day.
+  const issuedDay=new Date(issued).toISOString().slice(0,10);
+  if(result.calendar==='observations'){
+    if(result.dataQuality.ageDays>1)
+      throw Error('Cannot issue prospective receipt from stale irregular close');
+  }else if(targetDate(result.latest.date,1,result.calendar)<issuedDay){
+    throw Error('Cannot issue prospective receipt after an expected close was missed');
+  }
+  if(result.targetDate&&result.targetDate<issuedDay)throw Error('Target date has already passed');
   const record={schemaVersion:1,issuedAt,source,codeCommit,sourceManifest,modelVersion:result.version,
     horizon:h,calendar:result.calendar,originDate:result.latest.date,originClose:result.latest.price,
     historyHash:hash(series),historyLength:series.length,targetDate:result.targetDate,
