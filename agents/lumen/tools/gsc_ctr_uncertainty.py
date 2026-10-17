@@ -5,18 +5,22 @@ import json
 import math
 
 Z_95 = 1.959963984540054
+# Keep counters exactly representable as IEEE-754 integers and avoid overflow.
+MAX_COUNT = (1 << 53) - 1
 
 
 def wilson_interval(clicks, impressions):
     if type(clicks) is not int or type(impressions) is not int:
         raise ValueError("counts must be integers")
+    if impressions > MAX_COUNT or clicks > MAX_COUNT:
+        raise ValueError("counts exceed maximum supported value")
     if impressions < 1 or clicks < 0 or clicks > impressions:
         raise ValueError("require 0 <= clicks <= impressions and impressions >= 1")
     p = clicks / impressions
     z2 = Z_95 * Z_95
     den = 1 + z2 / impressions
     center = (p + z2 / (2 * impressions)) / den
-    half = Z_95 * math.sqrt(p * (1 - p) / impressions + z2 / (4 * impressions ** 2)) / den
+    half = Z_95 * math.sqrt(p * (1 - p) / impressions + z2 / (4 * impressions * impressions)) / den
     return max(0.0, min(p, center - half)), min(1.0, max(p, center + half))
 
 
