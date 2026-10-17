@@ -27,18 +27,18 @@ export function buildSnapshot({asOf,observations=[],sourceId=FROZEN.sourceId,sou
     if(r.sourceId!==FROZEN.sourceId||r.sourceSession!==FROZEN.sourceSession) fail('Source/session mismatch at '+i);
     previous=r.date;
   }
-  const forecasts=[1,7,30].map(h=>{
-    const point=FROZEN.predictions[h];
-    if(observations.length<h) return {horizon:h,point,status:'pending',observedSinceOrigin:observations.length,required:h};
-    const target=observations[h-1],b=Math.abs(FROZEN.originPrice-target.price),c=Math.abs(point-target.price);
-    return {horizon:h,point,status:'matured_timing_unverified',targetDate:target.date,
-      baselineAbsoluteError:b,challengerAbsoluteError:c,improvementUsd:b-c,
-      directionCorrect:Math.sign(point-FROZEN.originPrice)===Math.sign(target.price-FROZEN.originPrice),
-      caveat:'Self-declared capture time does not prove provider publication chronology.'};
-  });
-  return {schemaVersion:1,batchId:FROZEN.batchId,generatedAsOf:asOf,
+  // Caller-supplied rows can be an ordered SUBSET of provider fixings.
+  // Neither row count nor capturedAt proves provider-sequence completeness.
+  // Without an independently authenticated complete provider-session manifest,
+  // do not assign ordinal targets or compute comparative scores.
+  const forecasts=[1,7,30].map(h=>({
+    horizon:h,point:FROZEN.predictions[h],
+    status:observations.length<h?'pending':'sequence_unverified',
+    observedSinceOrigin:observations.length,required:h
+  }));
+  return {schemaVersion:2,batchId:FROZEN.batchId,generatedAsOf:asOf,
     anchorCommit:FROZEN.anchorCommit,anchorCommittedAt:FROZEN.anchorCommittedAt,
     reference:{date:FROZEN.originDate,price:FROZEN.originPrice,unit:'USD/troy oz',sourceId:FROZEN.sourceId,session:FROZEN.sourceSession},
     observedSinceOrigin:observations.length,forecastStatus:'research_only',forecasts,
-    warnings:['Not a live quote.','Matured outcomes remain timing-unverified.','No demonstrated predictive skill or profitability.']};
+    warnings:['Not a live quote.','Submitted observations do not establish provider-sequence completeness.','No forecast outcomes are scored until independent sequence and publication evidence exist.','No demonstrated predictive skill or profitability.']};
 }
