@@ -1,3 +1,4 @@
+import {isValidOffsetTimestamp} from './timestamp_validation.mjs';
 // Research-only, fail-closed snapshot. Capture time is NOT publication proof.
 export const FROZEN = Object.freeze({
   batchId:'worker-a-2026-10-16-cycle169',
@@ -9,7 +10,7 @@ export const FROZEN = Object.freeze({
 });
 const day=d=>typeof d==='string'&&/^\d{4}-\d{2}-\d{2}$/.test(d)&&
   !Number.isNaN(Date.parse(d+'T00:00:00Z'))&&new Date(d+'T00:00:00Z').toISOString().slice(0,10)===d;
-const time=t=>typeof t==='string'&&/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(t)&&Number.isFinite(Date.parse(t));
+const time=isValidOffsetTimestamp;
 const fail=m=>{throw Error(m)};
 export function buildSnapshot({asOf,observations=[],sourceId=FROZEN.sourceId,sourceSession=FROZEN.sourceSession}={}) {
   if(!time(asOf)) fail('asOf must be an offset-aware timestamp');
