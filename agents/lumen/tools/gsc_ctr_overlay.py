@@ -7,7 +7,7 @@ Usage: python gsc_ctr_overlay.py < original_report.json > separate_overlay.json
 import copy
 import json
 import sys
-from gsc_ctr_uncertainty import ctr_change_screen
+from gsc_ctr_uncertainty import ctr_change_screen, MAX_COUNT
 
 LIMIT = 8 * 1024 * 1024
 
@@ -43,7 +43,7 @@ def overlay(report):
         if any(type(v) is not int for v in values):
             raise ValueError('counts must be integers')
         ca, ia, cb, ib = values
-        if min(values) < 0 or ca > ia or cb > ib:
+        if min(values) < 0 or max(values) > MAX_COUNT or ca > ia or cb > ib:
             raise ValueError('invalid click/impression counts')
         screen = (ctr_change_screen(*values) if ia and ib else
                   {'screen': 'not_screenable', 'reason': 'zero impressions'})
@@ -71,7 +71,7 @@ def main():
         report = json.loads(raw.decode('utf-8'), object_pairs_hook=unique_keys,
                             parse_constant=reject_constant)
         print(json.dumps(overlay(report), ensure_ascii=False, allow_nan=False))
-    except (ValueError, TypeError, UnicodeError) as exc:
+    except (ValueError, TypeError, UnicodeError, RecursionError) as exc:
         print('Invalid report: ' + str(exc), file=sys.stderr)
         return 2
     return 0
