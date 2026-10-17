@@ -33,3 +33,15 @@ jobs:
           python-version: "3.12"
       - name: Validate current lab state
         run: python tools/validate_lab.py
+
+  gold-dashboard-node:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run research dashboard regression tests
+        run: node --test products/gold-forecast/dashboard/*.test.mjs
