@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {pairedLossDifferentials,auditPairedDifference,disjointPhaseAudit,runMonteCarlo} from './dependence_audit.mjs';
+test('seed reproducibility',()=>assert.deepEqual(pairedLossDifferentials({seed:5}),pairedLossDifferentials({seed:5})));
+test('seed variation',()=>assert.notDeepEqual(pairedLossDifferentials({seed:5}),pairedLossDifferentials({seed:6})));
+test('bounded paired MAE differences',()=>assert.ok(pairedLossDifferentials({n:200,h:30}).every(x=>Math.abs(x)<=1+1e-10)));
+test('reject invalid settings',()=>assert.throws(()=>pairedLossDifferentials({phi:1})));
+test('reject bad bandwidth',()=>assert.throws(()=>auditPairedDifference(Array(40).fill(1),{bandwidth:40})));
+test('constant differences zero variance',()=>{let a=auditPairedDifference(Array(50).fill(0));assert.equal(a.se,0);assert.equal(a.excludesZero,false)});
+test('large uniform positive difference is detected',()=>assert.equal(auditPairedDifference(Array(100).fill(1)).excludesZero,true));
+test('iid and HAC coincide at bandwidth zero',()=>{let d=pairedLossDifferentials({n:100,h:1});assert.deepEqual(auditPairedDifference(d),auditPairedDifference(d,{bandwidth:0}))});
+test('moving average HAC raises SE for strongly correlated sample',()=>{let d=Array.from({length:300},(_,i)=>Math.sin(i/30));assert.ok(auditPairedDifference(d,{bandwidth:29}).se>auditPairedDifference(d).se)});
+test('Monte Carlo rates valid',()=>{let r=runMonteCarlo({replications:10,n:90,h:7});assert.equal(r.methods.length,3);assert.ok(r.methods.every(x=>x.falsePositiveRate>=0&&x.falsePositiveRate<=1))});
+test('disjoint fixed phase selects correct count',()=>assert.equal(disjointPhaseAudit(Array(100).fill(0),7).n,15));
+test('disjoint exact t test detects constant positive difference',()=>assert.equal(disjointPhaseAudit(Array(100).fill(1),7).excludesZero,true));
