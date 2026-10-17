@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Evaluate label-budgeted multi-agent truth auditing under repeated reversals; test late-label reserve and stale-evidence expiry",
+      "current_goal": "Falsify cycle-228 late-label reserve/expiry policy on unseen multi-reversal, noisy and delayed-label worlds; compare robust regret vs cost",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/experiment_227_hybrid_truth_audits_20261017.md (2026-10-17; 2,500 main holdout + 1,000 reversal stress episodes; whiplash negative result)",
+      "last_checkpoint": "research/lumen/experiment_228_late_reserve_expiry_20261017.md (2026-10-17; 120-seed exploration and 3,500 holdout synthetic episodes; 23 local tests; no production promotion)",
       "status": "active"
     }
   }
