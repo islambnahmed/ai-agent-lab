@@ -1,4 +1,5 @@
 // Presentation-only adapter. Never upgrades an evidence status.
+import {FROZEN} from './evidence_snapshot.mjs';
 const copy = {
   ar: {
     title:'توقعات الذهب — بحث تجريبي', intro:'توقعات مجمدة وليست أسعارًا مباشرة أو نصيحة استثمارية.',
@@ -31,16 +32,32 @@ export function makeView(snapshot, lang='ar') {
   if (!snapshot || snapshot.schemaVersion !== 1 || snapshot.forecastStatus !== 'research_only' ||
       !snapshot.reference || snapshot.reference.unit !== 'USD/troy oz' ||
       !Array.isArray(snapshot.forecasts) || snapshot.forecasts.length !== 3 ||
-      typeof snapshot.anchorCommit !== 'string' || !/^[a-f0-9]{40}$/.test(snapshot.anchorCommit))
+      snapshot.anchorCommit !== FROZEN.anchorCommit || snapshot.batchId !== FROZEN.batchId ||
+      snapshot.reference.date !== FROZEN.originDate || snapshot.reference.price !== FROZEN.originPrice ||
+      snapshot.reference.sourceId !== FROZEN.sourceId || snapshot.reference.session !== FROZEN.sourceSession ||
+      !Number.isInteger(snapshot.observedSinceOrigin) || snapshot.observedSinceOrigin < 0 ||
+      snapshot.observedSinceOrigin > 1000)
     throw Error('Invalid research snapshot');
   const s = copy[lang];
   const forecasts = snapshot.forecasts.map((f,i) => {
-    if (f.horizon !== [1,7,30][i] || !Number.isFinite(f.point) ||
+    if (f.horizon !== [1,7,30][i] || f.point !== FROZEN.predictions[f.horizon] ||
         !['pending','matured_timing_unverified'].includes(f.status))
       throw Error('Unrecognized forecast status or horizon');
-    if (f.status === 'matured_timing_unverified' &&
-        (!Number.isFinite(f.baselineAbsoluteError) || !Number.isFinite(f.challengerAbsoluteError)))
-      throw Error('Missing score');
+    if (f.status === 'pending') {
+      if (snapshot.observedSinceOrigin >= f.horizon || f.observedSinceOrigin !== snapshot.observedSinceOrigin ||
+          f.required !== f.horizon || f.baselineAbsoluteError !== undefined ||
+          f.challengerAbsoluteError !== undefined)
+        throw Error('Inconsistent pending forecast');
+    } else {
+      const b = f.baselineAbsoluteError, c = f.challengerAbsoluteError;
+      if (snapshot.observedSinceOrigin < f.horizon ||
+          typeof f.targetDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(f.targetDate) ||
+          f.targetDate <= FROZEN.originDate ||
+          !Number.isFinite(b) || !Number.isFinite(c) || b < 0 || c < 0 ||
+          ![FROZEN.originPrice+b, FROZEN.originPrice-b].some(actual =>
+            actual > 0 && Math.abs(Math.abs(f.point-actual)-c) < 1e-7))
+        throw Error('Inconsistent matured forecast score');
+    }
     const description = f.status === 'pending' ? s.pending : s.unverified;
     const score = f.status === 'pending' ? null : s.score.replace('{c}',money(f.challengerAbsoluteError)).replace('{b}',money(f.baselineAbsoluteError));
     return {horizon:f.horizon, price:money(f.point), status:f.status, description, score};
