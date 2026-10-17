@@ -1,3 +1,4 @@
+import {isValidOffsetTimestamp} from './timestamp_validation.mjs';
 // Presentation-only adapter. Never upgrades an evidence status.
 import {FROZEN} from './evidence_snapshot.mjs';
 const copy = {
@@ -27,7 +28,7 @@ const copy = {
   }
 };
 const money = n => Number.isFinite(n) ? n.toFixed(2) : null;
-const validTimestamp = t => typeof t === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,3})?(?:Z|[+-]\d{2}:\d{2})$/.test(t) && Number.isFinite(Date.parse(t));
+const validTimestamp = isValidOffsetTimestamp;
 export function makeView(snapshot, lang='ar') {
   if (!['ar','en'].includes(lang)) throw Error('Unsupported language');
   if (!snapshot || snapshot.schemaVersion !== 2 || snapshot.forecastStatus !== 'research_only' ||
