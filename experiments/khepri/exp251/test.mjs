@@ -1,0 +1,18 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {DelayedEnsemble,EXPERTS,expertForecast,makeSeries,evaluate,weightsFromScores,benchmark} from './delayed_ensemble.mjs';
+const p=makeSeries('trend',7,140,90);
+test('expert outputs positive finite forecasts',()=>{for(const h of [1,7,30])for(const m of EXPERTS){const f=expertForecast(p.slice(0,80),h,m);assert.ok(f>0&&Number.isFinite(f));}});
+test('equal scores yield equal weights',()=>assert.deepEqual(weightsFromScores([0,0,0],.1),[1/3,1/3,1/3]));
+test('weights are normalized and favor lower errors',()=>{const w=weightsFromScores([.001,.004,.009],.003);assert.ok(Math.abs(w.reduce((a,b)=>a+b,0)-1)<1e-12);assert.ok(w[0]>w[1]&&w[1]>w[2]);});
+test('strict chronological streaming',()=>{const a=new DelayedEnsemble();a.step(0,[100]);assert.throws(()=>a.step(2,[100,101,102]));});
+test('feedback is delayed by exact horizon',()=>{const a=new DelayedEnsemble({h:7});for(let t=0;t<=48;t++){a.step(t,p.slice(0,t+1));assert.equal(a.updates,Math.max(0,t-47));}assert.equal(a.updateLog[0].origin,41);assert.equal(a.updateLog[0].at,48);});
+test('no future-data leakage into earlier forecasts',()=>{const a=new DelayedEnsemble({h:7}),b=new DelayedEnsemble({h:7});let before,after;for(let t=0;t<100;t++){const x=a.step(t,p.slice(0,t+1));const altered=p.slice(0,t+1).map((v,i)=>i>=100?v*2:v);const y=b.step(t,altered);if(t===99){before=x;after=y;}}assert.deepEqual(before,after);});
+test('perturbing a future target does not affect a past issue',()=>{const a=new DelayedEnsemble({h:7}),b=new DelayedEnsemble({h:7});let f,g;for(let t=0;t<100;t++){f=a.step(t,p.slice(0,t+1));g=b.step(t,p.slice(0,t+1));}assert.deepEqual(f,g);for(let t=100;t<110;t++){a.step(t,p.slice(0,t+1));b.step(t,p.slice(0,t+1).map((v,i)=>i===106?v*1.4:v));}assert.notDeepEqual(a.scores,b.scores);});
+test('same seed is deterministic',()=>assert.deepEqual(makeSeries('switch',23),makeSeries('switch',23)));
+test('different seeds differ',()=>assert.notDeepEqual(makeSeries('switch',23),makeSeries('switch',24)));
+test('static selection uses matured pre-evaluation targets',()=>{const v=evaluate(makeSeries('trend',3),30);assert.equal(v.n,370);assert.ok(v.chosen&&Number.isFinite(v.staticMae));});
+test('benchmark rows are finite',()=>{const v=benchmark({seeds:2,n:950,evalStart:600});assert.equal(v.rows.length,12);for(const row of v.rows)assert.ok(Number.isFinite(row.onlineMae)&&Number.isFinite(row.staticMae));});
+test('online method can lose to static: no universal improvement claim',()=>{const b=benchmark({seeds:8,n:950,evalStart:600});assert.ok(b.rows.some(r=>r.onlineBeatsStatic<8));});
+test('30-close horizon never learns a label before it matures',()=>{const a=new DelayedEnsemble({h:30});for(let t=0;t<=71;t++){a.step(t,p.slice(0,t+1));assert.equal(a.updates,Math.max(0,t-70));}assert.deepEqual(a.updateLog,[{at:71,origin:41}]);});
+test('transfer: price units to positive conversion-rate scale',()=>{const s=makeSeries('switch',8);const a=evaluate(s,7),b=evaluate(s.map(x=>x/100000),7);assert.ok(Math.abs(a.onlineMae-b.onlineMae)<1e-12);assert.ok(Math.abs(a.staticMae-b.staticMae)<1e-12);});
