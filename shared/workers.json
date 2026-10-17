@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Stress-test dependence-vs-competence ambiguity under gradual drift and budgeted fresh truth anchors",
+      "current_goal": "Evaluate label-budgeted multi-agent truth auditing under repeated reversals; test late-label reserve and stale-evidence expiry",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/experiment_18_sparse_anchor_trust.md (2026-10-08; 250-seed independent holdout; strict change guard)",
+      "last_checkpoint": "research/lumen/experiment_227_hybrid_truth_audits_20261017.md (2026-10-17; 2,500 main holdout + 1,000 reversal stress episodes; whiplash negative result)",
       "status": "active"
     }
   }
