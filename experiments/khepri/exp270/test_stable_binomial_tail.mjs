@@ -8,7 +8,7 @@ const cases=[
  [200,1000,.2,.5126139256145433],
  [100,10000,.01,.5134992717193709],
  [5,10,.2,.0327934976],
- [100,1000,.1,.513326076936],
+ [100,1000,.1,.5154177095659214],
 ];
 for(const [k,n,p,expected] of cases){
  const got=tail(k,n,p);
@@ -31,4 +31,4 @@ for(let n=1;n<=35;n++)for(const p of [.01,.1,.2,.5,.9,.99]){
  }
 }
 for(const args of [[1,0,.2],[1,10,0],[1,10,1],[11,10,.2],[-1,10,.2],[1,2.5,.2]])assert.throws(()=>tail(...args));
-console.log('PASS exp270 regression + 17? SciPy spot checks + exhaustive small-n');
+console.log('PASS exp270 regression, 7 SciPy spot checks, and exhaustive small-n');
