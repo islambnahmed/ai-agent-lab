@@ -22,10 +22,16 @@ export function normalize(raw,{asOf=new Date()}={}){
 const mean=xs=>xs.reduce((a,b)=>a+b,0)/xs.length;
 export function metrics(rows){
   if(!rows.length)throw Error('No evaluation rows');
+  // A zero-return forecast (notably persistence) makes no directional call.
+  // Report conditional hit rate and participation separately, not false 0% accuracy.
+  const active=rows.filter(r=>Math.sign(r.point-r.originClose)!==0);
   return {n:rows.length,mae:mean(rows.map(r=>Math.abs(r.point-r.actual))),
     rmse:Math.sqrt(mean(rows.map(r=>(r.point-r.actual)**2))),
     mape:100*mean(rows.map(r=>Math.abs(r.point-r.actual)/r.actual)),
-    directionAccuracy:100*mean(rows.map(r=>Math.sign(r.point-r.originClose)===Math.sign(r.actual-r.originClose)?1:0))};
+    directionAccuracy:active.length?100*mean(active.map(r=>Math.sign(r.point-r.originClose)===Math.sign(r.actual-r.originClose)?1:0)):null,
+    directionalPredictions:active.length,
+    directionalAbstentions:rows.length-active.length,
+    directionalCoveragePct:100*active.length/rows.length};
 }
 export function sample(series,h,model,start,end,stride=1){
   const prices=series.map(r=>r.price),rows=[];
