@@ -5,6 +5,8 @@ import {forecast} from './forecast.mjs';
 import {parseInstant} from './historical-integrity.mjs';
 import {prepareHistory} from './data.mjs';
 export const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+// Date-only closes and forecast horizons use UTC, regardless of timestamp offset.
+const utcDay=ms=>new Date(ms).toISOString().slice(0,10);
 
 export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest}){
   const issued=parseInstant(issuedAt,'Issue timestamp');
@@ -14,7 +16,7 @@ export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest
   if(fetched>issued||issued-fetched>60*60000)throw Error('Use a snapshot fetched before issue and within one hour');
   series=prepareHistory(series,{asOf:issuedAt}).series;
   const result=forecast(series,h,{asOf:issuedAt});
-  if(result.targetDate&&result.targetDate<issuedAt.slice(0,10))throw Error('Target date has already passed');
+  if(result.targetDate&&result.targetDate<utcDay(issued))throw Error('Target date has already passed');
   const record={schemaVersion:1,issuedAt,source,codeCommit,sourceManifest,modelVersion:result.version,
     horizon:h,calendar:result.calendar,originDate:result.latest.date,originClose:result.latest.price,
     historyHash:hash(series),historyLength:series.length,targetDate:result.targetDate,
@@ -33,7 +35,8 @@ export function verifyReceipt(receipt){
 }
 export function settleReceipt(receipt,series,{asOf}={}){
   verifyReceipt(receipt);
-  if(parseInstant(asOf)<=parseInstant(receipt.issuedAt))throw Error('Settlement must occur after issue');
+  const settledAt=parseInstant(asOf),issuedAt=parseInstant(receipt.issuedAt);
+  if(settledAt<=issuedAt)throw Error('Settlement must occur after issue');
   series=prepareHistory(series,{asOf}).series;
   const prefix=series.slice(0,receipt.historyLength);
   if(hash(prefix)!==receipt.historyHash)throw Error('Historical vintage revised / prefix missing: quarantine receipt');
@@ -44,8 +47,8 @@ export function settleReceipt(receipt,series,{asOf}={}){
     return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate:receipt.targetDate};
   }
   const targetDate=series[index].date;
-  if(targetDate<receipt.issuedAt.slice(0,10))throw Error('Outcome predates issue');
-  if(targetDate>=asOf.slice(0,10))return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
+  if(targetDate<utcDay(issuedAt))throw Error('Outcome predates issue');
+  if(targetDate>=utcDay(settledAt))return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
   if(index!==receipt.historyLength+receipt.horizon-1)throw Error('Horizon / calendar mismatch');
   const actual=series[index].price;
   return {id:receipt.id,horizon:receipt.horizon,status:'matured',targetDate,actual,
