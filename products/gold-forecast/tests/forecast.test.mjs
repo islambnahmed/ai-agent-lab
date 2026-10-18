@@ -67,3 +67,12 @@ test("reported audit coverage equals actual inclusion inside the displayed band"
       "coverage must measure the same interval shown to the user at horizon "+h);
   }
 });
+
+test('persistence reports no directional prediction rather than zero hit rate',()=>{
+  // Import-free regression via the public forecast result.
+  const result=forecast(data(260),7);
+  assert.equal(result.baseline.directionAccuracy,null);
+  assert.equal(result.baseline.directionalPredictions,0);
+  assert.equal(result.baseline.directionalCoveragePct,0);
+  assert.equal(result.baseline.directionalAbstentions,result.baseline.n);
+});
