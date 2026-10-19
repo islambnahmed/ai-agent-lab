@@ -40,6 +40,8 @@
   a{color:#ecc886}.source{line-height:2;color:#9da9b9;font-size:12px}
   .sidebar .card{margin-bottom:18px}.full{display:block;width:100%;margin:12px 0;text-align:center}.upload{cursor:pointer}
   .alert{color:#f0bb90;font-size:12px;min-height:18px;margin:16px 0}
+  .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+  button:focus-visible,a:focus-visible,.sr-only:focus-visible + .upload{outline:3px solid #f5d18a;outline-offset:3px}
   footer{border-top:1px solid #293548;padding:25px 0 40px;margin-top:20px;color:#8d9bae;font-size:11px;line-height:2}
   @media(max-width:900px){.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr;gap:15px}.sidebar .card{margin:0}}
   @media(max-width:680px){.shell{padding:0 15px}header{height:auto;padding:15px 0;flex-wrap:wrap;gap:8px}.intro{padding-top:34px}.stats{grid-template-columns:1fr;gap:9px}.card{padding:17px}.big{font-size:28px;margin:9px 0}.panel-heading{flex-direction:column}.switches{width:100%}.switches button{flex:1}.sidebar{grid-template-columns:1fr}.metrics{grid-template-columns:1fr 1fr}.forecast-price{font-size:37px}}
@@ -54,7 +56,7 @@
 <section class="layout">
 <div class="main-col">
 <article class="card">
- <div class="panel-heading"><div><span class="eyebrow">XAU / USD FORECAST</span><h2>توقع السعر القادم</h2></div><div class="switches"><button data-h="1">إغلاق واحد</button><button class="chosen" data-h="7">7 إغلاقات</button><button data-h="30">30 إغلاقًا</button></div></div>
+ <div class="panel-heading"><div><span class="eyebrow">XAU / USD FORECAST</span><h2>توقع السعر القادم</h2></div><div class="switches" role="group" aria-label="فترة التوقع"><button type="button" data-h="1" aria-pressed="false">إغلاق واحد</button><button type="button" class="chosen" data-h="7" aria-pressed="true">7 إغلاقات</button><button type="button" data-h="30" aria-pressed="false">30 إغلاقًا</button></div></div>
  <div class="prediction"><div><span class="label">السعر المتوقع (ليس سعر تداول مضمون)</span><div class="forecast-price" id="forecast">—</div><div class="tiny" id="target">—</div></div><div class="change" id="change">—</div></div>
  <svg id="chart" viewBox="0 0 920 310" role="img" aria-label="مخطط الإغلاقات التاريخية والتوقع"></svg>
  <div class="legend">━ التاريخ الفعلي　┄ التوقع　<span style="color:#dbb574">▰ نطاق عدم اليقين التجريبي</span></div>
@@ -76,7 +78,7 @@
 <article class="card"><h3>مقارنة النماذج قبل الاختبار</h3><p class="tiny">الترتيب حسب خطأ فترة الاختيار؛ الاختبار النهائي لا يختار الفائز.</p><div style="overflow:auto"><table style="width:100%;font-size:12px;text-align:right;border-spacing:12px"><thead><tr><th>النموذج</th><th>MAE ($)</th><th>RMSE ($)</th></tr></thead><tbody id="candidates"></tbody></table></div><p class="source" id="quality">—</p><button class="button" id="export" disabled>تنزيل تقرير التقييم</button></article>
 <article class="card"><span class="eyebrow">DATA SOURCE</span><h3>الأسعار ومصدرها</h3><p class="source" id="source">جارٍ تحميل التاريخ والأسعار من Standard Bullion.</p><p class="source" id="updated">—</p><a href="https://standardbullion.com" target="_blank" rel="noopener noreferrer">Data by Standard Bullion ↗</a>
 <p class="source" id="crosscheck">—</p><a href="https://gold-api.com" target="_blank" rel="noopener noreferrer">Gold API — مقارنة سعر إرشادي ↗</a>
-<button class="button full" id="demo">جرّب بيانات اصطناعية — DEMO</button><label class="button full upload" for="csv">ارفع ملف أسعار CSV</label><input type="file" id="csv" accept=".csv,text/csv" hidden><div class="tiny">صيغة الملف: date,price — بالدولار لكل أونصة تروي. البيانات يومية متصلة، والحد الأقصى 2 MB. يُقرأ داخل المتصفح ولا يُرفع لخادم.</div>
+<button class="button full" id="demo">جرّب بيانات اصطناعية — DEMO</button><input type="file" id="csv" class="sr-only" accept=".csv,text/csv"><label class="button full upload" for="csv">ارفع ملف أسعار CSV</label><div class="tiny">صيغة الملف: date,price — بالدولار لكل أونصة تروي. البيانات يومية متصلة، والحد الأقصى 2 MB. يُقرأ داخل المتصفح ولا يُرفع لخادم.</div>
 </article>
 </aside>
 </section>
