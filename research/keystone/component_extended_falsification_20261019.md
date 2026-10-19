@@ -13,7 +13,7 @@
 - 184 independent LP comparisons: 65 triangle + isolate (n=4), 45 two triangles + isolate (n=7), 45 triangle + tree (n=6), 25 triangle + tree + isolates (n=8), 4 connected four-cycles (n=4).
 - 548 permutation-invariance checks.
 - 4 explicit boundary/infeasibility checks.
-- All passed; maximum absolute difference vs LP 3.608224830031759e-16; maximum relabeling difference 0.0.
+- Candidate tests all passed; production baseline self-test **fails** at a strict float equality: `any_survives_bounds([.9]*5)` gives `(0.09999999999999998, 0.5)` rather than `(0.1, 0.5)` (known precision-sensitive assertion, not a candidate failure). Maximum absolute difference vs LP 3.608224830031759e-16; maximum relabeling difference 0.0.
 - End-to-end runtimes including LP and relabels, single local run: 0.2964s, 0.264s, 0.2502s, 0.1835s, 22.8609s respectively. **Not** production benchmark measurements.
 
 ## Decision
