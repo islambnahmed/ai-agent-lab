@@ -19,3 +19,5 @@ jobs:
           python-version: "3.12"
       - name: Validate lab structure
         run: python tools/validate_lab.py
+      - name: Run root walk-forward regression tests
+        run: python -m unittest discover -s tests -p 'test_*.py'
