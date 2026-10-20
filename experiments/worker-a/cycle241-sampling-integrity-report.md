@@ -1,0 +1,3 @@
+# Worker A cycle 241 — Sampling integrity
+
+In 200 synthetic trials with N=500, K=90, m=80, honest selection observed 18.2% errors. A substituted all-correct sample failed deterministic verification 200/200 times. But when the adversary learned the seed before freezing and committing the manifest, all 200 biased samples passed verification while reporting 0% errors. Thus deterministic seed-based sampling and a manifest hash alone do not prove unbiased selection. An independently witnessed pre-seed manifest commitment and independent unpredictable seed are prerequisites. Local prototype and 10 passed assertions; not production validated.
