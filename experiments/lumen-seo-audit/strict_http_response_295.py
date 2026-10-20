@@ -9,7 +9,7 @@ import re
 _MAX_HEADER_BYTES = 16_384
 _MAX_STATUS_BYTES = 4_096
 _MAX_INTERIM_RESPONSES = 3
-_TOKEN = re.compile(rb"[!#$%&'*+.^_`|~0-9A-Za-z-]+\\Z")
+_TOKEN = re.compile(rb"[!#$%&'*+.^_`|~0-9A-Za-z-]+\Z")
 
 
 class _GuardedHeaderReader:
@@ -24,19 +24,19 @@ class _GuardedHeaderReader:
         line = self._wrapped.readline(size)
         if self._mode == 'body':
             return line
-        if not line.endswith(b'\\r\\n'):
+        if not line.endswith(b'\r\n'):
             raise ValueError('Non-CRLF HTTP status/header line')
         if self._mode == 'status':
             if len(line) > _MAX_STATUS_BYTES:
                 raise ValueError('HTTP status line too large')
-            self._current_interim = bool(re.match(rb'HTTP/1\\.[01] 100(?: |\\r\\n)', line))
+            self._current_interim = bool(re.match(rb'HTTP/1\.[01] 100(?: |\r\n)', line))
             self._mode = 'headers'
             self._bytes = len(line)
             return line
         self._bytes += len(line)
         if self._bytes > _MAX_HEADER_BYTES:
             raise ValueError('HTTP response headers too large')
-        if line == b'\\r\\n':
+        if line == b'\r\n':
             if self._current_interim:
                 self._interim += 1
                 if self._interim > _MAX_INTERIM_RESPONSES:
@@ -45,7 +45,7 @@ class _GuardedHeaderReader:
             else:
                 self._mode = 'body'
             return line
-        if line[:1] in (b' ', b'\\t'):
+        if line[:1] in (b' ', b'\t'):
             raise ValueError('Folded HTTP header line rejected')
         key, sep, value = line[:-2].partition(b':')
         if not sep or not _TOKEN.fullmatch(key):
@@ -66,18 +66,18 @@ class StrictHTTPResponse(http.client.HTTPResponse):
 
     def _read_next_chunk_size(self):
         line = self.fp.readline(82)
-        if not re.fullmatch(rb'[0-9A-Fa-f]{1,16}\\r\\n', line):
+        if not re.fullmatch(rb'[0-9A-Fa-f]{1,16}\r\n', line):
             raise ValueError('Invalid chunk size line')
         return int(line[:-2], 16)
 
     def _read_and_discard_trailer(self):
-        if self.fp.readline(82) != b'\\r\\n':
+        if self.fp.readline(82) != b'\r\n':
             raise ValueError('Missing final CRLF or unsupported chunk trailer')
 
     def _get_chunk_left(self):
         remaining = self.chunk_left
         if not remaining:
-            if remaining is not None and self._safe_read(2) != b'\\r\\n':
+            if remaining is not None and self._safe_read(2) != b'\r\n':
                 raise ValueError('Invalid chunk data terminator')
             remaining = self._read_next_chunk_size()
             if remaining == 0:
