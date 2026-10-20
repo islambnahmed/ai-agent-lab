@@ -4,6 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {issueReceipt,settleReceipt,hash} from '../journal.mjs';
 import {prepareProviderHistory} from '../data.mjs';
+import {summarizeSettlements} from '../settlement-quality.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=name=>JSON.parse(fs.readFileSync(path.join(root,'data',name+'.json'),'utf8'));
@@ -41,15 +42,11 @@ if(command==='issue'){
       const appended=frozen.concat(prepared.series.filter(r=>r.date>receipt.originDate));
       return settleReceipt(receipt,appended,{asOf});
     }
-    catch(e){return {id:receipt.id,status:'quarantined',error:e.message};}
+    catch(e){return {id:receipt.id,horizon:receipt.horizon,targetDate:receipt.targetDate,status:'quarantined',error:e.message};}
   });
-  // Keep horizons separate; never pool them to select a winner.
-  const summaries=[1,7,30].map(h=>{
-    const rows=outcomes.filter(r=>r.horizon===h&&r.status==='matured');
-    const avg=key=>rows.length?rows.reduce((s,r)=>s+r[key],0)/rows.length:null;
-    return {horizon:h,matured:rows.length,modelMae:avg('modelAbsError'),baselineMae:avg('baselineAbsError')};
-  });
-  const report={asOf,outcomes,summaries,caveat:'Descriptive prospective outcomes; receipt Git timestamps must precede target close'};
+  // Every issued receipt stays in the denominator, including quarantined ones.
+  const {summaries,totals,caveat}=summarizeSettlements(outcomes);
+  const report={asOf,outcomes,summaries,totals,caveat};
   const out=path.join(root,'runs');fs.mkdirSync(out,{recursive:true});fs.writeFileSync(path.join(out,'settlements.json'),JSON.stringify(report,null,2));
   console.log(JSON.stringify(report,null,2));
 }else throw Error('Use: node scripts/journal.mjs issue|settle');
