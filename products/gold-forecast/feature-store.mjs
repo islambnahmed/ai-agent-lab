@@ -14,11 +14,14 @@ export function availableFeatures(records,originAt,{maxAgeDays=30}={}){
     // Otherwise a later revision can hide an earlier conflict, and identical
     // values from different sources can silently change provenance by row order.
     const key=JSON.stringify([row.feature,observed,available]);
+    // Two differently formatted timestamps can denote the same instant.
+    // Compare and emit canonical UTC instants without weakening source/vintage checks.
+    const canonicalRow={...row,observedAt:new Date(observed).toISOString(),availableAt:new Date(available).toISOString()};
     const prior=seen.get(key);
-    if(prior&&!isDeepStrictEqual(prior,row))throw Error('Conflicting same-vintage feature provenance');
-    if(!prior)seen.set(key,row);
+    if(prior&&!isDeepStrictEqual(prior,canonicalRow))throw Error('Conflicting same-vintage feature provenance');
+    if(!prior)seen.set(key,canonicalRow);
     const old=best.get(row.feature);
-    if(!old||observed>old.observed||observed===old.observed&&available>old.available)best.set(row.feature,{row,observed,available});
+    if(!old||observed>old.observed||observed===old.observed&&available>old.available)best.set(row.feature,{row:canonicalRow,observed,available});
     // Equal-key conflicts are checked independently of which revision wins.
   }
   return Object.fromEntries([...best].map(([key,{row,observed}])=>[key,{...row,ageDays:(origin-observed)/86400000,stale:origin-observed>maxAgeDays*86400000}]));
