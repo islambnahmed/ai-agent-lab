@@ -1,17 +1,25 @@
 // Point-in-time exogenous input contract. Historical observation date is not
 // publication time. Current snapshots cannot be backfilled into past origins.
 import {parseInstant} from './historical-integrity.mjs';
+import {isDeepStrictEqual} from 'node:util';
 export function availableFeatures(records,originAt,{maxAgeDays=30}={}){
-  const origin=parseInstant(originAt),best=new Map();
+  const origin=parseInstant(originAt),best=new Map(),seen=new Map();
   if(!Number.isFinite(maxAgeDays)||maxAgeDays<0)throw Error('Invalid feature age limit');
   for(const row of records){
     if(typeof row?.feature!=='string'||typeof row.source!=='string'||typeof row.vintage!=='string'||!Number.isFinite(row.value))throw Error('Invalid feature record');
     const observed=parseInstant(row.observedAt),available=parseInstant(row.availableAt);
     if(available<observed)throw Error('Feature available before observation');
     if(observed>origin||available>origin)continue;
+    // Audit every eligible same-instant vintage, even if a newer revision wins.
+    // Otherwise a later revision can hide an earlier conflict, and identical
+    // values from different sources can silently change provenance by row order.
+    const key=JSON.stringify([row.feature,observed,available]);
+    const prior=seen.get(key);
+    if(prior&&!isDeepStrictEqual(prior,row))throw Error('Conflicting same-vintage feature provenance');
+    if(!prior)seen.set(key,row);
     const old=best.get(row.feature);
     if(!old||observed>old.observed||observed===old.observed&&available>old.available)best.set(row.feature,{row,observed,available});
-    else if(observed===old.observed&&available===old.available&&row.value!==old.row.value)throw Error('Conflicting same-vintage feature');
+    // Equal-key conflicts are checked independently of which revision wins.
   }
   return Object.fromEntries([...best].map(([key,{row,observed}])=>[key,{...row,ageDays:(origin-observed)/86400000,stale:origin-observed>maxAgeDays*86400000}]));
 }
