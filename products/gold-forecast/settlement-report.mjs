@@ -1,4 +1,5 @@
 import {summarizeSettlements} from './settlement-accounting.mjs';
+import {parseInstant} from './historical-integrity.mjs';
 
 /**
  * Pure reporting adapter for the existing journal CLI.
@@ -6,8 +7,11 @@ import {summarizeSettlements} from './settlement-accounting.mjs';
  * It accepts only receipt and outcome objects; provenance must be audited separately.
  */
 export function buildSettlementReport(receipts, outcomes, asOf) {
-  if(typeof asOf !== 'string' || !Number.isFinite(Date.parse(asOf)) ||
-     !/(Z|[+-]\d\d:\d\d)$/.test(asOf)) throw Error('Offset-aware asOf required');
+  try { parseInstant(asOf, 'Settlement asOf'); }
+  catch(e) {
+    if(/explicit ISO timezone required/.test(e.message)) throw Error('Offset-aware asOf required');
+    throw e;
+  }
   const accounting = summarizeSettlements(receipts, outcomes);
   // Legacy shape remains available for existing consumers of settlements.json.
   const summaries = accounting.map(({horizon,matured,modelMae,baselineMae})=>({
