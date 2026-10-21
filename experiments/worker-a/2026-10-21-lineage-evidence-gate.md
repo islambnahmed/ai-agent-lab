@@ -29,3 +29,12 @@ Synthetic examples:
 The research module was published on `sandbox/worker-a-20261021-lineage-evidence-gate` at commit `6b15415fe790103f9d0214a54bec05dcc15fa2aa`. Uploading the new regression test file was blocked by platform safety checks. The 14 tests therefore ran **locally only**; no repository CI success is claimed for this module. No changes to `main`, trading logic, or production forecasting.
 
 Before any integration, independently inspect and version acquisition-chain evidence, record the roster as-of each origin, verify quote conventions and upstream independence, and test on held-out legally obtained multi-provider gold observations. Preserve the counterexample where false provenance defeats the gate. Do not equate synthetic pass rates with market reliability.
+
+## Additional deterministic stress test and CI status
+
+A separate seeded synthetic check ran 1,000 trials per scenario with small quote jitter:
+- Five genuinely distinct *declared* roots with matching prices: 1,000/1,000 corroborated.
+- Three erroneous feeds correctly mapped to one shared root, plus two normal roots: 1,000/1,000 abstained.
+- Three erroneous feeds incorrectly labelled as three distinct roots: 1,000/1,000 **falsely corroborated**.
+
+These are controlled synthetic outcomes, not real-world performance rates. The new code commit passed Gold Lab MVP tests (run 39543651304) and AI Agent Lab CI (run 39543651423), but the blocked new regression file is **not part of those CI runs**. Local tests and stress script remain in the recovery bundle.
