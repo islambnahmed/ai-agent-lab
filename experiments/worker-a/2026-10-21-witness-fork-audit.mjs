@@ -1,20 +1,40 @@
 /**
- * Research-only audit of multiple independently authenticated ledger checkpoints.
- * This does NOT authenticate witnesses, prove real time, detect hidden forks,
- * establish upstream completeness, or verify market prices.
+ * Research-only cross-view ledger fork audit. All supplied snapshots must be
+ * for the same ledger stream. trustedCheckpointLookup MUST independently
+ * authenticate and origin-freeze each checkpoint. Neither trust, real-time,
+ * upstream completeness, nor unseen forks can be established by this code.
  */
-import {buildLedger} from './anchored-history.mjs';
+import {createHash} from 'node:crypto';
+const DATE=/^\d{4}-\d{2}-\d{2}$/;
 const ISO=/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?(?:Z|[+-]\d\d:\d\d)$/;
 const SHA=/^[0-9a-f]{64}$/;
+const nonempty=x=>typeof x==='string'&&x.trim().length>0;
+const digest=s=>createHash('sha256').update(s).digest('hex');
 function timestamp(s) {
-  if(typeof s!=='string'||!ISO.test(s)||!Number.isFinite(Date.parse(s))) throw Error('Invalid timestamp');
+  if(typeof s!=='string'||!ISO.test(s)||!Number.isFinite(Date.parse(s)))throw Error('Invalid timestamp');
   return Date.parse(s);
 }
-function fail(reason,detail={}) {return {status:'insufficient_evidence',reason,...detail};}
-/** All supplied views must refer to the SAME stream. trustedCheckpointLookup
- * must independently authenticate and origin-freeze every returned checkpoint.
- * Neither assumption can be established inside this function.
- */
+function normalized(record) {
+  if(!record||!nonempty(record.source)||!nonempty(record.receiptId)||
+     !Number.isFinite(record.close)||record.close<=0||!DATE.test(record.date))
+    throw Error('Invalid close record');
+  const t=Date.parse(record.date+'T00:00:00Z');
+  if(!Number.isFinite(t)||new Date(t).toISOString().slice(0,10)!==record.date)
+    throw Error('Invalid date');
+  timestamp(record.capturedAt);
+  return {source:record.source,date:record.date,close:record.close,
+    capturedAt:record.capturedAt,receiptId:record.receiptId};
+}
+function buildLedger(records) {
+  let head='0'.repeat(64);
+  return records.map((raw,i)=>{
+    const record=normalized(raw),seq=i+1,prev=head;
+    const payloadSha256=digest('gold-lab-record-v1\0'+JSON.stringify(record));
+    head=digest('gold-lab-chain-v1\0'+JSON.stringify([seq,prev,payloadSha256]));
+    return {seq,prev,payloadSha256,head,record};
+  });
+}
+const fail=(reason,detail={})=>({status:'insufficient_evidence',reason,...detail});
 export function auditWitnessForks(snapshots,{originAt,trustedCheckpointLookup}={}) {
   const origin=timestamp(originAt);
   if(!Array.isArray(snapshots)||snapshots.length<2||typeof trustedCheckpointLookup!=='function')
@@ -24,7 +44,7 @@ export function auditWitnessForks(snapshots,{originAt,trustedCheckpointLookup}={
     return fail('duplicate_or_invalid_anchor_id');
   const views=[];
   for(const item of snapshots) {
-    const id=item.anchorId, cp=trustedCheckpointLookup(id);
+    const id=item.anchorId,cp=trustedCheckpointLookup(id);
     if(!cp||cp.anchorId!==id||!Number.isSafeInteger(cp.count)||cp.count<1||!SHA.test(cp.head??''))
       return fail('invalid_or_untrusted_checkpoint',{anchorId:id});
     if(timestamp(cp.observedAt)>origin)return fail('checkpoint_after_origin',{anchorId:id});
