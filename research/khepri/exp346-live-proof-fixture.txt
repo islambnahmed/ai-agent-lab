@@ -1,0 +1,3 @@
+Khepri exp346: authorized reversible commit-pinned evidence fixture
+Date: 2026-10-21
+No secrets, no production behavior.
