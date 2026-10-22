@@ -44,7 +44,8 @@ export function settleReceipt(receipt,series,{asOf}={}){
     return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate:receipt.targetDate};
   }
   const targetDate=series[index].date;
-  if(targetDate<receipt.issuedAt.slice(0,10))throw Error('Outcome predates issue');
+  const issuedUtcDay=new Date(parseInstant(receipt.issuedAt)).toISOString().slice(0,10);
+  if(targetDate<=issuedUtcDay)throw Error('Target close must be after issue UTC day: same-day publication timing is unverified');
   if(targetDate>=asOf.slice(0,10))return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
   if(index!==receipt.historyLength+receipt.horizon-1)throw Error('Horizon / calendar mismatch');
   const actual=series[index].price;
