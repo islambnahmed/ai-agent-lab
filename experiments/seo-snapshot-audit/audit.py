@@ -26,6 +26,14 @@ class Parser(HTMLParser):
         self.head=False; self.title=None; self.h=None; self.anchor=None; self.script=None; self.suppressed=0
         self.lang=[]; self.titles=[]; self.meta=[]; self.canonicals=[]; self.alternates=[]
         self.headings=[]; self.images=[]; self.anchors=[]; self.jsonld=[]
+    def close(self):
+        super().close()
+        # A heading can remain open at EOF in malformed but common HTML.
+        if self.h is not None:
+            self.h['text'] = ' '.join(self.h['text'].split())
+            self.headings.append(self.h)
+            self.h = None
+
     def handle_starttag(self,tag,attrs):
         a={k.lower():v or '' for k,v in attrs if k}
         if tag=='html': self.lang.append(a.get('lang',''))
