@@ -14,7 +14,7 @@ const dir=path.join(root,'reports','prospective');fs.mkdirSync(dir,{recursive:tr
 const vintages=path.join(root,'data','vintages');fs.mkdirSync(vintages,{recursive:true});
 const command=process.argv[2];
 if(command==='issue'){
-  const files=['forecast.mjs','models.mjs','data.mjs','historical-integrity.mjs','calendar_contract.mjs','journal.mjs'];
+  const files=['forecast.mjs','models.mjs','data.mjs','historical-integrity.mjs','calendar_contract.mjs','journal.mjs','scripts/journal.mjs','scripts/fetch_data.py','package.json'];
   const dirty=execFileSync('git',['status','--porcelain','--',...files],{cwd:root,encoding:'utf8'});
   if(dirty.trim())throw Error('Commit implementation before issuing forecasts');
   const codeCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
@@ -29,9 +29,11 @@ if(command==='issue'){
     console.log(JSON.stringify({file:filename,id:receipt.id,targetDate:receipt.targetDate,point:receipt.point}));
   }
 }else if(command==='settle'){
-  const outcomes=fs.readdirSync(dir).filter(f=>f.endsWith('.json')).map(f=>{
-    const receipt=JSON.parse(fs.readFileSync(path.join(dir,f),'utf8'));
+  const outcomes=fs.readdirSync(dir).filter(f=>f.endsWith('.json')).sort().map(f=>{
+    let receipt;
     try{
+      receipt=JSON.parse(fs.readFileSync(path.join(dir,f),'utf8'));
+      if(!receipt||typeof receipt!=='object'||Array.isArray(receipt))throw Error('Invalid receipt object');
       const frozen=JSON.parse(fs.readFileSync(path.join(vintages,receipt.historyHash+'.json'),'utf8'));
       if(hash(frozen)!==receipt.historyHash)throw Error('Original local vintage corrupted');
       const frozenDates=new Map(frozen.map(r=>[r.date,r.price]));
@@ -41,7 +43,7 @@ if(command==='issue'){
       const appended=frozen.concat(prepared.series.filter(r=>r.date>receipt.originDate));
       return settleReceipt(receipt,appended,{asOf});
     }
-    catch(e){return {id:receipt.id,status:'quarantined',error:e.message};}
+    catch(e){return {file:f,id:receipt?.id??null,horizon:receipt?.horizon??null,status:'quarantined',error:e.message};}
   });
   // Keep horizons separate; never pool them to select a winner.
   const summaries=[1,7,30].map(h=>{
