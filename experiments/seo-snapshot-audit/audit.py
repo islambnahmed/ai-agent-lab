@@ -6,16 +6,24 @@ from pathlib import Path
 import argparse, json, re, sys
 
 def weburl(url):
+    """Conservative syntactic HTTP(S) URL validation, not DNS verification."""
     try:
-        p=urlsplit(url)
-        return p.scheme.lower() in ('http','https') and bool(p.netloc) and not p.username and not p.password
-    except ValueError:
+        if not isinstance(url, str) or not url or any(c.isspace() or ord(c) < 32 or ord(c) == 127 for c in url):
+            return False
+        p = urlsplit(url)
+        if p.scheme.lower() not in ('http', 'https') or not p.netloc or '@' in p.netloc or '\\' in p.netloc:
+            return False
+        if not p.hostname or '%' in p.hostname:
+            return False
+        port = p.port  # Access validates numeric port and its allowed range.
+        return port is None or port > 0
+    except (ValueError, TypeError, AttributeError):
         return False
 
 class Parser(HTMLParser):
     def __init__(self):
         super().__init__(convert_charrefs=True)
-        self.head=False; self.title=None; self.h=None; self.anchor=None; self.script=None
+        self.head=False; self.title=None; self.h=None; self.anchor=None; self.script=None; self.suppressed=0
         self.lang=[]; self.titles=[]; self.meta=[]; self.canonicals=[]; self.alternates=[]
         self.headings=[]; self.images=[]; self.anchors=[]; self.jsonld=[]
     def handle_starttag(self,tag,attrs):
@@ -36,10 +44,11 @@ class Parser(HTMLParser):
             self.anchors.append({'href':a.get('href',''),'text':'','label':a.get('aria-label','')})
             self.anchor=len(self.anchors)-1
         if tag=='script' and a.get('type','').lower()=='application/ld+json': self.script=''
+        if tag in ('script','style'): self.suppressed+=1
     def handle_data(self,data):
         if self.title is not None: self.title+=data[:200000]
-        if self.h is not None: self.h['text']+=data[:200000]
-        if self.anchor is not None: self.anchors[self.anchor]['text']+=data[:200000]
+        if self.h is not None and not self.suppressed: self.h['text']+=data[:200000]
+        if self.anchor is not None and not self.suppressed: self.anchors[self.anchor]['text']+=data[:200000]
         if self.script is not None: self.script+=data[:200000]
     def handle_endtag(self,tag):
         if tag=='title' and self.title is not None:
@@ -48,6 +57,7 @@ class Parser(HTMLParser):
             self.h['text']=' '.join(self.h['text'].split()); self.headings.append(self.h); self.h=None
         if tag=='a': self.anchor=None
         if tag=='script' and self.script is not None: self.jsonld.append(self.script); self.script=None
+        if tag in ('script','style') and self.suppressed: self.suppressed-=1
         if tag=='head': self.head=False
 
 def audit(html,page_url):
@@ -95,9 +105,14 @@ def audit(html,page_url):
         try: json.loads(block)
         except json.JSONDecodeError: add('jsonld_invalid','error','Invalid JSON-LD block '+str(i+1))
     f.sort(key=lambda x:(('error','warning','info').index(x['severity']),x['code'],x['detail']))
-    internal={urljoin(page_url,a['href']).split('#')[0] for a in p.anchors
-              if weburl(urljoin(page_url,a['href'])) and
-              urlsplit(urljoin(page_url,a['href'])).netloc.lower()==urlsplit(page_url).netloc.lower()}
+    internal=set()
+    for anchor in p.anchors:
+        href=anchor['href'].strip()
+        if not href or href.startswith('#'):
+            continue  # Empty/fragment-only targets are not links to other pages.
+        target=urljoin(page_url,href)
+        if weburl(target) and urlsplit(target).netloc.lower()==urlsplit(page_url).netloc.lower():
+            internal.add(target.split('#',1)[0])
     return {'schema_version':1,'page_url':page_url,
             'summary':{'errors':sum(x['severity']=='error' for x in f),
                        'warnings':sum(x['severity']=='warning' for x in f),
