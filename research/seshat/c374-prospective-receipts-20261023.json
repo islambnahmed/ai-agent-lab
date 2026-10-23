@@ -1,0 +1,133 @@
+{
+  "experiment": "seshat-c374-forward-issuance",
+  "status": "provisional_forward_receipts",
+  "githubRunId": "40025120184",
+  "codeCommit": "4d1ec27af3ffe3dc2915a15c4073dc776ae0a749",
+  "issuedAt": "2026-10-23T21:13:09.554Z",
+  "sourceManifest": {
+    "url": "https://standardbullion.com/api/v1/market/history?metal=XAU&range=1y",
+    "requestedAt": "2026-10-23T21:13:09.259Z",
+    "receivedAt": "2026-10-23T21:13:09.520Z",
+    "httpStatus": 200,
+    "rawSha256": "bc6d6a15fedb65c7eb66d7e97d05bc41c58941d2a303ae1814587a681fb6436e",
+    "status": "fetched"
+  },
+  "observations": 324,
+  "latestCompletedObservation": "2026-10-22",
+  "cadence": "observations",
+  "receipts": [
+    {
+      "gate": {
+        "eligible": true,
+        "originDate": "2026-10-22",
+        "issueDay": "2026-10-23",
+        "horizon": 7,
+        "earliestTargetDate": "2026-10-29",
+        "reason": "earliest_possible_target_after_issue_utc_day",
+        "assumption": "at most one provider observation per UTC date",
+        "caveat": "Eligibility does not establish source-vintage integrity, publication time, or forecast skill"
+      },
+      "receipt": {
+        "schemaVersion": 1,
+        "issuedAt": "2026-10-23T21:13:09.554Z",
+        "source": "Standard Bullion",
+        "codeCommit": "4d1ec27af3ffe3dc2915a15c4073dc776ae0a749",
+        "sourceManifest": {
+          "url": "https://standardbullion.com/api/v1/market/history?metal=XAU&range=1y",
+          "requestedAt": "2026-10-23T21:13:09.259Z",
+          "receivedAt": "2026-10-23T21:13:09.520Z",
+          "httpStatus": 200,
+          "rawSha256": "bc6d6a15fedb65c7eb66d7e97d05bc41c58941d2a303ae1814587a681fb6436e",
+          "status": "fetched"
+        },
+        "modelVersion": "gold-v2.0.0",
+        "horizon": 7,
+        "calendar": "observations",
+        "originDate": "2026-10-22",
+        "originClose": 4028.12,
+        "historyHash": "0360f4ebe0b9d418123a04b4a462665aa30aefa5476bb0747eda1a46d2f3ac9f",
+        "historyLength": 324,
+        "targetDate": null,
+        "model": "mean_reversion",
+        "point": 4061.7258849408922,
+        "lower": 3801.9019203586963,
+        "upper": 4321.549849523089,
+        "baseline": 4028.12,
+        "caveat": "Requires external Git timestamp anchor before target close; not evidence of predictive skill",
+        "id": "caef1d589a664b3efe60e21ee84a6a2788e2b9e4ebb52f178081275ceacb6a06"
+      }
+    },
+    {
+      "gate": {
+        "eligible": true,
+        "originDate": "2026-10-22",
+        "issueDay": "2026-10-23",
+        "horizon": 30,
+        "earliestTargetDate": "2026-11-21",
+        "reason": "earliest_possible_target_after_issue_utc_day",
+        "assumption": "at most one provider observation per UTC date",
+        "caveat": "Eligibility does not establish source-vintage integrity, publication time, or forecast skill"
+      },
+      "receipt": {
+        "schemaVersion": 1,
+        "issuedAt": "2026-10-23T21:13:09.554Z",
+        "source": "Standard Bullion",
+        "codeCommit": "4d1ec27af3ffe3dc2915a15c4073dc776ae0a749",
+        "sourceManifest": {
+          "url": "https://standardbullion.com/api/v1/market/history?metal=XAU&range=1y",
+          "requestedAt": "2026-10-23T21:13:09.259Z",
+          "receivedAt": "2026-10-23T21:13:09.520Z",
+          "httpStatus": 200,
+          "rawSha256": "bc6d6a15fedb65c7eb66d7e97d05bc41c58941d2a303ae1814587a681fb6436e",
+          "status": "fetched"
+        },
+        "modelVersion": "gold-v2.0.0",
+        "horizon": 30,
+        "calendar": "observations",
+        "originDate": "2026-10-22",
+        "originClose": 4028.12,
+        "historyHash": "0360f4ebe0b9d418123a04b4a462665aa30aefa5476bb0747eda1a46d2f3ac9f",
+        "historyLength": 324,
+        "targetDate": null,
+        "model": "persistence",
+        "point": 4028.12,
+        "lower": 3681.5526850560223,
+        "upper": 4374.687314943977,
+        "baseline": 4028.12,
+        "caveat": "Requires external Git timestamp anchor before target close; not evidence of predictive skill",
+        "id": "70d294ea341cab6ddaafb088a9fd902008f7a18e06bf9853e38d2ef351b1fe9d"
+      }
+    }
+  ],
+  "blocked": [
+    {
+      "eligible": false,
+      "originDate": "2026-10-22",
+      "issueDay": "2026-10-23",
+      "horizon": 1,
+      "earliestTargetDate": "2026-10-23",
+      "reason": "target_could_already_have_occurred",
+      "assumption": "at most one provider observation per UTC date",
+      "caveat": "Eligibility does not establish source-vintage integrity, publication time, or forecast skill"
+    }
+  ],
+  "evaluationPolicy": {
+    "precommit": "first successful GitHub Actions issuance per originDate/horizon only; no cherry-picking later runs",
+    "target": "h-th strictly later unique UTC-dated provider close; no other calendar or vendor substitution",
+    "settlement": "pending until h new observations and same-definition independent review; quarantine if original history unavailable",
+    "benchmark": "unchanged origin close; paired absolute error; no skill claim from one forecast"
+  },
+  "limitations": [
+    "Provider close semantics and historical publication times unverified",
+    "No licensed raw history archived; original historical prefix may be unrecoverable",
+    "GitHub Actions timestamps prove script execution, not provider publication",
+    "Prospective eligibility assumes at most one close per UTC date",
+    "No certified settlement, predictive skill, statistical significance or trading advice"
+  ],
+  "evidence": {
+    "githubActionsRun": "https://github.com/islambnahmed/ai-agent-lab/actions/runs/40025120184",
+    "githubActionsJobId": 120659257380,
+    "receiptFileSavedAfterRun": true,
+    "archiveNote": "Exact derived JSON extracted from first successful GitHub Actions job log. Source feed raw bytes were not archived."
+  }
+}
