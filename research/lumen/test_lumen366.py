@@ -72,6 +72,37 @@ class TestVersionedLabels(unittest.TestCase):
         for cutoff in (T1, T2):
             prefix = [e for e in EVENTS if e["ingested_at"] <= cutoff]
             self.assertEqual(snapshot(IDS, EVENTS, cutoff), snapshot(IDS, prefix, cutoff))
+    def test_future_malformed_record_does_not_poison_past(self):
+        altered = copy.deepcopy(EVENTS)
+        altered[-1]["label"] = True
+        self.assertEqual(snapshot(IDS, altered, T2), snapshot(IDS, EVENTS, T2))
+        with self.assertRaises(LedgerError):
+            validate_ledger(IDS, altered)
+    def test_randomized_bounds_against_independent_enumerator(self):
+        import itertools
+        import random
+        rng = random.Random(366)
+        for _ in range(300):
+            sample = []
+            for i, cid in enumerate(IDS):
+                if rng.randrange(4) == 0:
+                    continue
+                sample.append({"id": "v" + cid, "case_id": cid,
+                               "ingested_at": f"2026-10-23T09:{i:02d}:00Z",
+                               "label": rng.randrange(2),
+                               "status": rng.choice(["provisional", "final"]),
+                               "supersedes": None, "source": "lab_fixture"})
+            threshold = rng.choice([0.25, 0.4, 0.6])
+            x = snapshot(IDS, sample, T1, threshold=threshold)
+            known = [e["label"] for e in sample if e["status"] == "final"]
+            unknown_count = len(IDS) - len(known)
+            totals = [sum(known) + sum(bits)
+                      for bits in itertools.product((0, 1), repeat=unknown_count)]
+            self.assertEqual((x["lower_rate"], x["upper_rate"]),
+                             (min(totals) / len(IDS), max(totals) / len(IDS)))
+            expected = ("accept" if max(totals) / len(IDS) <= threshold else
+                        "reject" if min(totals) / len(IDS) > threshold else "abstain")
+            self.assertEqual(x["decision"], expected)
 
 
 if __name__ == "__main__":
