@@ -29,6 +29,8 @@ def load_prices(path):
 
 def _drift_from_endpoints(first, last, observed_count, horizon):
     # Mean adjacent log-return telescopes to (log(last)-log(first))/(n-1).
+    if not all(math.isfinite(p) and p > 0 for p in (first, last)):
+        raise ValueError("Prices must be positive and finite")
     if first == last:
         return last  # Preserve exact zero drift, including flat-price tests.
     mean_return = (math.log(last) - math.log(first)) / (observed_count - 1)
@@ -49,6 +51,8 @@ def predict_drift(train, horizon):
     """
     if len(train) < 2:
         raise ValueError("Insufficient training prices")
+    if any(not math.isfinite(p) or p <= 0 for p in train):
+        raise ValueError("Prices must be positive and finite")
     return _drift_from_endpoints(train[0], train[-1], len(train), horizon)
 
 
@@ -60,6 +64,8 @@ def backtest(rows, horizon=7, train_min=120, stride=None):
     if stride < horizon:
         raise ValueError("stride must be >= horizon for independent target windows")
     prices = [p for _, p in rows]
+    if any(not math.isfinite(p) or p <= 0 for p in prices):
+        raise ValueError("Prices must be positive and finite")
     results = []
     for origin in range(train_min - 1, len(rows) - horizon, stride):
         last = prices[origin]
