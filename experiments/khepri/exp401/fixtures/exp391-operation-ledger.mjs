@@ -11,7 +11,7 @@ function canonical(value, seen=new Set()) {
   }
   if(Array.isArray(value)) {
     if(seen.has(value)) throw new TypeError('Cycle');
-    if(Object.keys(value).length!==value.length || Array.from({length:value.length},(_,i)=>!Object.hasOwn(value,i)).some(v=>v)) throw new TypeError('Sparse or decorated array');
+    if(Object.keys(value).length!==value.length || Array.from({length:value.length},(_,i)=>Object.hasOwn(value,i)).some(v=>!v)) throw new TypeError('Sparse or decorated array');
     seen.add(value);
     const out='['+value.map(x=>canonical(x,seen)).join(',')+']';
     seen.delete(value); return out;
