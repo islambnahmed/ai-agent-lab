@@ -1,0 +1,17 @@
+{
+  "experiment": "exp402",
+  "cases": 1823,
+  "valid": 1723,
+  "rejected": 100,
+  "cross_runtime_mismatches": 0,
+  "by_kind": {
+    "gold": 610,
+    "seo": 600,
+    "raw": 613
+  },
+  "naive_python_json": "{\"v\":1.0}",
+  "naive_js_json": "{\"v\":1}",
+  "unicode_normalization_preserved": true,
+  "decimal_string_normalization": true,
+  "mismatch_examples": []
+}
