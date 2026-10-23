@@ -80,7 +80,7 @@ def main(argv=None):
         document = json.loads(data.decode("utf-8"), object_pairs_hook=_reject_duplicate_keys)
         result = evaluate_document(document)
         result["input_sha256"] = hashlib.sha256(data).hexdigest()
-    except (OSError, UnicodeError, ValueError, TypeError, NotImplementedError) as exc:
+    except (OSError, UnicodeError, ValueError, TypeError, NotImplementedError, RecursionError) as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
     print(json.dumps(result, sort_keys=True, separators=(",", ":")))
