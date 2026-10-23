@@ -1,0 +1,138 @@
+{
+  "null_ar1": [
+    {
+      "n": 20,
+      "phi": 0,
+      "reps": 2500,
+      "naive_abs_z_gt_1_96_rate": 0.0776,
+      "hac_abs_z_gt_1_96_rate": 0.1524,
+      "exact_ar1_mean_variance_inflation": 1,
+      "exact_ar1_effective_n": 20
+    },
+    {
+      "n": 20,
+      "phi": 0.8,
+      "reps": 2500,
+      "naive_abs_z_gt_1_96_rate": 0.568,
+      "hac_abs_z_gt_1_96_rate": 0.3916,
+      "exact_ar1_mean_variance_inflation": 7.0231,
+      "exact_ar1_effective_n": 2.848
+    },
+    {
+      "n": 20,
+      "phi": 0.9,
+      "reps": 2500,
+      "naive_abs_z_gt_1_96_rate": 0.7124,
+      "hac_abs_z_gt_1_96_rate": 0.548,
+      "exact_ar1_mean_variance_inflation": 11.0942,
+      "exact_ar1_effective_n": 1.803
+    },
+    {
+      "n": 60,
+      "phi": 0,
+      "reps": 2500,
+      "naive_abs_z_gt_1_96_rate": 0.0508,
+      "hac_abs_z_gt_1_96_rate": 0.1004,
+      "exact_ar1_mean_variance_inflation": 1,
+      "exact_ar1_effective_n": 60
+    },
+    {
+      "n": 60,
+      "phi": 0.8,
+      "reps": 2500,
+      "naive_abs_z_gt_1_96_rate": 0.5416,
+      "hac_abs_z_gt_1_96_rate": 0.2292,
+      "exact_ar1_mean_variance_inflation": 8.3333,
+      "exact_ar1_effective_n": 7.2
+    },
+    {
+      "n": 60,
+      "phi": 0.9,
+      "reps": 2500,
+      "naive_abs_z_gt_1_96_rate": 0.6868,
+      "hac_abs_z_gt_1_96_rate": 0.3492,
+      "exact_ar1_mean_variance_inflation": 16.0054,
+      "exact_ar1_effective_n": 3.749
+    }
+  ],
+  "upstream_integration": [
+    {
+      "case": "gold",
+      "phi_returns": 0,
+      "replicates": 60,
+      "statuses": {
+        "evaluation_ready": 60
+      },
+      "mean_lag1_paired_mae_delta": -0.0792,
+      "fraction_lag1_gt_0_2": 0.0667,
+      "first_example": {
+        "windows": 40,
+        "status": "evaluation_ready",
+        "lag1": -0.0486,
+        "lag7": -0.146,
+        "estimated_ar1_ess": 40,
+        "higher_lag_warning": false
+      }
+    },
+    {
+      "case": "gold",
+      "phi_returns": 0.9,
+      "replicates": 60,
+      "statuses": {
+        "evaluation_ready": 60
+      },
+      "mean_lag1_paired_mae_delta": 0.359,
+      "fraction_lag1_gt_0_2": 0.8,
+      "first_example": {
+        "windows": 40,
+        "status": "evaluation_ready",
+        "lag1": 0.2891,
+        "lag7": -0.0489,
+        "estimated_ar1_ess": 22.06,
+        "higher_lag_warning": false
+      }
+    },
+    {
+      "case": "seo",
+      "phi_returns": 0,
+      "replicates": 60,
+      "statuses": {
+        "evaluation_ready": 60
+      },
+      "mean_lag1_paired_mae_delta": 0.0232,
+      "fraction_lag1_gt_0_2": 0.35,
+      "first_example": {
+        "windows": 93,
+        "status": "evaluation_ready",
+        "lag1": 0.43,
+        "lag7": 0.7711,
+        "estimated_ar1_ess": 37.07,
+        "higher_lag_warning": true
+      }
+    },
+    {
+      "case": "seo",
+      "phi_returns": 0.9,
+      "replicates": 60,
+      "statuses": {
+        "evaluation_ready": 60
+      },
+      "mean_lag1_paired_mae_delta": -0.5588,
+      "fraction_lag1_gt_0_2": 0,
+      "first_example": {
+        "windows": 93,
+        "status": "evaluation_ready",
+        "lag1": -0.6619,
+        "lag7": 0.7738,
+        "estimated_ar1_ess": 93,
+        "higher_lag_warning": true
+      }
+    }
+  ],
+  "notes": [
+    "All data synthetic. AR1 null uses Gaussian paired deltas, not actual backtest deltas.",
+    "Absolute z>1.96 is a diagnostic threshold, not a calibrated finite-sample test.",
+    "Upstream evaluation_ready is a sample-count label, not an explicit statistical significance claim.",
+    "SEO weekly seasonality with horizon=3 can create strong lag-7 dependence even when lag-1 correlation is negative; AR1 ESS is then not appropriate."
+  ]
+}
