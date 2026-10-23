@@ -110,6 +110,40 @@ class ExactCountBoundsTests(unittest.TestCase):
                     any_survives_bounds_from_counts(total, marg, pair_counts),
                     (1 - expected[1], 1 - expected[0]))
 
+    def test_disconnected_triangle_components_integer_oracle(self):
+        # Independent integer-atom oracle for formerly unsupported graphs:
+        # triangle + isolated mode, triangle + edge, two disjoint triangles.
+        for n, total, edges in [
+            (4, 2, ((0, 1), (0, 2), (1, 2))),
+            (5, 2, ((0, 1), (0, 2), (1, 2), (3, 4))),
+            (6, 2, ((0, 1), (0, 2), (1, 2),
+                    (3, 4), (3, 5), (4, 5))),
+        ]:
+            worlds = tuple(product((0, 1), repeat=n))
+            observed = defaultdict(lambda: [total + 1, -1])
+            for weights in compositions(total, len(worlds)):
+                marg, pairs = signature(weights, worlds, edges)
+                bounds = observed[marg, pairs]
+                bounds[0] = min(bounds[0], weights[-1])
+                bounds[1] = max(bounds[1], weights[-1])
+            for (marg, pairs), (low, high) in observed.items():
+                counts = dict(zip(edges, pairs))
+                expected = (Fraction(low, total), Fraction(high, total))
+                self.assertEqual(
+                    all_fail_bounds_from_counts(total, marg, counts),
+                    expected, (n, total, marg, pairs))
+                self.assertEqual(
+                    any_survives_bounds_from_counts(total, marg, counts),
+                    (1 - expected[1], 1 - expected[0]))
+
+    def test_disconnected_triangle_still_rejects_global_infeasibility(self):
+        # All three pairwise edges individually satisfy Frechet constraints,
+        # but no joint table can satisfy them simultaneously.
+        with self.assertRaises(ValueError):
+            all_fail_bounds_from_counts(
+                10, [1, 1, 1, 5],
+                {(0, 1): 0, (0, 2): 1, (1, 2): 1})
+
     def test_exact_counts_beyond_float_integer_precision(self):
         total = 2 ** 53 + 1
         expected = Fraction(total - 2, total)
