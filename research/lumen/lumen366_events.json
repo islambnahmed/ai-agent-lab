@@ -1,0 +1,93 @@
+{
+  "schema_version": 1,
+  "fixture_id": "lumen365_balanced_overlap_v1",
+  "cutoffs": [
+    "2026-10-23T10:00:00Z",
+    "2026-10-23T11:00:00Z",
+    "2026-10-23T12:00:00Z"
+  ],
+  "note": "Synthetic event sequence. All times and source roles are lab-declared; no external attestation.",
+  "events": [
+    {
+      "id": "e01",
+      "case_id": "C01",
+      "ingested_at": "2026-10-23T09:01:00Z",
+      "label": 0,
+      "status": "final",
+      "supersedes": null,
+      "source": "synthetic_label_producer"
+    },
+    {
+      "id": "e02",
+      "case_id": "C02",
+      "ingested_at": "2026-10-23T09:02:00Z",
+      "label": 0,
+      "status": "final",
+      "supersedes": null,
+      "source": "synthetic_label_producer"
+    },
+    {
+      "id": "e03",
+      "case_id": "C03",
+      "ingested_at": "2026-10-23T09:03:00Z",
+      "label": 0,
+      "status": "final",
+      "supersedes": null,
+      "source": "synthetic_label_producer"
+    },
+    {
+      "id": "e04",
+      "case_id": "C04",
+      "ingested_at": "2026-10-23T09:04:00Z",
+      "label": 1,
+      "status": "final",
+      "supersedes": null,
+      "source": "synthetic_label_producer"
+    },
+    {
+      "id": "e06",
+      "case_id": "C06",
+      "ingested_at": "2026-10-23T09:05:00Z",
+      "label": 1,
+      "status": "final",
+      "supersedes": null,
+      "source": "synthetic_label_producer"
+    },
+    {
+      "id": "e08",
+      "case_id": "C08",
+      "ingested_at": "2026-10-23T09:06:00Z",
+      "label": 0,
+      "status": "final",
+      "supersedes": null,
+      "source": "synthetic_label_producer"
+    },
+    {
+      "id": "e05",
+      "case_id": "C05",
+      "ingested_at": "2026-10-23T10:30:00Z",
+      "label": 1,
+      "status": "final",
+      "supersedes": null,
+      "source": "synthetic_label_producer"
+    },
+    {
+      "id": "e07",
+      "case_id": "C07",
+      "ingested_at": "2026-10-23T10:31:00Z",
+      "label": 0,
+      "status": "provisional",
+      "supersedes": null,
+      "source": "synthetic_label_producer"
+    },
+    {
+      "id": "e07c",
+      "case_id": "C07",
+      "ingested_at": "2026-10-23T11:30:00Z",
+      "label": 1,
+      "status": "final",
+      "supersedes": "e07",
+      "source": "synthetic_label_producer"
+    }
+  ]
+}
