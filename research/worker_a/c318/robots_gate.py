@@ -130,9 +130,16 @@ def decide(robots: str, product_token: str, url_or_path: str) -> Decision:
         if not isinstance(url_or_path, str):
             raise ValueError('URL/path required')
         if '://' in url_or_path:
+            # urlsplit strips some raw control characters and does not validate
+            # port syntax/range by itself. Reject malformed full URLs rather
+            # than assigning a misleading crawl permission to their paths.
+            if any(ord(c) <= 32 or ord(c) == 127 for c in url_or_path) or '\\' in url_or_path:
+                raise ValueError('invalid raw URL character')
             parsed = urlsplit(url_or_path)
-            if parsed.scheme.lower() not in ('http', 'https') or not parsed.netloc or parsed.username or parsed.password:
+            if (parsed.scheme.lower() not in ('http', 'https') or not parsed.netloc
+                    or not parsed.hostname or parsed.username or parsed.password):
                 raise ValueError('unsupported URL form')
+            _ = parsed.port  # Validate numeric syntax and 0..65535 range.
             target = parsed.path or '/'
             if parsed.query:
                 target += '?' + parsed.query
