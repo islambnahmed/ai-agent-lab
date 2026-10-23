@@ -27,12 +27,43 @@ def load_prices(path):
     return rows
 
 
+def _drift_from_endpoints(first, last, observed_count, horizon):
+    # Mean adjacent log-return telescopes to (log(last)-log(first))/(n-1).
+    if not all(math.isfinite(p) and p > 0 for p in (first, last)):
+        raise ValueError("Prices must be positive and finite")
+    if first == last:
+        return last  # Preserve exact zero drift, including flat-price tests.
+    mean_return = (math.log(last) - math.log(first)) / (observed_count - 1)
+    try:
+        forecast = math.exp(math.log(last) + horizon * mean_return)
+    except OverflowError as exc:
+        raise ValueError("Drift forecast outside positive finite range") from exc
+    if not math.isfinite(forecast) or forecast <= 0:
+        raise ValueError("Drift forecast outside positive finite range")
+    return forecast
+
+
 def predict_drift(train, horizon):
-    """Fit mean one-step log-return ONLY on observed training prices."""
+    """Fit mean one-step log-return ONLY on observed training prices.
+
+    Telescoping the mean avoids O(n) ratios and intermediate overflow or
+    underflow, even when each observed price is positive and finite.
+    """
     if len(train) < 2:
         raise ValueError("Insufficient training prices")
-    returns = [math.log(b / a) for a, b in zip(train, train[1:])]
-    return train[-1] * math.exp(horizon * statistics.mean(returns))
+    if any(not math.isfinite(p) or p <= 0 for p in train):
+        raise ValueError("Prices must be positive and finite")
+    return _drift_from_endpoints(train[0], train[-1], len(train), horizon)
+
+
+def _stable_rmse(errors):
+    """Compute RMSE without overflowing when squaring finite errors."""
+    scale = max(abs(error) for error in errors)
+    if scale == 0:
+        return 0.0
+    return scale * math.sqrt(
+        math.fsum((error / scale) ** 2 for error in errors) / len(errors)
+    )
 
 
 def backtest(rows, horizon=7, train_min=120, stride=None):
@@ -42,21 +73,28 @@ def backtest(rows, horizon=7, train_min=120, stride=None):
         stride = horizon  # disjoint target intervals, avoids overlap inflation
     if stride < horizon:
         raise ValueError("stride must be >= horizon for independent target windows")
+    # Direct Python callers bypass load_prices(), so enforce the same
+    # chronological contract here to prevent training on future observations.
+    if any(a[0] >= b[0] for a, b in zip(rows, rows[1:])):
+        raise ValueError("Need strictly increasing unique dates")
     prices = [p for _, p in rows]
+    if any(not math.isfinite(p) or p <= 0 for p in prices):
+        raise ValueError("Prices must be positive and finite")
     results = []
     for origin in range(train_min - 1, len(rows) - horizon, stride):
-        train = prices[:origin + 1]
+        last = prices[origin]
         actual = prices[origin + horizon]
+        candidate = _drift_from_endpoints(prices[0], last, origin + 1, horizon)
         results.append({
             "origin_date": rows[origin][0].isoformat(),
             "target_date": rows[origin + horizon][0].isoformat(),
-            "baseline": train[-1],
-            "candidate": predict_drift(train, horizon),
+            "baseline": last,
+            "candidate": candidate,
             "actual": actual,
-            "baseline_abs_error": abs(train[-1] - actual),
-            "candidate_abs_error": abs(predict_drift(train, horizon) - actual),
+            "baseline_abs_error": abs(last - actual),
+            "candidate_abs_error": abs(candidate - actual),
             "baseline_direction_correct": False,  # flat forecast has no direction
-            "candidate_direction_correct": (predict_drift(train, horizon) - train[-1]) * (actual - train[-1]) > 0,
+            "candidate_direction_correct": (candidate > last and actual > last) or (candidate < last and actual < last),
         })
     if not results:
         return {"status": "insufficient_holdout", "independent_windows": 0, "results": []}
@@ -69,7 +107,7 @@ def backtest(rows, horizon=7, train_min=120, stride=None):
         "baseline_mae": base,
         "candidate_mae": cand,
         "mae_improvement_pct": (base - cand) / base * 100 if base else None,
-        "candidate_rmse": math.sqrt(statistics.mean((x["candidate"] - x["actual"]) ** 2 for x in results)),
+        "candidate_rmse": _stable_rmse([x["candidate"] - x["actual"] for x in results]),
         "candidate_direction_accuracy": statistics.mean(x["candidate_direction_correct"] for x in results),
         "warning": "Model choice must not be tuned on these test windows; validate on a later untouched period.",
         "results": results,
