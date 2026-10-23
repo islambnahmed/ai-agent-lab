@@ -157,6 +157,55 @@ class ExactCountBoundsTests(unittest.TestCase):
             any_survives_bounds_from_counts(10, marginals, counts),
             (Fraction(4, 5), Fraction(1)))
 
+    def test_metamorphic_relabel_scale_and_input_order(self):
+        # Independent invariants: relabeling modes, reordering constraints,
+        # and scaling a shared population must not change probability bounds.
+        # Includes triangle+tree, tree+isolated, and disjoint-edge graphs.
+        from random import Random
+
+        rng = Random(20261023)
+        graphs = [
+            (6, ((0, 1), (0, 2), (1, 2), (3, 4), (4, 5))),
+            (7, ((0, 1), (1, 2), (2, 3), (4, 5))),
+            (8, ((0, 1), (2, 3), (4, 5), (6, 7))),
+        ]
+        for n, edges in graphs:
+            worlds = tuple(product((0, 1), repeat=n))
+            for trial in range(24):
+                weights = [rng.randrange(4) for _ in worlds]
+                if not any(weights):
+                    weights[0] = 1
+                total = sum(weights)
+                marg, pairs = signature(weights, worlds, edges)
+                counts = dict(zip(edges, pairs))
+                baseline = all_fail_bounds_from_counts(total, marg, counts)
+
+                permutation = list(range(n))
+                rng.shuffle(permutation)
+                remapped_marg = [0] * n
+                for old, new in enumerate(permutation):
+                    remapped_marg[new] = marg[old]
+                remapped_edges = {
+                    tuple(sorted((permutation[i], permutation[j]))): value
+                    for (i, j), value in zip(edges, pairs)
+                }
+                reversed_edges = dict(reversed(list(remapped_edges.items())))
+                with self.subTest(n=n, trial=trial):
+                    self.assertEqual(
+                        all_fail_bounds_from_counts(
+                            total, remapped_marg, reversed_edges),
+                        baseline)
+                    self.assertEqual(
+                        any_survives_bounds_from_counts(total, marg, counts),
+                        (1 - baseline[1], 1 - baseline[0]))
+                    scale = 2 ** 53 + 1
+                    self.assertEqual(
+                        all_fail_bounds_from_counts(
+                            total * scale,
+                            [v * scale for v in marg],
+                            {edge: value * scale for edge, value in counts.items()}),
+                        baseline)
+
     def test_exact_counts_beyond_float_integer_precision(self):
         total = 2 ** 53 + 1
         expected = Fraction(total - 2, total)
