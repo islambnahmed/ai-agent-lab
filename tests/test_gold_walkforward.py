@@ -55,6 +55,11 @@ class GoldWalkForwardTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "outside positive finite range"):
             predict_drift([1e-300, 1e300], 2)
 
+    def test_drift_rejects_invalid_intermediate_and_flat_prices(self):
+        for prices in ([1, -1, 1], [-1, -1], [1, float("nan"), 1]):
+            with self.subTest(prices=prices), self.assertRaises(ValueError):
+                predict_drift(prices, 1)
+
     def test_drift_matches_old_formula_on_regular_prices(self):
         prices = [2000 + i * 0.7 for i in range(500)]
         expected = prices[-1] * math.exp(7 * sum(
