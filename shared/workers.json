@@ -23,7 +23,7 @@
       "persona": null,
       "current_goal": "Apply cardinality-sensitive risk audit to a small independently anchored lab fixture; prioritize provenance over more synthetic solver complexity",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/lumen364_cardinality_audit.md (2026-10-23; 0% nominal vs 0–33.33% when size uncertain; 12 local tests and 120 seeded monotonicity cases; report committed; code ZIP local only)",
+      "last_checkpoint": "research/lumen/lumen364_cardinality_audit.md + lumen364.py + test_lumen364.py (2026-10-23; 0% nominal vs 0–33.33% size-uncertain; 12/12 tests, 120 seeded invariants; GitHub code/report/fixture verified; Notion summary verified; ZIP local)",
       "status": "active"
     }
   }
