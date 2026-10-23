@@ -1,0 +1,97 @@
+{
+  "gold": {
+    "trials": 12000,
+    "seed": 394,
+    "mode": "honest",
+    "metrics": {
+      "flat": {
+        "correct": 10307,
+        "wrong": 1693,
+        "abstain": 0
+      },
+      "graph": {
+        "correct": 9511,
+        "wrong": 244,
+        "abstain": 2245
+      }
+    },
+    "breakdown": {
+      "commonShock": 243,
+      "sharedXFault": 1450
+    }
+  },
+  "seo": {
+    "trials": 12000,
+    "seed": 395,
+    "mode": "honest",
+    "metrics": {
+      "flat": {
+        "correct": 10332,
+        "wrong": 1668,
+        "abstain": 0
+      },
+      "graph": {
+        "correct": 9485,
+        "wrong": 236,
+        "abstain": 2279
+      }
+    },
+    "breakdown": {
+      "commonShock": 235,
+      "sharedXFault": 1433
+    }
+  },
+  "forged": {
+    "trials": 12000,
+    "seed": 394,
+    "mode": "forged",
+    "metrics": {
+      "flat": {
+        "correct": 10307,
+        "wrong": 1693,
+        "abstain": 0
+      },
+      "graph": {
+        "correct": 10307,
+        "wrong": 1693,
+        "abstain": 0
+      }
+    }
+  },
+  "independent": {
+    "trials": 12000,
+    "seed": 394,
+    "mode": "independent",
+    "metrics": {
+      "flat": {
+        "correct": 11687,
+        "wrong": 313,
+        "abstain": 0
+      },
+      "graph": {
+        "correct": 11687,
+        "wrong": 313,
+        "abstain": 0
+      }
+    }
+  },
+  "commonShock": {
+    "trials": 12000,
+    "seed": 394,
+    "mode": "honest",
+    "systemicFault": 0.25,
+    "metrics": {
+      "flat": {
+        "correct": 7817,
+        "wrong": 4183,
+        "abstain": 0
+      },
+      "graph": {
+        "correct": 7203,
+        "wrong": 3097,
+        "abstain": 1700
+      }
+    }
+  },
+  "note": "Summary of locally reproduced deterministic output; benchmark.mjs emits full detailed result including simulation parameters."
+}
