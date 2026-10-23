@@ -1,0 +1,400 @@
+{
+  "version": 1,
+  "notes": "Synthetic offline cases. Unsupported-input abstentions are local policy, not a normative search-engine claim.",
+  "cases": [
+    {
+      "id": "basic-empty",
+      "category": "basic",
+      "robots": "",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "allowed"
+    },
+    {
+      "id": "basic-disallow",
+      "category": "basic",
+      "robots": "User-agent: *\nDisallow: /private",
+      "agent": "ExampleBot",
+      "target": "/private/x",
+      "expected": "disallowed"
+    },
+    {
+      "id": "basic-prefix-boundary",
+      "category": "basic",
+      "robots": "User-agent: *\nDisallow: /private",
+      "agent": "ExampleBot",
+      "target": "/privacy",
+      "expected": "allowed"
+    },
+    {
+      "id": "basic-allow",
+      "category": "basic",
+      "robots": "User-agent: *\nDisallow: /\nAllow: /public",
+      "agent": "ExampleBot",
+      "target": "/public/doc",
+      "expected": "allowed"
+    },
+    {
+      "id": "basic-allow-tie",
+      "category": "basic",
+      "robots": "User-agent: *\nDisallow: /same\nAllow: /same",
+      "agent": "ExampleBot",
+      "target": "/same",
+      "expected": "allowed"
+    },
+    {
+      "id": "basic-disallow-longer",
+      "category": "basic",
+      "robots": "User-agent: *\nAllow: /\nDisallow: /private",
+      "agent": "ExampleBot",
+      "target": "/private",
+      "expected": "disallowed"
+    },
+    {
+      "id": "basic-no-match",
+      "category": "basic",
+      "robots": "User-agent: *\nDisallow: /secret",
+      "agent": "ExampleBot",
+      "target": "/open",
+      "expected": "allowed"
+    },
+    {
+      "id": "basic-case",
+      "category": "basic",
+      "robots": "User-agent: *\nDisallow: /Secret",
+      "agent": "ExampleBot",
+      "target": "/secret",
+      "expected": "allowed"
+    },
+    {
+      "id": "basic-crlf",
+      "category": "basic",
+      "robots": "User-agent: *\r\nDisallow: /private\r\n",
+      "agent": "ExampleBot",
+      "target": "/private",
+      "expected": "disallowed"
+    },
+    {
+      "id": "basic-comment",
+      "category": "basic",
+      "robots": "User-agent: * # global\nDisallow: /private # comment",
+      "agent": "ExampleBot",
+      "target": "/private",
+      "expected": "disallowed"
+    },
+    {
+      "id": "basic-blank-disallow",
+      "category": "basic",
+      "robots": "User-agent: *\nDisallow:",
+      "agent": "ExampleBot",
+      "target": "/anything",
+      "expected": "allowed"
+    },
+    {
+      "id": "basic-blank-allow",
+      "category": "basic",
+      "robots": "User-agent: *\nAllow:",
+      "agent": "ExampleBot",
+      "target": "/anything",
+      "expected": "allowed"
+    },
+    {
+      "id": "basic-robots",
+      "category": "basic",
+      "robots": "User-agent: *\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "/robots.txt",
+      "expected": "allowed"
+    },
+    {
+      "id": "agents-specific",
+      "category": "agents",
+      "robots": "User-agent: ExampleBot\nDisallow: /a\nUser-agent: *\nAllow: /",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "disallowed"
+    },
+    {
+      "id": "agents-fallback",
+      "category": "agents",
+      "robots": "User-agent: ExampleBot\nDisallow: /a\nUser-agent: *\nDisallow: /b",
+      "agent": "OtherBot",
+      "target": "/b",
+      "expected": "disallowed"
+    },
+    {
+      "id": "agents-no-fallback",
+      "category": "agents",
+      "robots": "User-agent: ExampleBot\nDisallow: /a",
+      "agent": "OtherBot",
+      "target": "/a",
+      "expected": "allowed"
+    },
+    {
+      "id": "agents-longest",
+      "category": "agents",
+      "robots": "User-agent: Bot\nDisallow: /a\nUser-agent: ExampleBot\nAllow: /\nUser-agent: *\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "allowed"
+    },
+    {
+      "id": "agents-merged",
+      "category": "agents",
+      "robots": "User-agent: ExampleBot\nDisallow: /a\nUser-agent: ExampleBot\nDisallow: /b",
+      "agent": "ExampleBot",
+      "target": "/b",
+      "expected": "disallowed"
+    },
+    {
+      "id": "agents-multiple",
+      "category": "agents",
+      "robots": "User-agent: FirstBot\nUser-agent: ExampleBot\nDisallow: /a",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "disallowed"
+    },
+    {
+      "id": "agents-empty-boundary",
+      "category": "agents",
+      "robots": "User-agent: FirstBot\nDisallow:\nUser-agent: SecondBot\nDisallow: /a",
+      "agent": "FirstBot",
+      "target": "/a",
+      "expected": "allowed"
+    },
+    {
+      "id": "agents-empty-boundary-second",
+      "category": "agents",
+      "robots": "User-agent: FirstBot\nDisallow:\nUser-agent: SecondBot\nDisallow: /a",
+      "agent": "SecondBot",
+      "target": "/a",
+      "expected": "disallowed"
+    },
+    {
+      "id": "agents-ua-case",
+      "category": "agents",
+      "robots": "User-agent: examplebot\nDisallow: /a",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "disallowed"
+    },
+    {
+      "id": "agents-sitemap",
+      "category": "agents",
+      "robots": "User-agent: ExampleBot\nSitemap: https://example.test/sitemap.xml\nDisallow: /a",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "disallowed"
+    },
+    {
+      "id": "glob-wildcard",
+      "category": "wildcards",
+      "robots": "User-agent: *\nDisallow: /*.pdf",
+      "agent": "ExampleBot",
+      "target": "/docs/file.pdf",
+      "expected": "disallowed"
+    },
+    {
+      "id": "glob-wildcard-no-match",
+      "category": "wildcards",
+      "robots": "User-agent: *\nDisallow: /*.pdf",
+      "agent": "ExampleBot",
+      "target": "/docs/file.png",
+      "expected": "allowed"
+    },
+    {
+      "id": "glob-anchor",
+      "category": "wildcards",
+      "robots": "User-agent: *\nDisallow: /*.pdf$",
+      "agent": "ExampleBot",
+      "target": "/docs/file.pdf",
+      "expected": "disallowed"
+    },
+    {
+      "id": "glob-anchor-query",
+      "category": "wildcards",
+      "robots": "User-agent: *\nDisallow: /*.pdf$",
+      "agent": "ExampleBot",
+      "target": "/docs/file.pdf?download=1",
+      "expected": "allowed"
+    },
+    {
+      "id": "glob-nonanchor-query",
+      "category": "wildcards",
+      "robots": "User-agent: *\nDisallow: /*.pdf",
+      "agent": "ExampleBot",
+      "target": "/docs/file.pdf?download=1",
+      "expected": "disallowed"
+    },
+    {
+      "id": "glob-start",
+      "category": "wildcards",
+      "robots": "User-agent: *\nDisallow: /a*b",
+      "agent": "ExampleBot",
+      "target": "/axxxb/c",
+      "expected": "disallowed"
+    },
+    {
+      "id": "glob-start-negative",
+      "category": "wildcards",
+      "robots": "User-agent: *\nDisallow: /a*b",
+      "agent": "ExampleBot",
+      "target": "/axxxc",
+      "expected": "allowed"
+    },
+    {
+      "id": "glob-allow-precedence",
+      "category": "wildcards",
+      "robots": "User-agent: *\nDisallow: /*\nAllow: /public",
+      "agent": "ExampleBot",
+      "target": "/public",
+      "expected": "allowed"
+    },
+    {
+      "id": "encoding-unreserved",
+      "category": "encoding",
+      "robots": "User-agent: *\nDisallow: /abc",
+      "agent": "ExampleBot",
+      "target": "/%61bc",
+      "expected": "disallowed"
+    },
+    {
+      "id": "encoding-raw-unicode",
+      "category": "encoding",
+      "robots": "User-agent: *\nDisallow: /café",
+      "agent": "ExampleBot",
+      "target": "/caf%C3%A9",
+      "expected": "disallowed"
+    },
+    {
+      "id": "encoding-percent-hex-case",
+      "category": "encoding",
+      "robots": "User-agent: *\nDisallow: /caf%C3%A9",
+      "agent": "ExampleBot",
+      "target": "/caf%c3%a9",
+      "expected": "disallowed"
+    },
+    {
+      "id": "encoding-reserved",
+      "category": "encoding",
+      "robots": "User-agent: *\nDisallow: /a/b",
+      "agent": "ExampleBot",
+      "target": "/a%2Fb",
+      "expected": "allowed"
+    },
+    {
+      "id": "encoding-literal-star",
+      "category": "encoding",
+      "robots": "User-agent: *\nDisallow: /file-%2A.txt",
+      "agent": "ExampleBot",
+      "target": "/file-*.txt",
+      "expected": "disallowed"
+    },
+    {
+      "id": "encoding-literal-dollar",
+      "category": "encoding",
+      "robots": "User-agent: *\nDisallow: /file-%24",
+      "agent": "ExampleBot",
+      "target": "/file-$",
+      "expected": "disallowed"
+    },
+    {
+      "id": "encoding-bom",
+      "category": "encoding",
+      "robots": "﻿User-agent: *\nDisallow: /secret",
+      "agent": "ExampleBot",
+      "target": "/secret",
+      "expected": "disallowed"
+    },
+    {
+      "id": "encoding-query",
+      "category": "encoding",
+      "robots": "User-agent: *\nDisallow: /*?q=%2A",
+      "agent": "ExampleBot",
+      "target": "/search?q=*",
+      "expected": "disallowed"
+    },
+    {
+      "id": "unknown-bad-percent",
+      "category": "abstention",
+      "robots": "User-agent: *\nDisallow: /a%ZZ",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "unknown"
+    },
+    {
+      "id": "unknown-bad-path",
+      "category": "abstention",
+      "robots": "User-agent: *\nDisallow: a",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "unknown"
+    },
+    {
+      "id": "unknown-bad-agent",
+      "category": "abstention",
+      "robots": "User-agent: bad agent\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "unknown"
+    },
+    {
+      "id": "unknown-bad-target",
+      "category": "abstention",
+      "robots": "User-agent: *\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "relative",
+      "expected": "unknown"
+    },
+    {
+      "id": "unknown-bad-target-percent",
+      "category": "abstention",
+      "robots": "User-agent: *\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "/bad%XX",
+      "expected": "unknown"
+    },
+    {
+      "id": "unknown-bad-anchor",
+      "category": "abstention",
+      "robots": "User-agent: *\nDisallow: /a$b",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "unknown"
+    },
+    {
+      "id": "unknown-bad-token",
+      "category": "abstention",
+      "robots": "User-agent: *\nDisallow: /",
+      "agent": "Bad Agent",
+      "target": "/a",
+      "expected": "unknown"
+    },
+    {
+      "id": "unknown-too-large",
+      "category": "abstention",
+      "robots": "User-agent: *\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "unknown",
+      "repeat_char": "x",
+      "repeat_count": 512000
+    },
+    {
+      "id": "unknown-double-anchor",
+      "category": "abstention",
+      "robots": "User-agent: *\nDisallow: /a$$",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "unknown"
+    },
+    {
+      "id": "unknown-double-anchor-root",
+      "category": "abstention",
+      "robots": "User-agent: *\nDisallow: /$$",
+      "agent": "ExampleBot",
+      "target": "/",
+      "expected": "unknown"
+    }
+  ]
+}
