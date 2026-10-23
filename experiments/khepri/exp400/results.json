@@ -1,0 +1,48 @@
+{
+  "seed": 4002026,
+  "trialsPerScenario": 1000,
+  "scenarios": {
+    "weekday4pct": {
+      "legacyAccept": 1000,
+      "exp399Accept": 999,
+      "weekdayAccept": 1000,
+      "combinedAccept": 999,
+      "maxMissingWeekdays": 7
+    },
+    "daily4pct": {
+      "legacyAccept": 1000,
+      "exp399Accept": 1000,
+      "weekdayAccept": 1000,
+      "combinedAccept": 1000,
+      "maxMissingWeekdays": 5
+    },
+    "alternating13": {
+      "legacyAccept": 1000,
+      "exp399Accept": 1000,
+      "weekdayAccept": 0,
+      "combinedAccept": 0,
+      "maxMissingWeekdays": 15
+    },
+    "alternating17": {
+      "legacyAccept": 1000,
+      "exp399Accept": 0,
+      "weekdayAccept": 0,
+      "combinedAccept": 0,
+      "maxMissingWeekdays": 44
+    },
+    "weeklyTail": {
+      "legacyAccept": 1000,
+      "exp399Accept": 0,
+      "weekdayAccept": 0,
+      "combinedAccept": 0,
+      "maxMissingWeekdays": 100
+    },
+    "legitimateThreeDayTradingWeek": {
+      "legacyAccept": 0,
+      "exp399Accept": 0,
+      "weekdayAccept": 0,
+      "combinedAccept": 0,
+      "maxMissingWeekdays": 30
+    }
+  }
+}
