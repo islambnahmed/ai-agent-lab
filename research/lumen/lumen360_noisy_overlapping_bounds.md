@@ -29,4 +29,4 @@ Standard-library Python prototype `lumen360.py` and `test_lumen360.py` are in co
 - Worst-case search is exponential; no production-scale claim.
 - Next: independently committed membership snapshots and corruption model sensitivity, plus scaling tests on sparse overlapping graphs.
 
-**Status:** GitHub report is a summary; executable source is presently in the local ZIP artifact, not asserted to be in this repository.
+**Status:** Executable source and tests were subsequently committed to this branch at `research/lumen/lumen360.py` and `research/lumen/test_lumen360.py`; the local ZIP remains the exact locally tested and checksummed bundle.
