@@ -7,7 +7,7 @@ import http.client
 import socket
 import unittest
 from unittest.mock import patch
-from trusted_fetch_adapter import fetch_and_decide
+from trusted_fetch_adapter import fetch_and_decide, stdlib_https_transport
 from pinned_https_transport import pinned_https_transport
 
 TARGET = 'https://example.test/private'
@@ -47,7 +47,8 @@ class HTTPParserFailureTests(unittest.TestCase):
                 raise http.client.BadStatusLine('BROKEN HTTP STATUS')
         with patch('trusted_fetch_adapter.build_opener', return_value=BrokenOpener()):
             outcome = fetch_and_decide(TARGET, 'ExampleBot',
-                                       allowed_origins=ORIGINS, allow_network=True)
+                                       allowed_origins=ORIGINS, allow_network=True,
+                                       transport=stdlib_https_transport)
         self.assertEqual(outcome.status, 'unknown')
         self.assertIsNone(outcome.record)
 
