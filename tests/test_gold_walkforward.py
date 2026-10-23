@@ -43,5 +43,26 @@ class GoldWalkForwardTests(unittest.TestCase):
         self.assertTrue(math.isclose(predict_drift([100, 110, 121], 2), 146.41))
 
 
+    def test_drift_avoids_intermediate_ratio_overflow_underflow(self):
+        # Positive finite prices can have b/a overflow or underflow.
+        # Endpoint drift remains exactly zero in this case.
+        self.assertTrue(math.isclose(
+            predict_drift([1e-300, 1e300, 1e-300], 1), 1e-300,
+            rel_tol=1e-12,
+        ))
+
+    def test_drift_rejects_unrepresentable_forecast(self):
+        with self.assertRaisesRegex(ValueError, "outside positive finite range"):
+            predict_drift([1e-300, 1e300], 2)
+
+    def test_drift_matches_old_formula_on_regular_prices(self):
+        prices = [2000 + i * 0.7 for i in range(500)]
+        expected = prices[-1] * math.exp(7 * sum(
+            math.log(b / a) for a, b in zip(prices, prices[1:])
+        ) / (len(prices) - 1))
+        self.assertTrue(math.isclose(predict_drift(prices, 7), expected,
+                                     rel_tol=1e-12))
+
+
 if __name__ == "__main__":
     unittest.main()
