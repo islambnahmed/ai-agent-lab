@@ -1,0 +1,31 @@
+name: Seshat C374 conservative forward issuance
+on:
+  push:
+    branches:
+      - seshat/c374-forward-issuance
+    paths:
+      - 'experiments/seshat/c374-forward-issuance/**'
+      - '.github/workflows/c374-forward-issuance.yml'
+permissions:
+  contents: read
+jobs:
+  issue-forward:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline eligibility regression tests
+        run: node --test experiments/seshat/c374-forward-issuance/eligibility.test.mjs
+      - name: Read-only provider fetch and prospective issuance
+        run: node experiments/seshat/c374-forward-issuance/issue_forward.mjs
+      - name: Archive derived receipts only
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seshat-c374-forward-receipts
+          path: seshat-c374-forward-receipts.json
+          if-no-files-found: ignore
+          retention-days: 30
