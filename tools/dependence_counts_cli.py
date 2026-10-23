@@ -61,7 +61,9 @@ def evaluate_document(doc):
         "any_survives": {"lower": str(1 - hi), "upper": str(1 - lo)},
         "mode_count": len(marginal),
         "pairwise_constraint_count": len(edges),
-        "total": total,
+        # JSON numbers above 2**53 lose precision in JavaScript consumers.
+        # Keep the original population count exact across language boundaries.
+        "total": str(total),
     }
 
 
