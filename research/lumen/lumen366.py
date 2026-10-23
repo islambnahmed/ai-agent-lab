@@ -72,16 +72,25 @@ def validate_ledger(case_ids, events):
 
 
 def snapshot(case_ids, events, as_of, *, threshold=0.4, final_only=True):
-    validate_ledger(case_ids, events)
     cutoff = parse_utc(as_of)
+    if not isinstance(events, list):
+        raise LedgerError("events must be a list")
+    # An as-of snapshot consumes only the receipt-order prefix available then.
+    # Validate the full ledger separately when auditing later arrivals.
+    prefix = []
+    for event in events:
+        if not isinstance(event, dict) or "ingested_at" not in event:
+            raise LedgerError("invalid event envelope")
+        if parse_utc(event["ingested_at"]) > cutoff:
+            break
+        prefix.append(event)
+    validate_ledger(case_ids, prefix)
     if type(threshold) not in (int, float) or not 0 <= threshold <= 1:
         raise LedgerError("threshold outside [0,1]")
     if type(final_only) is not bool:
         raise LedgerError("final_only must be bool")
     current = {}
-    for event in events:
-        if parse_utc(event["ingested_at"]) > cutoff:
-            break
+    for event in prefix:
         current[event["case_id"]] = event
     known = {c: e["label"] for c, e in current.items()
              if not final_only or e["status"] == "final"}
