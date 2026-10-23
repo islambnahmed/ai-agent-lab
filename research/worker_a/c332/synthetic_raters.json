@@ -1,0 +1,62 @@
+{
+  "https://example.test/account/1": {
+    "rater_a": "intentional",
+    "rater_b": "intentional"
+  },
+  "https://example.test/account/2": {
+    "rater_a": "intentional",
+    "rater_b": "intentional"
+  },
+  "https://example.test/account/3": {
+    "rater_a": "intentional",
+    "rater_b": "intentional"
+  },
+  "https://example.test/account/4": {
+    "rater_a": "intentional",
+    "rater_b": "intentional"
+  },
+  "https://example.test/account/5": {
+    "rater_a": "intentional",
+    "rater_b": "intentional"
+  },
+  "https://example.test/blog/1": {
+    "rater_a": "accidental",
+    "rater_b": "accidental"
+  },
+  "https://example.test/blog/2": {
+    "rater_a": "accidental",
+    "rater_b": "accidental"
+  },
+  "https://example.test/blog/3": {
+    "rater_a": "accidental",
+    "rater_b": "accidental"
+  },
+  "https://example.test/blog/4": {
+    "rater_a": "accidental",
+    "rater_b": "accidental"
+  },
+  "https://example.test/blog/5": {
+    "rater_a": "unknown",
+    "rater_b": "accidental"
+  },
+  "https://example.test/docs/1": {
+    "rater_a": "accidental",
+    "rater_b": "accidental"
+  },
+  "https://example.test/docs/2": {
+    "rater_a": "accidental",
+    "rater_b": "accidental"
+  },
+  "https://example.test/docs/3": {
+    "rater_a": "accidental",
+    "rater_b": "intentional"
+  },
+  "https://example.test/docs/4": {
+    "rater_a": "accidental",
+    "rater_b": "accidental"
+  },
+  "https://example.test/docs/5": {
+    "rater_a": "accidental",
+    "rater_b": "accidental"
+  }
+}
