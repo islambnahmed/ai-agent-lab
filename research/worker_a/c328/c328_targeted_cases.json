@@ -1,0 +1,73 @@
+{
+  "purpose": "Post-holdout targeted cases; kept separate from the original 14-mutant holdout score.",
+  "cases": [
+    {
+      "id": "c328-exact-file-size-boundary",
+      "category": "boundary",
+      "robots": "User-agent: *\nDisallow: /private\n#",
+      "repeat_char": "x",
+      "repeat_count": 511966,
+      "agent": "ExampleBot",
+      "target": "/private",
+      "expected": "disallowed"
+    },
+    {
+      "id": "c328-exact-path-size-boundary",
+      "category": "boundary",
+      "robots": "User-agent: *\nDisallow: /a",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "repeat_target_char": "a",
+      "repeat_target_count": 8190,
+      "expected": "disallowed"
+    },
+    {
+      "id": "c328-fragment-in-path-invalid",
+      "category": "input-validation",
+      "robots": "User-agent: *\nDisallow: /private",
+      "agent": "ExampleBot",
+      "target": "/private#fragment",
+      "expected": "unknown"
+    },
+    {
+      "id": "c328-agent-token-infix",
+      "category": "agents",
+      "robots": "User-agent: bot\nDisallow: /private\nUser-agent: *\nAllow: /private",
+      "agent": "SuperBotCrawler",
+      "target": "/private",
+      "expected": "disallowed"
+    },
+    {
+      "id": "c328-colon-inside-rule-value",
+      "category": "parser",
+      "robots": "User-agent: *\nDisallow: /v1:private",
+      "agent": "ExampleBot",
+      "target": "/v1:private",
+      "expected": "disallowed"
+    },
+    {
+      "id": "c328-ampersand-query-preserved",
+      "category": "url",
+      "robots": "User-agent: *\nDisallow: /search?q=a&lang=en",
+      "agent": "ExampleBot",
+      "target": "https://example.test/search?q=a&lang=en",
+      "expected": "disallowed"
+    },
+    {
+      "id": "c328-http-url-accepted",
+      "category": "url",
+      "robots": "User-agent: *\nDisallow: /private",
+      "agent": "ExampleBot",
+      "target": "http://example.test/private",
+      "expected": "disallowed"
+    },
+    {
+      "id": "c328-url-with-empty-path-root",
+      "category": "url",
+      "robots": "User-agent: *\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "https://example.test",
+      "expected": "disallowed"
+    }
+  ]
+}
