@@ -1,0 +1,12 @@
+{
+  "gold_synthetic": {
+    "comparisons": 303,
+    "max_relative_change": 1.7763568394002505e-15,
+    "mean_relative_change": 4.803638235259341e-16
+  },
+  "seo_traffic_synthetic": {
+    "comparisons": 303,
+    "max_relative_change": 1.7763568394002505e-15,
+    "mean_relative_change": 6.009127922063553e-16
+  }
+}
