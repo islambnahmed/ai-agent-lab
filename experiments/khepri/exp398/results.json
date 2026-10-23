@@ -1,0 +1,238 @@
+{
+  "experiment": "exp398",
+  "seed": 3982026,
+  "replicates": 100,
+  "train_n": 900,
+  "holdout_n": 900,
+  "deploy_n": 900,
+  "threshold_grid": [
+    0.35,
+    0.4,
+    0.45,
+    0.5,
+    0.55,
+    0.6,
+    0.65,
+    0.7,
+    0.75,
+    0.8,
+    0.85,
+    0.9,
+    0.95
+  ],
+  "reward": {
+    "correct": 1,
+    "wrong": -2,
+    "abstain": -0.15
+  },
+  "results": {
+    "gold_q0.02_shift0.00": {
+      "train_optimism": 0.08269,
+      "holdout_error": -0.01918,
+      "holdout_ci_covers_holdout_truth": 0.97,
+      "selected_train_truth": -0.11399,
+      "selected_deploy_truth": -0.12116,
+      "holdout_vs_deploy_gap": -0.01748,
+      "cautious_deploy_truth": -0.08316,
+      "oracle_train_truth": -0.06899,
+      "fixed_deploy_truth": -0.07886,
+      "chosen_threshold": 0.7085,
+      "cautious_threshold": 0.829,
+      "holdout_estimate": -0.13864,
+      "train_optimism_ci95": [
+        0.05935,
+        0.10602
+      ],
+      "holdout_error_ci95": [
+        -0.04255,
+        0.00418
+      ],
+      "holdout_vs_deploy_gap_ci95": [
+        -0.04142,
+        0.00646
+      ]
+    },
+    "gold_q0.02_shift0.20": {
+      "train_optimism": 0.10411,
+      "holdout_error": 0.01022,
+      "holdout_ci_covers_holdout_truth": 0.99,
+      "selected_train_truth": -0.11528,
+      "selected_deploy_truth": -0.36013,
+      "holdout_vs_deploy_gap": 0.25346,
+      "cautious_deploy_truth": -0.22673,
+      "oracle_train_truth": -0.07036,
+      "fixed_deploy_truth": -0.28248,
+      "chosen_threshold": 0.7065,
+      "cautious_threshold": 0.8185,
+      "holdout_estimate": -0.10668,
+      "train_optimism_ci95": [
+        0.07888,
+        0.12934
+      ],
+      "holdout_error_ci95": [
+        -0.00634,
+        0.02679
+      ],
+      "holdout_vs_deploy_gap_ci95": [
+        0.22496,
+        0.28195
+      ]
+    },
+    "gold_q0.10_shift0.00": {
+      "train_optimism": 0.02638,
+      "holdout_error": -0.00145,
+      "holdout_ci_covers_holdout_truth": 0.99,
+      "selected_train_truth": -0.08458,
+      "selected_deploy_truth": -0.09388,
+      "holdout_vs_deploy_gap": -0.00174,
+      "cautious_deploy_truth": -0.08496,
+      "oracle_train_truth": -0.07119,
+      "fixed_deploy_truth": -0.07977,
+      "chosen_threshold": 0.748,
+      "cautious_threshold": 0.8235,
+      "holdout_estimate": -0.09562,
+      "train_optimism_ci95": [
+        0.0186,
+        0.03416
+      ],
+      "holdout_error_ci95": [
+        -0.00828,
+        0.00538
+      ],
+      "holdout_vs_deploy_gap_ci95": [
+        -0.01255,
+        0.00908
+      ]
+    },
+    "gold_q0.10_shift0.20": {
+      "train_optimism": 0.03138,
+      "holdout_error": 0.00647,
+      "holdout_ci_covers_holdout_truth": 0.99,
+      "selected_train_truth": -0.09002,
+      "selected_deploy_truth": -0.29945,
+      "holdout_vs_deploy_gap": 0.21675,
+      "cautious_deploy_truth": -0.22472,
+      "oracle_train_truth": -0.07188,
+      "fixed_deploy_truth": -0.28294,
+      "chosen_threshold": 0.7485,
+      "cautious_threshold": 0.8235,
+      "holdout_estimate": -0.0827,
+      "train_optimism_ci95": [
+        0.02077,
+        0.042
+      ],
+      "holdout_error_ci95": [
+        -0.00114,
+        0.01408
+      ],
+      "holdout_vs_deploy_gap_ci95": [
+        0.19694,
+        0.23657
+      ]
+    },
+    "seo_q0.02_shift0.00": {
+      "train_optimism": 0.11816,
+      "holdout_error": -0.00201,
+      "holdout_ci_covers_holdout_truth": 0.97,
+      "selected_train_truth": -0.14719,
+      "selected_deploy_truth": -0.15648,
+      "holdout_vs_deploy_gap": -0.00057,
+      "cautious_deploy_truth": -0.1431,
+      "oracle_train_truth": -0.10707,
+      "fixed_deploy_truth": -0.11735,
+      "chosen_threshold": 0.6545,
+      "cautious_threshold": 0.826,
+      "holdout_estimate": -0.15704,
+      "train_optimism_ci95": [
+        0.09281,
+        0.14351
+      ],
+      "holdout_error_ci95": [
+        -0.02802,
+        0.02399
+      ],
+      "holdout_vs_deploy_gap_ci95": [
+        -0.02971,
+        0.02858
+      ]
+    },
+    "seo_q0.02_shift0.20": {
+      "train_optimism": 0.13517,
+      "holdout_error": -0.00084,
+      "holdout_ci_covers_holdout_truth": 0.93,
+      "selected_train_truth": -0.15556,
+      "selected_deploy_truth": -0.3578,
+      "holdout_vs_deploy_gap": 0.19496,
+      "cautious_deploy_truth": -0.20327,
+      "oracle_train_truth": -0.10884,
+      "fixed_deploy_truth": -0.24047,
+      "chosen_threshold": 0.646,
+      "cautious_threshold": 0.8385,
+      "holdout_estimate": -0.16284,
+      "train_optimism_ci95": [
+        0.10696,
+        0.16338
+      ],
+      "holdout_error_ci95": [
+        -0.03354,
+        0.03185
+      ],
+      "holdout_vs_deploy_gap_ci95": [
+        0.15558,
+        0.23433
+      ]
+    },
+    "seo_q0.10_shift0.00": {
+      "train_optimism": 0.03157,
+      "holdout_error": 0.00083,
+      "holdout_ci_covers_holdout_truth": 0.99,
+      "selected_train_truth": -0.12456,
+      "selected_deploy_truth": -0.13353,
+      "holdout_vs_deploy_gap": 0.00213,
+      "cautious_deploy_truth": -0.13172,
+      "oracle_train_truth": -0.10893,
+      "fixed_deploy_truth": -0.11841,
+      "chosen_threshold": 0.7215,
+      "cautious_threshold": 0.846,
+      "holdout_estimate": -0.1314,
+      "train_optimism_ci95": [
+        0.02323,
+        0.03992
+      ],
+      "holdout_error_ci95": [
+        -0.00591,
+        0.00757
+      ],
+      "holdout_vs_deploy_gap_ci95": [
+        -0.00768,
+        0.01193
+      ]
+    },
+    "seo_q0.10_shift0.20": {
+      "train_optimism": 0.03288,
+      "holdout_error": 0.00645,
+      "holdout_ci_covers_holdout_truth": 0.99,
+      "selected_train_truth": -0.12368,
+      "selected_deploy_truth": -0.28284,
+      "holdout_vs_deploy_gap": 0.15487,
+      "cautious_deploy_truth": -0.2007,
+      "oracle_train_truth": -0.10811,
+      "fixed_deploy_truth": -0.24455,
+      "chosen_threshold": 0.7175,
+      "cautious_threshold": 0.843,
+      "holdout_estimate": -0.12797,
+      "train_optimism_ci95": [
+        0.02271,
+        0.04305
+      ],
+      "holdout_error_ci95": [
+        -0.00053,
+        0.01344
+      ],
+      "holdout_vs_deploy_gap_ci95": [
+        0.13772,
+        0.17203
+      ]
+    }
+  }
+}
