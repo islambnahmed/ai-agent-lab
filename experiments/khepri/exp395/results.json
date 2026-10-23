@@ -1,0 +1,54 @@
+{
+  "seed": 3952026,
+  "definition": "Synthetic; receipt timestamps are trusted; oracle truth is latent value at decision. Revisions after decision can be more accurate but unavailable.",
+  "cases": {
+    "gold": {
+      "n": 12000,
+      "lateRevision": 8390,
+      "backdatedLateRevision": 4201,
+      "initialLate": 1801,
+      "latest": {
+        "coverage": 1,
+        "leakedDecisions": 8390,
+        "leakRateAmongSelected": 0.6991666666666667,
+        "relativeRMSE": 0.001006726785599514
+      },
+      "published": {
+        "coverage": 1,
+        "leakedDecisions": 5095,
+        "leakRateAmongSelected": 0.4245833333333333,
+        "relativeRMSE": 0.01439758543605012
+      },
+      "snapshot": {
+        "coverage": 0.8966666666666666,
+        "leakedDecisions": 0,
+        "leakRateAmongSelected": 0,
+        "relativeRMSE": 0.016574529496625988
+      }
+    },
+    "seo": {
+      "n": 12000,
+      "lateRevision": 8371,
+      "backdatedLateRevision": 4208,
+      "initialLate": 1761,
+      "latest": {
+        "coverage": 1,
+        "leakedDecisions": 8371,
+        "leakRateAmongSelected": 0.6975833333333333,
+        "relativeRMSE": 0.002318762551253132
+      },
+      "published": {
+        "coverage": 1,
+        "leakedDecisions": 5064,
+        "leakRateAmongSelected": 0.422,
+        "relativeRMSE": 0.032620842868620874
+      },
+      "snapshot": {
+        "coverage": 0.9001666666666667,
+        "leakedDecisions": 0,
+        "leakRateAmongSelected": 0,
+        "relativeRMSE": 0.03768745521390509
+      }
+    }
+  }
+}
