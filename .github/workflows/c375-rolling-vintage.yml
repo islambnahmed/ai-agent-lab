@@ -1,0 +1,31 @@
+name: Seshat C375 rolling vintage diagnostic
+on:
+  push:
+    branches:
+      - seshat/c375-rolling-vintage
+    paths:
+      - 'experiments/seshat/c375-rolling-vintage/**'
+      - '.github/workflows/c375-rolling-vintage.yml'
+permissions:
+  contents: read
+jobs:
+  diagnose:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Synthetic rolling-window regression tests
+        run: node --test experiments/seshat/c375-rolling-vintage/rolling_vintage.test.mjs
+      - name: Read-only legacy receipt and current provider audit
+        run: node experiments/seshat/c375-rolling-vintage/probe.mjs
+      - name: Archive derived suffix commitments, not raw vendor data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: seshat-c375-derived-commitment
+          path: seshat-c375-derived-commitment.json
+          if-no-files-found: ignore
+          retention-days: 30
