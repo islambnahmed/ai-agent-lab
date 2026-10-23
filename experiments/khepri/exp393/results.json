@@ -1,0 +1,22 @@
+{
+  "gold": {
+    "trials": 12000, "seed": 393, "individualFault": 0.1, "systemicFault": 0.03,
+    "baseline": 2000, "amplitude": 200, "faultMultiplier": 1.18,
+    "cases": {"noFault":8428,"upstreamOnly":1019,"systemic":337},
+    "methods": {
+      "naive":{"acceptedCorrect":10321,"acceptedWrong":563,"abstained":1116},
+      "lineage2":{"acceptedCorrect":11340,"acceptedWrong":660,"abstained":0},
+      "lineage3":{"acceptedCorrect":8428,"acceptedWrong":342,"abstained":3230}
+    }
+  },
+  "seo": {
+    "trials": 12000, "seed": 394, "individualFault": 0.1, "systemicFault": 0.03,
+    "baseline": 100, "amplitude": 10, "faultMultiplier": 0.7,
+    "cases": {"noFault":8396,"upstreamOnly":1014,"systemic":358},
+    "methods": {
+      "naive":{"acceptedCorrect":10303,"acceptedWrong":581,"abstained":1116},
+      "lineage2":{"acceptedCorrect":11317,"acceptedWrong":683,"abstained":0},
+      "lineage3":{"acceptedCorrect":8396,"acceptedWrong":365,"abstained":3239}
+    }
+  }
+}
