@@ -1,0 +1,43 @@
+{
+  "version": 1,
+  "cases": [
+    {
+      "id": "size-limit-independent-of-path-limit",
+      "category": "size",
+      "robots": "User-agent: *\nDisallow: /secret\n#",
+      "repeat_char": "x",
+      "repeat_count": 512000,
+      "agent": "ExampleBot",
+      "target": "/secret",
+      "expected": "unknown",
+      "rationale": "Oversize via comment; avoid accidentally passing through the 8192-character rule-path guard."
+    },
+    {
+      "id": "absolute-url-query-must-be-included",
+      "category": "url",
+      "robots": "User-agent: *\nDisallow: /search?q=1",
+      "agent": "ExampleBot",
+      "target": "https://example.test/search?q=1",
+      "expected": "disallowed",
+      "rationale": "Path-only cases do not exercise urlsplit query assembly."
+    },
+    {
+      "id": "wildcard-syntax-contributes-to-rule-length",
+      "category": "precedence",
+      "robots": "User-agent: *\nDisallow: /*.htm\nAllow: /page",
+      "agent": "ExampleBot",
+      "target": "/page.htm",
+      "expected": "disallowed",
+      "rationale": "The wildcard rule has a longer pattern than /page."
+    },
+    {
+      "id": "terminal-anchor-contributes-to-rule-length",
+      "category": "precedence",
+      "robots": "User-agent: *\nDisallow: /a$\nAllow: /a",
+      "agent": "ExampleBot",
+      "target": "/a",
+      "expected": "disallowed",
+      "rationale": "The terminal anchor distinguishes longer disallow from shorter allow."
+    }
+  ]
+}
