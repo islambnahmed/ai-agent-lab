@@ -20,3 +20,14 @@ test('does not accept a self-asserted publication timestamp for same-day target'
 test('first lock and identical subsequent observation are idempotent',()=>{const dir=mkdtempSync(join(tmpdir(),'seshat-c366-'));try{assert.equal(writeOnceOutcome(dir,good()).status,'first_locked');assert.equal(writeOnceOutcome(dir,good()).status,'unchanged');}finally{rmSync(dir,{recursive:true,force:true});}});
 test('revised target cannot silently replace original outcome',()=>{const dir=mkdtempSync(join(tmpdir(),'seshat-c366-'));try{const original=good();writeOnceOutcome(dir,original);const next=4260;const revision=makeOutcomeLock(receipt,{...outcome,actual:next,modelAbsError:Math.abs(receipt.point-next),baselineAbsError:Math.abs(receipt.baseline-next)},args);const conflict=writeOnceOutcome(dir,revision);assert.equal(conflict.status,'conflicting_revision');assert.equal(JSON.parse(readFileSync(join(dir,receipt.id+'.json'))).actual,actual);}finally{rmSync(dir,{recursive:true,force:true});}});
 test('tampered stored lock is rejected',()=>{const dir=mkdtempSync(join(tmpdir(),'seshat-c366-'));try{const x=good();writeOnceOutcome(dir,x);const p=join(dir,receipt.id+'.json');writeFileSync(p,JSON.stringify({...x,actual:1}));assert.throws(()=>writeOnceOutcome(dir,x),/corrupted/);}finally{rmSync(dir,{recursive:true,force:true});}});
+
+test('same price with revised source evidence is not silently called unchanged',()=>{
+  const dir=mkdtempSync(join(tmpdir(),'seshat-c368-'));
+  try{
+    const first=good();writeOnceOutcome(dir,first);
+    const revised=makeOutcomeLock(receipt,outcome,{...args,manifest:{...args.manifest,rawSha256:'c'.repeat(64)}});
+    const result=writeOnceOutcome(dir,revised);
+    assert.equal(result.status,'evidence_revision');
+    assert.equal(JSON.parse(readFileSync(join(dir,receipt.id+'.json'))).lockSha256,first.lockSha256);
+  }finally{rmSync(dir,{recursive:true,force:true});}
+});
