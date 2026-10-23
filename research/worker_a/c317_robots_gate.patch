@@ -1,0 +1,51 @@
+--- a/robots_gate.py
++++ b/robots_gate.py
+@@ -81,6 +81,7 @@
+         raise ValueError('file exceeds bounded 500 KiB inspection limit')
+     groups = []
+     agents, rules = [], []
++    saw_rule_line = False
+     for line_number, raw in enumerate(robots.splitlines(), 1):
+         line = raw.split('#', 1)[0].strip()
+         if not line or ':' not in line:
+@@ -90,15 +91,19 @@
+         if key == 'user-agent':
+             if not value or not re.fullmatch(r'[A-Za-z0-9_.-]+|\*', value):
+                 raise ValueError(f'invalid user-agent at line {line_number}')
+-            if agents and rules:
++            if agents and saw_rule_line:
+                 groups.append((tuple(agents), tuple(rules)))
+                 agents, rules = [], []
++                saw_rule_line = False
+             agents.append(value.lower())
+         elif key in ('allow', 'disallow'):
+             if not agents:
+                 continue
++            # Even an empty Allow/Disallow is a syntactic rule line, so the
++            # following User-agent starts a new group (RFC 9309, §2.2).
++            saw_rule_line = True
+             if not value:
+-                continue  # empty Disallow/Allow is no rule
++                continue  # empty Disallow/Allow has no matching path
+             if not value.startswith('/') or len(value) > 8192:
+                 raise ValueError(f'unsupported rule path at line {line_number}')
+             # Only a terminal '$' and '*' wildcards are supported.
+@@ -147,13 +152,15 @@
+                 anchored = pattern.endswith('$')
+                 core = pattern[:-1] if anchored else pattern
+                 if _glob_matches(core, target, anchored):
+-                    # Specificity is number of literal octets, not consumed wildcard span.
+-                    score = len(core.replace('*', '').encode('utf-8'))
++                    # Published Google precedence examples count wildcard/anchor
++                    # syntax in the rule's length. Omitting '*' or '$'
++                    # misclassifies /*.htm vs /page and /$ vs /.
++                    score = len(pattern.encode('utf-8'))
+                     matches.append((score, kind == 'allow', kind, pattern, line))
+         if not matches:
+             return Decision('allowed', selected, None, 'no matching allow/disallow rule')
+         best = max(matches, key=lambda r: (r[0], r[1]))
+         return Decision('allowed' if best[1] else 'disallowed', selected,
+-                        f'{best[2]}: {best[3]} (line {best[4]})', 'longest matching literal path; allow wins ties')
++                        f'{best[2]}: {best[3]} (line {best[4]})', 'longest matching rule pattern; allow wins ties')
+     except (ValueError, UnicodeError) as exc:
+         return Decision('unknown', None, None, str(exc))
