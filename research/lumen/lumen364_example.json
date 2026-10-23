@@ -1,0 +1,33 @@
+{
+  "entities": [
+    "A",
+    "B",
+    "C"
+  ],
+  "reports": [
+    {
+      "name": "a",
+      "members": [
+        "A"
+      ],
+      "kind": "count",
+      "value": 0
+    },
+    {
+      "name": "bc",
+      "members": [
+        "B",
+        "C"
+      ],
+      "kind": "count",
+      "value": 0
+    }
+  ],
+  "uncertain_groups": [
+    "bc"
+  ],
+  "max_error_rate": 0.2,
+  "max_radius": 1,
+  "max_membership_changes": 1,
+  "max_corrupt_values": 0
+}
