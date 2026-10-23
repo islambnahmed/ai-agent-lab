@@ -19,5 +19,5 @@ jobs:
           python-version: "3.12"
       - name: Validate lab structure
         run: python tools/validate_lab.py
-      - name: Test exact-count dependence bounds
-        run: python -m unittest discover -s tests -p 'test_dependence_counts_exact.py' -v
+      - name: Test exact-count solver and offline JSON caller
+        run: python -m unittest discover -s tests -p 'test_dependence_counts_*.py' -v
