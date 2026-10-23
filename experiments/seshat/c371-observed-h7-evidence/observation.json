@@ -1,0 +1,57 @@
+{
+  "schema_version": 1,
+  "cycle": "C371",
+  "recorded_date": "2026-10-23",
+  "classification": "tentative_current_vintage",
+  "independent_execution": {
+    "provider": "GitHub Actions",
+    "run_id": 39993282182,
+    "job_id": 120550222082,
+    "run_url": "https://github.com/islambnahmed/ai-agent-lab/actions/runs/39993282182",
+    "conclusion": "success",
+    "offline_tests": {
+      "passed": 7,
+      "failed": 0
+    },
+    "received_at": "2026-10-23T17:13:30.697Z"
+  },
+  "source": {
+    "name": "Standard Bullion",
+    "url": "https://standardbullion.com/api/v1/market/history?metal=XAU&range=1y",
+    "raw_sha256": "bc6d6a15fedb65c7eb66d7e97d05bc41c58941d2a303ae1814587a681fb6436e",
+    "raw_bytes_preserved": false
+  },
+  "receipt": {
+    "id": "d5424cb833363c66b51e342afa99dcef56c0ab1e569f102a17877bb2ae2a8daf",
+    "issued_at": "2026-10-12T17:12:52.272Z",
+    "origin_date": "2026-10-11",
+    "origin_close": 4207.98,
+    "point": 4225.483424799358,
+    "baseline": 4207.98,
+    "horizon_observations": 7,
+    "original_history_length": 324,
+    "original_history_hash": "bcbfac86e29f02576a584cdab96be7915bce5d23f622f1e0c828964eda513f9f"
+  },
+  "observation": {
+    "as_of": "2026-10-23T17:13:30.697Z",
+    "latest_date": "2026-10-22",
+    "current_total_rows": 324,
+    "current_future_rows": 11,
+    "current_rows_through_origin": 313,
+    "original_rows_unavailable_at_least": 11,
+    "origin_close_current": 4207.98,
+    "target_date": "2026-10-18",
+    "target_close_current": 4192.32,
+    "model_absolute_error": 33.16342479935793,
+    "baseline_absolute_error": 15.659999999999854,
+    "winner": "baseline"
+  },
+  "limitations": [
+    "Current mutable vendor feed only",
+    "Original historical 324-row prefix cannot be verified from current rolling 324-row feed",
+    "No independent release timestamp for target value",
+    "No independent same-definition source verification",
+    "Raw response not archived; SHA is not self-sufficient for later replay",
+    "No certified settlement or predictive-skill inference"
+  ]
+}
