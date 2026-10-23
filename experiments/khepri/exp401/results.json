@@ -1,0 +1,44 @@
+{
+  "freeze/gold.receipt.issue": {
+    "completed": 8,
+    "multiple": 0,
+    "one": 12,
+    "total": 16,
+    "zero": 4
+  },
+  "freeze/seo.page.publish": {
+    "completed": 8,
+    "multiple": 0,
+    "one": 12,
+    "total": 16,
+    "zero": 4
+  },
+  "keyed/gold.receipt.issue": {
+    "completed": 16,
+    "multiple": 0,
+    "one": 16,
+    "total": 16,
+    "zero": 0
+  },
+  "keyed/seo.page.publish": {
+    "completed": 16,
+    "multiple": 0,
+    "one": 16,
+    "total": 16,
+    "zero": 0
+  },
+  "replay/gold.receipt.issue": {
+    "completed": 16,
+    "multiple": 5,
+    "one": 11,
+    "total": 16,
+    "zero": 0
+  },
+  "replay/seo.page.publish": {
+    "completed": 16,
+    "multiple": 5,
+    "one": 11,
+    "total": 16,
+    "zero": 0
+  }
+}
