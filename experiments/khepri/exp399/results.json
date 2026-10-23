@@ -1,0 +1,34 @@
+{
+  "seed": 3992026,
+  "trialsPerScenario": 1000,
+  "scenarios": {
+    "weekdayLike": {
+      "legacyAccept": 1000,
+      "local50Accept": 1000,
+      "local65Accept": 805,
+      "hybridAccept": 1000,
+      "minWorstWindowFraction": 0.5
+    },
+    "dailyLike": {
+      "legacyAccept": 1000,
+      "local50Accept": 1000,
+      "local65Accept": 1000,
+      "hybridAccept": 1000,
+      "minWorstWindowFraction": 0.7
+    },
+    "weeklyTail": {
+      "legacyAccept": 1000,
+      "local50Accept": 0,
+      "local65Accept": 0,
+      "hybridAccept": 0,
+      "minWorstWindowFraction": 0
+    },
+    "alternating": {
+      "legacyAccept": 1000,
+      "local50Accept": 1000,
+      "local65Accept": 0,
+      "hybridAccept": 0,
+      "minWorstWindowFraction": 0.5
+    }
+  }
+}
