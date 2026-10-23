@@ -19,6 +19,7 @@ class CountCliTests(unittest.TestCase):
         self.assertEqual(result["all_fail"], {"lower": "1/5", "upper": "1/5"})
         self.assertEqual(result["any_survives"], {"lower": "4/5", "upper": "4/5"})
         self.assertEqual(result["pairwise_constraint_count"], 1)
+        self.assertEqual(result["total"], "10")
 
     def test_no_pairs_is_unknown_not_zero(self):
         doc = {"total": 10, "marginal_counts": [5, 5], "pairwise_counts": []}
@@ -30,8 +31,10 @@ class CountCliTests(unittest.TestCase):
         doc = {"total": total, "marginal_counts": [total - 1] * 2,
                "pairwise_counts": [{"i": 0, "j": 1, "count": total - 2}]}
         bound = f"{total - 2}/{total}"
-        self.assertEqual(evaluate_document(doc)["all_fail"],
-                         {"lower": bound, "upper": bound})
+        result = evaluate_document(doc)
+        self.assertEqual(result["all_fail"], {"lower": bound, "upper": bound})
+        self.assertEqual(result["total"], str(total))
+        self.assertIsInstance(json.loads(json.dumps(result))["total"], str)
 
     def test_invalid_documents(self):
         invalid = [
