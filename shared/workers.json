@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Test partially attested group memberships and sharp risk bounds with bounded membership uncertainty; verify independent anchor assumptions",
+      "current_goal": "Apply cardinality-sensitive risk audit to a small independently anchored lab fixture; prioritize provenance over more synthetic solver complexity",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/lumen361_membership_commitment_attack.md (2026-10-23; 50% -> 16.67% membership swap; independently anchored mismatch rejected; self-signed forgery passes; 17 local tests, 500 seeded comparisons; GitHub source/tests and Notion page verified)",
+      "last_checkpoint": "research/lumen/lumen364_cardinality_audit.md (2026-10-23; 0% nominal vs 0–33.33% when size uncertain; 12 local tests and 120 seeded monotonicity cases; report committed; code ZIP local only)",
       "status": "active"
     }
   }
