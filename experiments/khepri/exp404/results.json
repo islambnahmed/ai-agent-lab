@@ -1,0 +1,146 @@
+{
+  "seed": 404,
+  "scenarios_per_domain_architecture": 2000,
+  "focal": {
+    "shock_probability": 0.2,
+    "parallel_joint_success": 0.8,
+    "parallel_independent_success": 0.9600000000000002,
+    "serial_joint_success": 0.8,
+    "serial_independent_success": 0.6400000000000001,
+    "fallback_success": 0.9000000000000001,
+    "joint_choice": "fallback",
+    "independent_choice": "parallel"
+  },
+  "gold": {
+    "parallel": {
+      "scenarios": 2000,
+      "independence_wrong_choices": 733,
+      "independence_mean_true_utility_regret": 0.164952,
+      "independence_worst_true_utility_regret": 1.465263,
+      "pair_independence_minus_joint_mean_probability": 0.079007,
+      "pair_independence_minus_joint_min_probability": 0.022152,
+      "pair_independence_minus_joint_max_probability": 0.168495,
+      "half_shock_wrong_choices": 618,
+      "half_shock_mean_true_utility_regret": 0.115256,
+      "mc_max_abs_error_first_16_checks": 0.004759,
+      "first_disagreement": {
+        "case_index": 5,
+        "shock_probability": 0.21337,
+        "calm_outages": {
+          "a": 0.02887,
+          "b": 0.01485,
+          "c": 0.08824
+        },
+        "shocked_outages": {
+          "a": 0.96921,
+          "b": 0.80919,
+          "c": 0.08824
+        },
+        "joint_choice": "single",
+        "independence_choice": "pair",
+        "actual_utilities": {
+          "pair": 7.61668,
+          "single": 8.19605
+        }
+      }
+    },
+    "serial": {
+      "scenarios": 2000,
+      "independence_wrong_choices": 174,
+      "independence_mean_true_utility_regret": 0.02035,
+      "independence_worst_true_utility_regret": 0.8097,
+      "pair_independence_minus_joint_mean_probability": -0.077307,
+      "pair_independence_minus_joint_min_probability": -0.17525,
+      "pair_independence_minus_joint_max_probability": -0.0197,
+      "half_shock_wrong_choices": 561,
+      "half_shock_mean_true_utility_regret": 0.136439,
+      "mc_max_abs_error_first_16_checks": 0.006376,
+      "first_disagreement": {
+        "case_index": 8,
+        "shock_probability": 0.17389,
+        "calm_outages": {
+          "a": 0.01924,
+          "b": 0.02182,
+          "c": 0.05745
+        },
+        "shocked_outages": {
+          "a": 0.67928,
+          "b": 0.65725,
+          "c": 0.05745
+        },
+        "joint_choice": "pair",
+        "independence_choice": "single",
+        "actual_utilities": {
+          "pair": 7.87918,
+          "single": 7.65279
+        }
+      }
+    }
+  },
+  "seo": {
+    "parallel": {
+      "scenarios": 2000,
+      "independence_wrong_choices": 580,
+      "independence_mean_true_utility_regret": 0.128411,
+      "independence_worst_true_utility_regret": 1.817113,
+      "pair_independence_minus_joint_mean_probability": 0.068472,
+      "pair_independence_minus_joint_min_probability": 0.015483,
+      "pair_independence_minus_joint_max_probability": 0.15939,
+      "half_shock_wrong_choices": 500,
+      "half_shock_mean_true_utility_regret": 0.091108,
+      "mc_max_abs_error_first_16_checks": 0.006436,
+      "first_disagreement": {
+        "case_index": 0,
+        "shock_probability": 0.14715,
+        "calm_outages": {
+          "a": 0.01808,
+          "b": 0.04721,
+          "c": 0.03961
+        },
+        "shocked_outages": {
+          "a": 0.90258,
+          "b": 0.72956,
+          "c": 0.03961
+        },
+        "joint_choice": "single",
+        "independence_choice": "pair",
+        "actual_utilities": {
+          "pair": 9.69614,
+          "single": 9.84262
+        }
+      }
+    },
+    "serial": {
+      "scenarios": 2000,
+      "independence_wrong_choices": 204,
+      "independence_mean_true_utility_regret": 0.022405,
+      "independence_worst_true_utility_regret": 0.731474,
+      "pair_independence_minus_joint_mean_probability": -0.068637,
+      "pair_independence_minus_joint_min_probability": -0.157414,
+      "pair_independence_minus_joint_max_probability": -0.014691,
+      "half_shock_wrong_choices": 586,
+      "half_shock_mean_true_utility_regret": 0.149303,
+      "mc_max_abs_error_first_16_checks": 0.006431,
+      "first_disagreement": {
+        "case_index": 1,
+        "shock_probability": 0.05508,
+        "calm_outages": {
+          "a": 0.00911,
+          "b": 0.00889,
+          "c": 0.05868
+        },
+        "shocked_outages": {
+          "a": 0.68165,
+          "b": 0.79824,
+          "c": 0.05868
+        },
+        "joint_choice": "pair",
+        "independence_choice": "single",
+        "actual_utilities": {
+          "pair": 9.62229,
+          "single": 9.51353
+        }
+      }
+    }
+  }
+}
