@@ -86,5 +86,41 @@ class ExactCountBoundsTests(unittest.TestCase):
                     actual, expected, (n, total, edges, marg, pairs))
 
 
+    def test_larger_forests_independent_integer_oracle(self):
+        # Independent holdout: different graph structures and population sizes
+        # from the original 3/4-mode exhaustive tests.
+        for n, total, edges in [
+            (5, 3, ((0, 1), (0, 2), (0, 3), (0, 4))),  # star
+            (6, 2, ((0, 1), (1, 2), (3, 4))),          # forest + isolated
+        ]:
+            worlds = tuple(product((0, 1), repeat=n))
+            observed = defaultdict(lambda: [total + 1, -1])
+            for weights in compositions(total, len(worlds)):
+                marg, pairs = signature(weights, worlds, edges)
+                bounds = observed[marg, pairs]
+                bounds[0] = min(bounds[0], weights[-1])
+                bounds[1] = max(bounds[1], weights[-1])
+            for (marg, pairs), (low, high) in observed.items():
+                pair_counts = dict(zip(edges, pairs))
+                expected = (Fraction(low, total), Fraction(high, total))
+                self.assertEqual(
+                    all_fail_bounds_from_counts(total, marg, pair_counts),
+                    expected, (n, total, marg, pairs))
+                self.assertEqual(
+                    any_survives_bounds_from_counts(total, marg, pair_counts),
+                    (1 - expected[1], 1 - expected[0]))
+
+    def test_exact_counts_beyond_float_integer_precision(self):
+        total = 2 ** 53 + 1
+        expected = Fraction(total - 2, total)
+        self.assertEqual(
+            all_fail_bounds_from_counts(
+                total, [total - 1, total - 1], {(0, 1): total - 2}),
+            (expected, expected))
+        with self.assertRaises(ValueError):
+            all_fail_bounds_from_counts(
+                total, [total - 1, total - 1], {(0, 1): total})
+
+
 if __name__ == "__main__":
     unittest.main()
