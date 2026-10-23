@@ -1,8 +1,8 @@
 """Opt-in exact bounds from integer counts sharing one population.
 
 This API avoids binary-float feasibility ambiguities by using Fraction.
-Supported graphs: no pairwise edges, any forest, or complete n=3 triangle.
-Other cyclic graphs explicitly raise NotImplementedError.
+Supported graphs: disconnected components that are isolated vertices, trees,
+or complete three-node triangles. Other cyclic components are unsupported.
 """
 from fractions import Fraction
 from numbers import Integral
@@ -41,6 +41,9 @@ def all_fail_bounds_from_counts(total, marginal_counts, pairwise_counts=None):
     if not q:
         return max(Fraction(0), sum(p) - (n - 1)), min(p)
 
+    # Solve each connected component independently, then couple their
+    # all-fail events by Frechet bounds. A triangle can coexist with trees,
+    # isolated vertices, or other disjoint triangles.
     parent = list(range(n))
 
     def find(i):
@@ -49,46 +52,43 @@ def all_fail_bounds_from_counts(total, marginal_counts, pairwise_counts=None):
             i = parent[i]
         return i
 
-    cyclic = False
     for i, j in q:
-        a, b = find(i), find(j)
-        if a == b:
-            cyclic = True
-            break
-        parent[a] = b
-    if not cyclic:
-        parent = list(range(n))
-        for i, j in q:
-            parent[find(i)] = find(j)
-        components = {}
-        for v in range(n):
-            components.setdefault(find(v), []).append(v)
-        lo, hi = [], []
-        for nodes in components.values():
-            s = set(nodes)
-            edges = [(i, j, v) for (i, j), v in q.items() if i in s and j in s]
-            if not edges:
-                lo.append(p[nodes[0]])
-                hi.append(p[nodes[0]])
-                continue
+        parent[find(i)] = find(j)
+    components = {}
+    for v in range(n):
+        components.setdefault(find(v), []).append(v)
+
+    lowers, uppers = [], []
+    for nodes in components.values():
+        s = set(nodes)
+        edges = [(i, j, v) for (i, j), v in q.items() if i in s and j in s]
+        if not edges:
+            lo = hi = p[nodes[0]]
+        elif len(edges) == len(nodes) - 1:
+            # Every connected, simple graph with |V|-1 edges is a tree.
             deg = {v: 0 for v in nodes}
             for i, j, _ in edges:
                 deg[i] += 1
                 deg[j] += 1
-            lo.append(max(Fraction(0), sum(v for _, _, v in edges) -
-                          sum((deg[v] - 1) * p[v] for v in nodes)))
-            hi.append(min(v for _, _, v in edges))
-        return max(Fraction(0), sum(lo) - (len(lo) - 1)), min(hi)
+            lo = max(Fraction(0), sum(v for _, _, v in edges) -
+                     sum((deg[v] - 1) * p[v] for v in nodes))
+            hi = min(v for _, _, v in edges)
+        elif len(nodes) == 3 and len(edges) == 3:
+            a, b, c = sorted(nodes)
+            ab, ac, bc = q[a, b], q[a, c], q[b, c]
+            lo = max(Fraction(0), ab + ac - p[a], ab + bc - p[b],
+                     ac + bc - p[c])
+            hi = min(ab, ac, bc,
+                     1 - p[a] - p[b] - p[c] + ab + ac + bc)
+            if lo > hi:
+                raise ValueError("pairwise counts are globally infeasible")
+        else:
+            raise NotImplementedError(
+                "exact-count API supports tree and complete-triangle components")
+        lowers.append(lo)
+        uppers.append(hi)
 
-    if n == 3 and set(q) == {(0, 1), (0, 2), (1, 2)}:
-        pa, pb, pc = p
-        qab, qac, qbc = q[0, 1], q[0, 2], q[1, 2]
-        lower = max(Fraction(0), qab + qac - pa, qab + qbc - pb, qac + qbc - pc)
-        upper = min(qab, qac, qbc, 1 - pa - pb - pc + qab + qac + qbc)
-        if lower > upper:
-            raise ValueError("pairwise counts are globally infeasible")
-        return lower, upper
-    raise NotImplementedError("exact-count API supports forests and complete n=3 triangles")
+    return max(Fraction(0), sum(lowers) - (len(lowers) - 1)), min(uppers)
 
 
 def any_survives_bounds_from_counts(total, marginal_counts, pairwise_counts=None):
