@@ -42,6 +42,24 @@ independent publication time, or recover pre-existing missing snapshots. Source 
 A receipt hash detects changes; the externally timestamped Git commit anchors
 issuance. No task schedule or worker configuration is changed by these commands.
 
+
+### Experimental source-bound settlement (Seshat C368 branch only)
+
+The read-only `experiments/seshat/c368-verified-settlement/verified_settlement.mjs`
+bridge combines a saved raw response, its parsed JSON, its SHA-256 manifest,
+the exact original issue-time normalized vintage, and a prospectively committed
+receipt. It derives the actual outcome using the **observed-close index** (not
+an invented calendar date), checks overlap for provider revisions, and produces
+an outcome-lock candidate only after the UTC target day is complete.
+Missing vintages, changed prices, mismatched bytes, and absent overlapping
+origin dates fail closed. The bridge does **not** automatically settle live
+receipts, write locks, or claim to authenticate a provider's publication time.
+The caller must independently verify the supplied GitHub anchor timestamp.
+The write-once store now reports `evidence_revision` if the outcome metrics
+match but its underlying evidence changes, preserving the original lock.
+This is an offline, synthetic-fixture-tested prototype; no production forecast
+has been certified by it.
+
 ## Observation and source contract
 
 - Gold is XAU, USD per troy ounce. Historical `grain` must explicitly be daily;
