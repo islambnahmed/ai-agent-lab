@@ -73,6 +73,10 @@ def backtest(rows, horizon=7, train_min=120, stride=None):
         stride = horizon  # disjoint target intervals, avoids overlap inflation
     if stride < horizon:
         raise ValueError("stride must be >= horizon for independent target windows")
+    # Direct Python callers bypass load_prices(), so enforce the same
+    # chronological contract here to prevent training on future observations.
+    if any(a[0] >= b[0] for a, b in zip(rows, rows[1:])):
+        raise ValueError("Need strictly increasing unique dates")
     prices = [p for _, p in rows]
     if any(not math.isfinite(p) or p <= 0 for p in prices):
         raise ValueError("Prices must be positive and finite")
