@@ -28,6 +28,18 @@ class GoldWalkForwardTests(unittest.TestCase):
         result = backtest(self.make_rows(20), horizon=30, train_min=12)
         self.assertEqual(result["status"], "insufficient_holdout")
 
+    def test_direct_api_rejects_out_of_order_or_duplicate_dates(self):
+        # load_prices() validates CSV dates, but in-memory callers can bypass it.
+        # A future observation preceding an earlier origin would leak information.
+        rows = self.make_rows(5)
+        for invalid in (
+            [rows[0], rows[2], rows[1], rows[3], rows[4]],
+            [rows[0], rows[1], rows[1], rows[3], rows[4]],
+        ):
+            with self.subTest(dates=[d for d, _ in invalid]):
+                with self.assertRaisesRegex(ValueError, "strictly increasing unique dates"):
+                    backtest(invalid, horizon=1, train_min=2)
+
     def test_reject_overlapping_stride(self):
         with self.assertRaises(ValueError):
             backtest(self.make_rows(), horizon=7, train_min=120, stride=1)
