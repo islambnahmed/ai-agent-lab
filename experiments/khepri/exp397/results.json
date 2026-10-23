@@ -1,0 +1,104 @@
+{
+  "experiment": "exp397",
+  "seed": 3972026,
+  "n_per_replicate": 3000,
+  "replicates_per_domain_and_scenario": 200,
+  "logging_threshold": 0.75,
+  "alternative_threshold": 0.65,
+  "nominal_audit_probability": 0.1,
+  "reward": {
+    "correct": 1,
+    "incorrect": -2,
+    "abstain": -0.15
+  },
+  "domains": {
+    "gold": {
+      "independent_audit": {
+        "coverage": 0.337775,
+        "true_population_accuracy": 0.460345,
+        "selective_accuracy": 0.684373,
+        "audit_estimated_population_accuracy": 0.45664,
+        "true_alternative_policy_value": -0.124564,
+        "audited_alternative_policy_value": -0.125078,
+        "naive_labeled_only_alternative_policy_value": 0.00888,
+        "true_logged_policy_value": -0.081364,
+        "accuracy_estimation_bias": -0.003705,
+        "policy_value_estimation_bias": -0.000514,
+        "naive_policy_value_bias": 0.133444,
+        "accuracy_bias_95pct_ci": [
+          -0.007535,
+          0.000125
+        ],
+        "policy_value_bias_95pct_ci": [
+          -0.004951,
+          0.003924
+        ]
+      },
+      "outcome_dependent_audit": {
+        "coverage": 0.337752,
+        "true_population_accuracy": 0.459685,
+        "selective_accuracy": 0.68649,
+        "audit_estimated_population_accuracy": 0.68802,
+        "true_alternative_policy_value": -0.122305,
+        "audited_alternative_policy_value": 0.066253,
+        "naive_labeled_only_alternative_policy_value": 0.066344,
+        "true_logged_policy_value": -0.079281,
+        "accuracy_estimation_bias": 0.228335,
+        "policy_value_estimation_bias": 0.188558,
+        "naive_policy_value_bias": 0.188649,
+        "accuracy_bias_95pct_ci": [
+          0.223538,
+          0.233132
+        ],
+        "policy_value_bias_95pct_ci": [
+          0.184522,
+          0.192593
+        ]
+      }
+    },
+    "seo": {
+      "independent_audit": {
+        "coverage": 0.217548,
+        "true_population_accuracy": 0.44186,
+        "selective_accuracy": 0.666758,
+        "audit_estimated_population_accuracy": 0.440168,
+        "true_alternative_policy_value": -0.133848,
+        "audited_alternative_policy_value": -0.137099,
+        "naive_labeled_only_alternative_policy_value": -0.046327,
+        "true_logged_policy_value": -0.117309,
+        "accuracy_estimation_bias": -0.001692,
+        "policy_value_estimation_bias": -0.003251,
+        "naive_policy_value_bias": 0.087521,
+        "accuracy_bias_95pct_ci": [
+          -0.005974,
+          0.00259
+        ],
+        "policy_value_bias_95pct_ci": [
+          -0.007018,
+          0.000516
+        ]
+      },
+      "outcome_dependent_audit": {
+        "coverage": 0.217607,
+        "true_population_accuracy": 0.440662,
+        "selective_accuracy": 0.668273,
+        "audit_estimated_population_accuracy": 0.734707,
+        "true_alternative_policy_value": -0.131744,
+        "audited_alternative_policy_value": 0.021333,
+        "naive_labeled_only_alternative_policy_value": 0.01441,
+        "true_logged_policy_value": -0.116302,
+        "accuracy_estimation_bias": 0.294045,
+        "policy_value_estimation_bias": 0.153077,
+        "naive_policy_value_bias": 0.146154,
+        "accuracy_bias_95pct_ci": [
+          0.288286,
+          0.299804
+        ],
+        "policy_value_bias_95pct_ci": [
+          0.149367,
+          0.156787
+        ]
+      }
+    }
+  }
+}
