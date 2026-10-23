@@ -91,6 +91,13 @@ class BenchmarkTests(unittest.TestCase):
         self.assertEqual(e['rankings']['clicks_desc']['at_k']['3']['confirmed_accidental'], 3)
         self.assertEqual(e['rankings']['segment_round_robin']['at_k']['3']['confirmed_accidental'], 1)
 
+    def test_many_segments_with_long_tail(self):
+        rows = ([{'url': f'/{i}', 'clicks': 50000-i, 'segment': f's{i}'} for i in range(10000)] +
+                [{'url': f'/tail{i}', 'clicks': 10000-i, 'segment': 'tail'} for i in range(10000)])
+        order = rankings(rows)['segment_round_robin']
+        self.assertEqual(len(order), 20000)
+        self.assertEqual(len(set(order)), 20000)
+
     def test_synthetic_fixture_cli_and_stress_counterexample(self):
         report = load_json(HERE / 'synthetic_audit.json')
         labels = load_json(HERE / 'synthetic_raters.json')
