@@ -72,6 +72,23 @@ class CountCliTests(unittest.TestCase):
         self.assertIn(b"error:", proc.stderr)
         self.assertNotIn(b"Traceback", proc.stderr)
 
+    def test_deeply_nested_json_rejected_without_traceback(self):
+        # Well below the byte limit, but beyond the JSON parser recursion limit.
+        # Malformed/untrusted inputs should exit with a validation error, not a crash.
+        payloads = (
+            b"[" * 10_000 + b"0" + b"]" * 10_000,
+            b'{"x":' * 10_000 + b"0" + b"}" * 10_000,
+        )
+        for raw in payloads:
+            with self.subTest(prefix=raw[:1]):
+                proc = subprocess.run(
+                    [sys.executable, "-m", "tools.dependence_counts_cli", "-"],
+                    input=raw, capture_output=True, check=False,
+                )
+                self.assertEqual(proc.returncode, 2, proc.stderr)
+                self.assertIn(b"error:", proc.stderr)
+                self.assertNotIn(b"Traceback", proc.stderr)
+
     def test_duplicate_json_key_rejected(self):
         raw = b'{"total":10,"total":11,"marginal_counts":[5],"pairwise_counts":[]}'
         proc = subprocess.run([sys.executable, "-m", "tools.dependence_counts_cli", "-"],
