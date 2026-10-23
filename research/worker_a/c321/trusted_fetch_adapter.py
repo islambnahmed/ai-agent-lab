@@ -14,6 +14,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime, timezone
 import hashlib
+import http.client
 import math
 from typing import Callable, Mapping
 from urllib.error import HTTPError
@@ -171,6 +172,6 @@ def fetch_and_decide(target_url: str, product_token: str, *,
             decision = evaluate_record(record, product_token, target_url,
                                        now=datetime.now(timezone.utc), max_redirects=max_redirects)
             return FetchOutcome(decision.status, decision.reason, kind, decision, record)
-        except (ValueError, TypeError, OSError, TimeoutError, ssl.SSLError) as exc:
+        except (ValueError, TypeError, OSError, TimeoutError, ssl.SSLError, http.client.HTTPException) as exc:
             return _unknown(str(exc), kind)
     return _unknown('redirect traversal did not terminate', kind)
