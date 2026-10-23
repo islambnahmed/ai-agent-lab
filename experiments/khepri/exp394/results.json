@@ -3,6 +3,17 @@
     "trials": 12000,
     "seed": 394,
     "mode": "honest",
+    "base": 2000,
+    "amplitude": 200,
+    "badMultiplier": 1.18,
+    "xFault": 0.12,
+    "otherFault": 0.04,
+    "systemicFault": 0.02,
+    "breakdown": {
+      "commonShock": 243,
+      "sharedXFault": 1450,
+      "independentXFaults": 0
+    },
     "metrics": {
       "flat": {
         "correct": 10307,
@@ -15,15 +26,23 @@
         "abstain": 2245
       }
     },
-    "breakdown": {
-      "commonShock": 243,
-      "sharedXFault": 1450
-    }
+    "note": "Synthetic. Honest graph explicitly reveals shared X. Forged graph hides it. Independent mode has separate X failures."
   },
   "seo": {
     "trials": 12000,
     "seed": 395,
     "mode": "honest",
+    "base": 100,
+    "amplitude": 10,
+    "badMultiplier": 0.7,
+    "xFault": 0.12,
+    "otherFault": 0.04,
+    "systemicFault": 0.02,
+    "breakdown": {
+      "commonShock": 235,
+      "sharedXFault": 1433,
+      "independentXFaults": 0
+    },
     "metrics": {
       "flat": {
         "correct": 10332,
@@ -36,15 +55,23 @@
         "abstain": 2279
       }
     },
-    "breakdown": {
-      "commonShock": 235,
-      "sharedXFault": 1433
-    }
+    "note": "Synthetic. Honest graph explicitly reveals shared X. Forged graph hides it. Independent mode has separate X failures."
   },
   "forged": {
     "trials": 12000,
     "seed": 394,
     "mode": "forged",
+    "base": 2000,
+    "amplitude": 200,
+    "badMultiplier": 1.18,
+    "xFault": 0.12,
+    "otherFault": 0.04,
+    "systemicFault": 0.02,
+    "breakdown": {
+      "commonShock": 243,
+      "sharedXFault": 1450,
+      "independentXFaults": 0
+    },
     "metrics": {
       "flat": {
         "correct": 10307,
@@ -56,12 +83,24 @@
         "wrong": 1693,
         "abstain": 0
       }
-    }
+    },
+    "note": "Synthetic. Honest graph explicitly reveals shared X. Forged graph hides it. Independent mode has separate X failures."
   },
   "independent": {
     "trials": 12000,
     "seed": 394,
     "mode": "independent",
+    "base": 2000,
+    "amplitude": 200,
+    "badMultiplier": 1.18,
+    "xFault": 0.12,
+    "otherFault": 0.04,
+    "systemicFault": 0.02,
+    "breakdown": {
+      "commonShock": 246,
+      "sharedXFault": 0,
+      "independentXFaults": 1395
+    },
     "metrics": {
       "flat": {
         "correct": 11687,
@@ -73,13 +112,24 @@
         "wrong": 313,
         "abstain": 0
       }
-    }
+    },
+    "note": "Synthetic. Honest graph explicitly reveals shared X. Forged graph hides it. Independent mode has separate X failures."
   },
   "commonShock": {
     "trials": 12000,
     "seed": 394,
     "mode": "honest",
+    "base": 2000,
+    "amplitude": 200,
+    "badMultiplier": 1.18,
+    "xFault": 0.12,
+    "otherFault": 0.04,
     "systemicFault": 0.25,
+    "breakdown": {
+      "commonShock": 3095,
+      "sharedXFault": 1088,
+      "independentXFaults": 0
+    },
     "metrics": {
       "flat": {
         "correct": 7817,
@@ -91,7 +141,7 @@
         "wrong": 3097,
         "abstain": 1700
       }
-    }
-  },
-  "note": "Summary of locally reproduced deterministic output; benchmark.mjs emits full detailed result including simulation parameters."
+    },
+    "note": "Synthetic. Honest graph explicitly reveals shared X. Forged graph hides it. Independent mode has separate X failures."
+  }
 }
