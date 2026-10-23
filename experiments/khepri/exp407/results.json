@@ -1,0 +1,18 @@
+{
+  "seed": 407,
+  "trials": 10000,
+  "representable": 6921,
+  "oracle_unrepresentable": 3079,
+  "original_exception": 7333,
+  "original_nonfinite_or_zero": 1857,
+  "original_wrong_gt_1e_9": 39,
+  "stable_exception_when_representable": 0,
+  "stable_wrong_gt_1e_9": 0,
+  "stable_range_errors_when_unrepresentable": 3079,
+  "original_failures_on_representable": 6111,
+  "original_valid_on_representable": 810,
+  "original_max_relative_error": 0.2507719478910926,
+  "stable_max_relative_error": 5.477840403500522e-13,
+  "exceptions_or_invalid_original": 9190,
+  "counterexamples": []
+}
