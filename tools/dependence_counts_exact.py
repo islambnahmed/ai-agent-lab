@@ -58,10 +58,15 @@ def all_fail_bounds_from_counts(total, marginal_counts, pairwise_counts=None):
     for v in range(n):
         components.setdefault(find(v), []).append(v)
 
+    # Group edges once instead of rescanning every edge for every component.
+    # A forest of many disconnected pairs would otherwise take O(E * C).
+    edges_by_component = {root: [] for root in components}
+    for (i, j), value in q.items():
+        edges_by_component[find(i)].append((i, j, value))
+
     lowers, uppers = [], []
-    for nodes in components.values():
-        s = set(nodes)
-        edges = [(i, j, v) for (i, j), v in q.items() if i in s and j in s]
+    for root, nodes in components.items():
+        edges = edges_by_component[root]
         if not edges:
             lo = hi = p[nodes[0]]
         elif len(edges) == len(nodes) - 1:
