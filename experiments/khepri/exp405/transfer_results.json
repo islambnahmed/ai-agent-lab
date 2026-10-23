@@ -1,0 +1,20 @@
+{
+  "seed": 40577,
+  "description": "four SEO retrieval tools across three failure domains",
+  "deadline_1": {
+    "n": 2000,
+    "adaptive_beats_static": 2000,
+    "mean_adaptive_minus_static": 0.700653,
+    "marginal_policy_disagreements": 1605,
+    "mean_marginal_policy_regret": 0.734534,
+    "mc_max_abs_utility_error_first_6": 0.022338
+  },
+  "deadline_0_25": {
+    "n": 2000,
+    "adaptive_beats_static": 27,
+    "mean_adaptive_minus_static": -0.727541,
+    "marginal_policy_disagreements": 1675,
+    "mean_marginal_policy_regret": 0.165183,
+    "mc_max_abs_utility_error_first_6": 0.037123
+  }
+}
