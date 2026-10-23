@@ -1,0 +1,23 @@
+name: Seshat C373 all-offset phase sensitivity
+on:
+  push:
+    branches:
+      - seshat/c373-phase-rotation
+    paths:
+      - 'experiments/seshat/c373-phase-rotation/**'
+      - '.github/workflows/c373-phase-rotation.yml'
+permissions:
+  contents: read
+jobs:
+  phase-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Offline regression tests
+        run: node --test experiments/seshat/c373-phase-rotation/phase_metrics.test.mjs
+      - name: Live current-vintage descriptive phase probe
+        run: node experiments/seshat/c373-phase-rotation/live_phase_probe.mjs
