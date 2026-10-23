@@ -54,6 +54,9 @@ export function writeOnceOutcome(directory, lock) {
     if(!isDigest(oldSha)||sha256(JSON.stringify(oldCore))!==oldSha) throw Error('Stored outcome lock corrupted');
     const keys=['receiptId','horizon','targetDate','actual','modelAbsError','baselineAbsError','covered'];
     if(keys.some(k=>old[k]!==lock[k])) return {status:'conflicting_revision',path:filename,first:old,attempt:lock};
+    // Even unchanged prices can have different source bytes or observation times.
+    // Do not silently describe changed evidence as an identical replay.
+    if(oldSha!==lockSha256)return {status:'evidence_revision',path:filename,first:old,attempt:lock};
     return {status:'unchanged',path:filename};
   }
 }
