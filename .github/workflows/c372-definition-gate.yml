@@ -1,0 +1,20 @@
+name: Seshat C372 close-definition gate
+on:
+  push:
+    branches:
+      - seshat/c372-close-definition-gate
+    paths:
+      - 'experiments/seshat/c372-close-definition-gate/**'
+      - '.github/workflows/c372-definition-gate.yml'
+permissions:
+  contents: read
+jobs:
+  definition-tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: node --test experiments/seshat/c372-close-definition-gate/definition_gate.test.mjs
