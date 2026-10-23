@@ -56,6 +56,16 @@ def predict_drift(train, horizon):
     return _drift_from_endpoints(train[0], train[-1], len(train), horizon)
 
 
+def _stable_rmse(errors):
+    """Compute RMSE without overflowing when squaring finite errors."""
+    scale = max(abs(error) for error in errors)
+    if scale == 0:
+        return 0.0
+    return scale * math.sqrt(
+        math.fsum((error / scale) ** 2 for error in errors) / len(errors)
+    )
+
+
 def backtest(rows, horizon=7, train_min=120, stride=None):
     if horizon < 1 or train_min < 2:
         raise ValueError("Invalid horizon or train_min")
@@ -80,7 +90,7 @@ def backtest(rows, horizon=7, train_min=120, stride=None):
             "baseline_abs_error": abs(last - actual),
             "candidate_abs_error": abs(candidate - actual),
             "baseline_direction_correct": False,  # flat forecast has no direction
-            "candidate_direction_correct": (candidate - last) * (actual - last) > 0,
+            "candidate_direction_correct": (candidate > last and actual > last) or (candidate < last and actual < last),
         })
     if not results:
         return {"status": "insufficient_holdout", "independent_windows": 0, "results": []}
@@ -93,7 +103,7 @@ def backtest(rows, horizon=7, train_min=120, stride=None):
         "baseline_mae": base,
         "candidate_mae": cand,
         "mae_improvement_pct": (base - cand) / base * 100 if base else None,
-        "candidate_rmse": math.sqrt(statistics.mean((x["candidate"] - x["actual"]) ** 2 for x in results)),
+        "candidate_rmse": _stable_rmse([x["candidate"] - x["actual"] for x in results]),
         "candidate_direction_accuracy": statistics.mean(x["candidate_direction_correct"] for x in results),
         "warning": "Model choice must not be tuned on these test windows; validate on a later untouched period.",
         "results": results,
