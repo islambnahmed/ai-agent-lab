@@ -4,10 +4,11 @@ NOT a general crawler or proof of unforgeable provenance. This module makes
 response bytes/timestamps/redirects originate from a transport call rather
 than caller-supplied RobotsFetchRecord. Network is disabled by default.
 
-The stdlib HTTPS transport uses certificate verification, disables environment
-proxies and automatic redirects. Its DNS resolution is not IP-pinned: external
-egress restrictions and a tightly managed origin allowlist are REQUIRED before
-production deployment. No authorization to crawl follows from a robots result.
+There is NO implicit live transport: allow_network=True without an explicitly
+injected transport returns unknown. The optional stdlib HTTPS helper remains
+available for isolated transport tests but is not DNS/IP-pinned and must not be
+used as a production SSRF boundary. No authorization to crawl follows from a
+robots result.
 """
 from __future__ import annotations
 
@@ -42,7 +43,7 @@ class TransportResponse:
 class FetchOutcome:
     status: str  # allowed, disallowed, unknown
     reason: str
-    transport_kind: str  # test_double, stdlib_tls, none
+    transport_kind: str  # test_double, none; injected evidence is untrusted
     decision: ProvenanceDecision | None
     record: RobotsFetchRecord | None
 
@@ -102,6 +103,8 @@ def fetch_and_decide(target_url: str, product_token: str, *,
     """
     if not allow_network:
         return _unknown('network operation not explicitly enabled')
+    if transport is None:
+        return _unknown('explicit transport required; no implicit network backend')
     if not isinstance(allowed_origins, frozenset) or not all(isinstance(x, str) for x in allowed_origins):
         return _unknown('invalid trusted origin allowlist')
     if not isinstance(max_redirects, int) or isinstance(max_redirects, bool) or not 0 <= max_redirects <= 5:
@@ -126,8 +129,8 @@ def fetch_and_decide(target_url: str, product_token: str, *,
     except (TypeError, ValueError, AttributeError) as exc:
         return _unknown(str(exc))
 
-    chosen_transport = transport if transport is not None else stdlib_https_transport
-    kind = 'test_double' if transport is not None else 'stdlib_tls'
+    chosen_transport = transport
+    kind = 'test_double'  # Injected transport evidence is never independently authenticated
     cursor, hops, seen = root, [], {root}
     for _ in range(max_redirects + 1):
         try:
