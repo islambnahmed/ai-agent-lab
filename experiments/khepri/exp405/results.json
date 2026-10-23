@@ -1,0 +1,145 @@
+{
+  "seed": 405,
+  "focal": {
+    "p_b_marginal": 0.79466,
+    "p_c_marginal": 0.758,
+    "p_b_given_a_failed": 0.085582,
+    "p_c_given_a_failed": 0.758,
+    "adaptive_after_a": "c",
+    "optimal_deadline_1": {
+      "first": "b",
+      "fallback": "c",
+      "utility": 9.1593392,
+      "p_first_success": 0.79466,
+      "p_fallback_invoked": 0.20533999999999997,
+      "conditional_gains": {
+        "a": 0.48036427388721176,
+        "c": 6.880000000000003
+      }
+    },
+    "optimal_deadline_0_1": {
+      "static": {
+        "utility": 8.6030772,
+        "tools": [
+          "b",
+          "c"
+        ]
+      },
+      "adaptive": {
+        "first": "b",
+        "fallback": "c",
+        "utility": 7.75850972,
+        "p_first_success": 0.79466,
+        "p_fallback_invoked": 0.20533999999999997,
+        "conditional_gains": {
+          "a": -0.13196357261127883,
+          "c": 0.058000000000000274
+        }
+      },
+      "gain": -0.8445674799999994
+    }
+  },
+  "families": {
+    "gold": {
+      "1.0": {
+        "n": 2000,
+        "adaptive_beats_best_static": 2000,
+        "mean_adaptive_minus_static": 0.650536,
+        "max_adaptive_minus_static": 1.269057,
+        "min_adaptive_minus_static": 0.169677,
+        "marginal_policy_disagreements": 1447,
+        "mean_marginal_policy_regret": 0.498575,
+        "max_marginal_policy_regret": 1.803002,
+        "half_shock_wrong_policy_cases": 74,
+        "mean_half_shock_policy_regret": 0.000877,
+        "max_mc_abs_utility_error_first_6": 0.044861,
+        "example": {
+          "case_index": 0,
+          "shock": 0.0618,
+          "deadline": 1,
+          "static_choice": [
+            "a",
+            "b"
+          ],
+          "adaptive_first": "b",
+          "adaptive_fallback": "c",
+          "gain": 0.68957
+        }
+      },
+      "0.3": {
+        "n": 2000,
+        "adaptive_beats_best_static": 595,
+        "mean_adaptive_minus_static": -0.219105,
+        "max_adaptive_minus_static": 0.206176,
+        "min_adaptive_minus_static": -1.226439,
+        "marginal_policy_disagreements": 1455,
+        "mean_marginal_policy_regret": 0.116396,
+        "max_marginal_policy_regret": 0.482805,
+        "half_shock_wrong_policy_cases": 426,
+        "mean_half_shock_policy_regret": 0.040235,
+        "max_mc_abs_utility_error_first_6": 0.039791,
+        "example": {
+          "case_index": 14,
+          "shock": 0.181,
+          "deadline": 0.3,
+          "static_choice": [
+            "a"
+          ],
+          "adaptive_first": "a",
+          "adaptive_fallback": "c",
+          "gain": 0.1546
+        }
+      }
+    },
+    "seo": {
+      "1.0": {
+        "n": 2000,
+        "adaptive_beats_best_static": 2000,
+        "mean_adaptive_minus_static": 0.970039,
+        "max_adaptive_minus_static": 1.91813,
+        "min_adaptive_minus_static": 0.256317,
+        "marginal_policy_disagreements": 1397,
+        "mean_marginal_policy_regret": 0.747591,
+        "max_marginal_policy_regret": 2.519385,
+        "half_shock_wrong_policy_cases": 87,
+        "mean_half_shock_policy_regret": 0.001546,
+        "max_mc_abs_utility_error_first_6": 0.026704,
+        "example": {
+          "case_index": 0,
+          "shock": 0.0904,
+          "deadline": 1,
+          "static_choice": [
+            "b"
+          ],
+          "adaptive_first": "b",
+          "adaptive_fallback": "c",
+          "gain": 1.49324
+        }
+      },
+      "0.3": {
+        "n": 2000,
+        "adaptive_beats_best_static": 584,
+        "mean_adaptive_minus_static": -0.330012,
+        "max_adaptive_minus_static": 0.315816,
+        "min_adaptive_minus_static": -1.73457,
+        "marginal_policy_disagreements": 1441,
+        "mean_marginal_policy_regret": 0.174713,
+        "max_marginal_policy_regret": 0.781108,
+        "half_shock_wrong_policy_cases": 435,
+        "mean_half_shock_policy_regret": 0.071087,
+        "max_mc_abs_utility_error_first_6": 0.047763,
+        "example": {
+          "case_index": 18,
+          "shock": 0.0783,
+          "deadline": 0.3,
+          "static_choice": [
+            "b"
+          ],
+          "adaptive_first": "b",
+          "adaptive_fallback": "c",
+          "gain": 0.25175
+        }
+      }
+    }
+  }
+}
