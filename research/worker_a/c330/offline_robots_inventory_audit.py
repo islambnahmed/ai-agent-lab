@@ -16,7 +16,7 @@ from robots_gate import MAX_BYTES, decide
 
 MAX_URLS = 50000
 MAX_CLICKS = 10**9
-_HOST_LABEL = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\\Z")
+_HOST_LABEL = re.compile(r"[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\Z")
 _BAD_CHARS = frozenset('\\\\')
 
 
