@@ -22,7 +22,7 @@ python -m tools.dependence_counts_cli example.json
 python -m unittest discover -s tests -p 'test_dependence_counts_cli.py' -v
 ```
 
-The result includes `"all_fail":{"lower":"1/5","upper":"1/5"}`, `"any_survives":{"lower":"4/5","upper":"4/5"}`, input counts summary, and `input_sha256`. Bounds are **exact fraction strings**; the hash identifies the raw input bytes for reproducibility, not the data's empirical validity.
+The result includes `"all_fail":{"lower":"1/5","upper":"1/5"}`, `"any_survives":{"lower":"4/5","upper":"4/5"}`, input counts summary, and `input_sha256`. Bounds are **exact fraction strings**; the hash identifies the raw input bytes for reproducibility, not the data's empirical validity. The output `total` is a **decimal string** (for example `"total":"9007199254740993"`), never a JSON number, because JavaScript JSON parsers round integer values above `2^53 - 1`. `mode_count` and `pairwise_constraint_count` remain bounded JSON numbers. Input `total` and counts must still be JSON integers; this output representation does not change the input contract.
 
 ## Contract
 
