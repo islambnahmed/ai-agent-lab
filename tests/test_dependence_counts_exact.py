@@ -144,6 +144,19 @@ class ExactCountBoundsTests(unittest.TestCase):
                 10, [1, 1, 1, 5],
                 {(0, 1): 0, (0, 2): 1, (1, 2): 1})
 
+    def test_many_disconnected_components(self):
+        # A large number of disjoint edges must not require rescanning all
+        # pairwise constraints separately for each connected component.
+        half = 1024
+        counts = {(i, i + half): 2 for i in range(half)}
+        marginals = [5] * (2 * half)
+        self.assertEqual(
+            all_fail_bounds_from_counts(10, marginals, counts),
+            (Fraction(0), Fraction(1, 5)))
+        self.assertEqual(
+            any_survives_bounds_from_counts(10, marginals, counts),
+            (Fraction(4, 5), Fraction(1)))
+
     def test_exact_counts_beyond_float_integer_precision(self):
         total = 2 ** 53 + 1
         expected = Fraction(total - 2, total)
