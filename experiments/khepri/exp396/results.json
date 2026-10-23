@@ -1,0 +1,31 @@
+{
+  "seed": 3962026,
+  "nPerDomain": 10000,
+  "definition": "Synthetic latest-observation task: older revision may arrive after a newer observation. Compare exp395 receipt-first snapshot against observation-first selector. Same trusted receipt ledger; no real data.",
+  "domains": {
+    "gold": {
+      "trials": 10000,
+      "newObservationAvailable": 8996,
+      "lateOldCorrections": 5003,
+      "receiptFirstWrongObservation": 4529,
+      "observationFirstWrongObservation": 0,
+      "receiptFirstLeak": 0,
+      "observationFirstLeak": 0,
+      "bothOldWhenNewUnavailable": 1004,
+      "receiptFirstRelativeRMSE": 0.01493911573812473,
+      "observationFirstRelativeRMSE": 0.006520094341922257
+    },
+    "seo": {
+      "trials": 10000,
+      "newObservationAvailable": 9023,
+      "lateOldCorrections": 4932,
+      "receiptFirstWrongObservation": 4459,
+      "observationFirstWrongObservation": 0,
+      "receiptFirstLeak": 0,
+      "observationFirstLeak": 0,
+      "bothOldWhenNewUnavailable": 977,
+      "receiptFirstRelativeRMSE": 0.07677765613644975,
+      "observationFirstRelativeRMSE": 0.03332778801527482
+    }
+  }
+}
