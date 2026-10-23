@@ -1,0 +1,7 @@
+[
+  {"url": "https://example.com/private/account", "segment": "account", "organic_clicks_30d": 12},
+  {"url": "/private/public/help", "segment": "support", "organic_clicks_30d": 34},
+  {"url": "/pricing", "segment": "commercial", "organic_clicks_30d": 120},
+  {"url": "https://other.example/private/account", "segment": "account", "organic_clicks_30d": 50},
+  {"url": "/broken%ZZ", "segment": "support", "organic_clicks_30d": 3}
+]
