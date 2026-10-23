@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Falsify cycle-228 late-label reserve/expiry policy on unseen multi-reversal, noisy and delayed-label worlds; compare robust regret vs cost",
+      "current_goal": "Test independently committed membership snapshots and adversarial membership tampering after k-corrupt aggregate-value bounds",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/experiment_228_late_reserve_expiry_20261017.md (2026-10-17; 120-seed exploration and 3,500 holdout synthetic episodes; 23 local tests; no production promotion)",
+      "last_checkpoint": "research/lumen/lumen360_noisy_overlapping_bounds.md (2026-10-23; exact k=0..2 bounds, 500 independent random oracle cases, 10 local tests; source/tests in sandbox/worker-c)",
       "status": "active"
     }
   }
