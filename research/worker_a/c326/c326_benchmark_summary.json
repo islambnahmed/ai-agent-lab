@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-23",
+  "cycle": 326,
+  "curated": {
+    "total": 49,
+    "passed": 49,
+    "baseline_failed": 2
+  },
+  "oracle": {
+    "ascii_prefix": 13950,
+    "ascii_wildcard": 7502,
+    "invariance": 90
+  },
+  "unittest_methods": {
+    "total": 105,
+    "passed": 105
+  },
+  "patched_blob_sha": "ef238c9a4d418024cdff90b1c06566dea7626794",
+  "network_requests": 0,
+  "github_ci": "not_run",
+  "main_modified": false,
+  "limitations": "synthetic offline corpus; no live crawler compliance evidence"
+}
