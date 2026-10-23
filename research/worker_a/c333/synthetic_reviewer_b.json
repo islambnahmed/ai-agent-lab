@@ -1,0 +1,96 @@
+{
+  "reviewer": "b",
+  "synthetic_or_user_supplied": "SYNTHETIC; NOT HUMAN MEASURED",
+  "items": [
+    {
+      "url": "https://example.test/account/1",
+      "label": "intentional",
+      "seconds": 2,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/account/2",
+      "label": "intentional",
+      "seconds": 2,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/account/3",
+      "label": "intentional",
+      "seconds": 2,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/account/4",
+      "label": "intentional",
+      "seconds": 2,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/account/5",
+      "label": "intentional",
+      "seconds": 2,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/blog/1",
+      "label": "accidental",
+      "seconds": 35,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/blog/2",
+      "label": "accidental",
+      "seconds": 35,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/blog/3",
+      "label": "accidental",
+      "seconds": 35,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/blog/4",
+      "label": "accidental",
+      "seconds": 35,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/blog/5",
+      "label": "accidental",
+      "seconds": 35,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/docs/1",
+      "label": "accidental",
+      "seconds": 8,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/docs/2",
+      "label": "accidental",
+      "seconds": 8,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/docs/3",
+      "label": "intentional",
+      "seconds": 8,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/docs/4",
+      "label": "accidental",
+      "seconds": 8,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    },
+    {
+      "url": "https://example.test/docs/5",
+      "label": "accidental",
+      "seconds": 8,
+      "evidence_note": "synthetic fixture assumption; not real human evidence"
+    }
+  ]
+}
