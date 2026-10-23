@@ -1,0 +1,276 @@
+{
+  "version": 1,
+  "scope": "Hand-curated independent cases from published normative examples. NOT a complete oracle.",
+  "cases": [
+    {
+      "id": "root-disallow",
+      "robots": "User-agent: *\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "/",
+      "expected": "disallowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Slash matches all URLs"
+    },
+    {
+      "id": "robots-implicitly-allowed",
+      "robots": "User-agent: *\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "/robots.txt",
+      "expected": "allowed",
+      "source": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "rationale": "RFC 9309 2.2.2 special path"
+    },
+    {
+      "id": "fish-prefix",
+      "robots": "User-agent: *\nDisallow: /fish",
+      "agent": "ExampleBot",
+      "target": "/fishheads/yummy.html",
+      "expected": "disallowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Prefix matches fishheads"
+    },
+    {
+      "id": "fish-prefix-no-fuzzy",
+      "robots": "User-agent: *\nDisallow: /fish",
+      "agent": "ExampleBot",
+      "target": "/catfish",
+      "expected": "allowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Must match from first octet"
+    },
+    {
+      "id": "fish-prefix-case",
+      "robots": "User-agent: *\nDisallow: /fish",
+      "agent": "ExampleBot",
+      "target": "/Fish.asp",
+      "expected": "allowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Paths are case sensitive"
+    },
+    {
+      "id": "fish-prefix-query",
+      "robots": "User-agent: *\nDisallow: /fish",
+      "agent": "ExampleBot",
+      "target": "/fish.php?id=anything",
+      "expected": "disallowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Prefix also matches query-bearing URL"
+    },
+    {
+      "id": "fish-folder",
+      "robots": "User-agent: *\nDisallow: /fish/",
+      "agent": "ExampleBot",
+      "target": "/fish/salmon.htm",
+      "expected": "disallowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Folder rule matches slash"
+    },
+    {
+      "id": "fish-folder-no-slash",
+      "robots": "User-agent: *\nDisallow: /fish/",
+      "agent": "ExampleBot",
+      "target": "/fish",
+      "expected": "allowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Folder rule not identical to prefix without slash"
+    },
+    {
+      "id": "php-wildcard",
+      "robots": "User-agent: *\nDisallow: /*.php",
+      "agent": "ExampleBot",
+      "target": "/folder/filename.php?parameters",
+      "expected": "disallowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Star matches arbitrary run"
+    },
+    {
+      "id": "php-case",
+      "robots": "User-agent: *\nDisallow: /*.php",
+      "agent": "ExampleBot",
+      "target": "/windows.PHP",
+      "expected": "allowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Wildcard rule case sensitive"
+    },
+    {
+      "id": "php-end-anchor",
+      "robots": "User-agent: *\nDisallow: /*.php$",
+      "agent": "ExampleBot",
+      "target": "/folder/filename.php",
+      "expected": "disallowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Dollar anchors URL end"
+    },
+    {
+      "id": "php-end-query",
+      "robots": "User-agent: *\nDisallow: /*.php$",
+      "agent": "ExampleBot",
+      "target": "/filename.php?parameters",
+      "expected": "allowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Query is part of URL and invalidates end anchor"
+    },
+    {
+      "id": "fish-php-wildcard",
+      "robots": "User-agent: *\nDisallow: /fish*.php",
+      "agent": "ExampleBot",
+      "target": "/fishheads/catfish.php?parameters",
+      "expected": "disallowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Mid-pattern star matches"
+    },
+    {
+      "id": "precedence-page-htm",
+      "robots": "User-agent: *\nAllow: /page\nDisallow: /*.htm",
+      "agent": "ExampleBot",
+      "target": "/page.htm",
+      "expected": "disallowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Longer wildcard rule wins"
+    },
+    {
+      "id": "precedence-php5",
+      "robots": "User-agent: *\nAllow: /page\nDisallow: /*.ph",
+      "agent": "ExampleBot",
+      "target": "/page.php5",
+      "expected": "allowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Equal rule length prefers Allow"
+    },
+    {
+      "id": "root-anchor",
+      "robots": "User-agent: *\nAllow: /$\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "/",
+      "expected": "allowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Root anchor more specific"
+    },
+    {
+      "id": "root-anchor-not-subpath",
+      "robots": "User-agent: *\nAllow: /$\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "/page.htm",
+      "expected": "disallowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Root anchor not valid for subpath"
+    },
+    {
+      "id": "agent-specific",
+      "robots": "User-agent: ExampleBot\nDisallow: /fish\nUser-agent: *\nAllow: /",
+      "agent": "ExampleBot",
+      "target": "/fish",
+      "expected": "disallowed",
+      "source": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "rationale": "Named group overrides wildcard"
+    },
+    {
+      "id": "agent-merged",
+      "robots": "User-agent: ExampleBot\nDisallow: /fish\nUser-agent: ExampleBot\nDisallow: /shrimp",
+      "agent": "ExampleBot",
+      "target": "/shrimp",
+      "expected": "disallowed",
+      "source": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "rationale": "Named groups merge"
+    },
+    {
+      "id": "agent-other-fallback",
+      "robots": "User-agent: ExampleBot\nDisallow: /fish\nUser-agent: *\nDisallow: /shrimp",
+      "agent": "OtherBot",
+      "target": "/shrimp",
+      "expected": "disallowed",
+      "source": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "rationale": "Fallback wildcard applies to unrelated agent"
+    },
+    {
+      "id": "sitemap-not-group-boundary",
+      "robots": "User-agent: ExampleBot\nSitemap: https://example.com/sitemap.xml\nUser-agent: OtherBot\nDisallow: /fish",
+      "agent": "ExampleBot",
+      "target": "/fish",
+      "expected": "disallowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Sitemap must not terminate agent group"
+    },
+    {
+      "id": "utf8-raw",
+      "robots": "User-agent: *\nDisallow: /foo/bar/ツ",
+      "agent": "ExampleBot",
+      "target": "/foo/bar/%E3%83%84",
+      "expected": "disallowed",
+      "source": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "rationale": "UTF-8 normalized"
+    },
+    {
+      "id": "utf8-percent",
+      "robots": "User-agent: *\nDisallow: /foo/bar/%E3%83%84",
+      "agent": "ExampleBot",
+      "target": "/foo/bar/ツ",
+      "expected": "disallowed",
+      "source": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "rationale": "Percent-encoded UTF-8 equivalent"
+    },
+    {
+      "id": "star-literal",
+      "robots": "User-agent: *\nDisallow: /path/file-with-a-%2A.html",
+      "agent": "ExampleBot",
+      "target": "/path/file-with-a-*.html",
+      "expected": "disallowed",
+      "source": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "rationale": "Encoded star is literal"
+    },
+    {
+      "id": "dollar-literal",
+      "robots": "User-agent: *\nDisallow: /path/foo-%24",
+      "agent": "ExampleBot",
+      "target": "/path/foo-$",
+      "expected": "disallowed",
+      "source": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "rationale": "Encoded dollar is literal"
+    },
+    {
+      "id": "unreserved-decode",
+      "robots": "User-agent: *\nDisallow: /foo/bar/baz",
+      "agent": "ExampleBot",
+      "target": "/foo/bar/%62%61%7A",
+      "expected": "disallowed",
+      "source": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "rationale": "Unreserved ASCII escapes decoded"
+    },
+    {
+      "id": "reserved-different",
+      "robots": "User-agent: *\nDisallow: /a%2Fb",
+      "agent": "ExampleBot",
+      "target": "/a/b",
+      "expected": "allowed",
+      "source": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "rationale": "Reserved slash percent-encoding retained"
+    },
+    {
+      "id": "no-group",
+      "robots": "User-agent: SomeOtherBot\nDisallow: /",
+      "agent": "ExampleBot",
+      "target": "/anything",
+      "expected": "allowed",
+      "source": "https://www.rfc-editor.org/rfc/rfc9309.html",
+      "rationale": "No matching agent or wildcard group"
+    },
+    {
+      "id": "empty-disallow",
+      "robots": "User-agent: *\nDisallow:",
+      "agent": "ExampleBot",
+      "target": "/anything",
+      "expected": "allowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "Empty rule ignored"
+    },
+    {
+      "id": "bom",
+      "robots": "﻿User-agent: *\nDisallow: /private",
+      "agent": "ExampleBot",
+      "target": "/private",
+      "expected": "disallowed",
+      "source": "https://developers.google.com/crawling/docs/robots-txt/robots-txt-spec",
+      "rationale": "UTF-8 BOM ignored"
+    }
+  ]
+}
