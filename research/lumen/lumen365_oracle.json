@@ -1,0 +1,5 @@
+{
+  "fixture_id": "lumen365_balanced_overlap_v1",
+  "outcome_generation": "random.Random(365), int(random()<0.4), executed after precommit GitHub confirmation",
+  "labels": {"C01":0,"C02":0,"C03":0,"C04":1,"C05":1,"C06":1,"C07":1,"C08":0}
+}
