@@ -1,0 +1,8 @@
+Top pages,Clicks,Impressions,CTR,Position,segment,intent_label
+https://example.com/private/account,12,100,12%,7.1,account,intentional
+https://example.com/private/products,45,500,9%,8.1,commercial,accidental
+https://example.com/private/legacy,5,200,2.5%,13.2,legacy,unknown
+https://example.com/private/public/help,34,600,5.7%,9.5,support,unknown
+https://example.com/pricing,120,800,15%,3.2,commercial,unknown
+https://other.example/private/account,80,900,8.9%,5.2,external,accidental
+https://example.com/broken%ZZ,3,200,1.5%,18.0,broken,accidental
