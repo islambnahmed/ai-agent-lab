@@ -69,5 +69,29 @@ class GoldWalkForwardTests(unittest.TestCase):
                                      rel_tol=1e-12))
 
 
+    def test_direction_accuracy_does_not_underflow_for_tiny_prices(self):
+        # The old product-of-differences rounds to zero even when both
+        # movements have the same direction.
+        rows = [
+            (dt.date(2025, 1, 1), 1e-200),
+            (dt.date(2025, 1, 2), 1.01e-200),
+            (dt.date(2025, 1, 3), 1.03e-200),
+        ]
+        result = backtest(rows, horizon=1, train_min=2)
+        self.assertTrue(result["results"][0]["candidate_direction_correct"])
+        self.assertEqual(result["candidate_direction_accuracy"], 1)
+
+    def test_rmse_does_not_overflow_when_finite_errors_are_large(self):
+        # Squaring a 1e200 error raises OverflowError, but its RMSE is finite.
+        rows = [
+            (dt.date(2025, 1, 1), 1e200),
+            (dt.date(2025, 1, 2), 1e200),
+            (dt.date(2025, 1, 3), 2e200),
+        ]
+        result = backtest(rows, horizon=1, train_min=2)
+        self.assertTrue(math.isfinite(result["candidate_rmse"]))
+        self.assertTrue(math.isclose(result["candidate_rmse"], 1e200))
+
+
 if __name__ == "__main__":
     unittest.main()
