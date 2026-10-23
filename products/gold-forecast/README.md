@@ -26,6 +26,7 @@ After committing the code, fetch a fresh snapshot and issue future forecasts:
 
 ```bash
 npm run data
+python3 scripts/snapshot_verify.py  # fail-closed local raw-byte/manifest check
 npm run issue
 ```
 
@@ -33,7 +34,11 @@ Commit the new `reports/prospective/*.json` receipts **before** target closes ar
 available. Later: `npm run data && npm run settle`. Settlement is written to
 ignored `runs/settlements.json`; it cannot edit receipts. Preserve local
 `data/vintages/` until settlement, because a rolling one-year feed cannot
-reconstruct the exact original vintage. Source revisions quarantine outcomes.
+reconstruct the exact original vintage. New fetches also keep ignored
+`data/history.raw` (the exact bytes behind `rawSha256`), allowing a local
+byte-level audit against `data/history.json` and `data/fetch-manifest.json`.
+Do not commit raw provider feeds. This audit does not prove provider identity,
+independent publication time, or recover pre-existing missing snapshots. Source revisions quarantine outcomes.
 A receipt hash detects changes; the externally timestamped Git commit anchors
 issuance. No task schedule or worker configuration is changed by these commands.
 
