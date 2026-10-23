@@ -78,11 +78,16 @@ def snapshot(case_ids, events, as_of, *, threshold=0.4, final_only=True):
     # An as-of snapshot consumes only the receipt-order prefix available then.
     # Validate the full ledger separately when auditing later arrivals.
     prefix = []
+    passed_cutoff = False
     for event in events:
         if not isinstance(event, dict) or "ingested_at" not in event:
             raise LedgerError("invalid event envelope")
-        if parse_utc(event["ingested_at"]) > cutoff:
-            break
+        at = parse_utc(event["ingested_at"])
+        if at > cutoff:
+            passed_cutoff = True
+            continue
+        if passed_cutoff:
+            raise LedgerError("out-of-order as-of event after future-dated event")
         prefix.append(event)
     validate_ledger(case_ids, prefix)
     if type(threshold) not in (int, float) or not 0 <= threshold <= 1:
