@@ -1,0 +1,38 @@
+{
+  "seed": 403,
+  "focal": {
+    "exact_probabilities": {
+      "shared": 0.827046,
+      "diverse": 0.99063
+    },
+    "naive_probabilities": {
+      "shared": 0.965923,
+      "diverse": 0.99063
+    },
+    "true_expected_utilities": {
+      "shared": 7.47046,
+      "diverse": 7.906298
+    },
+    "true_optimal": "diverse",
+    "naive_choice": "shared",
+    "zero_outage_estimate_choice": "shared"
+  },
+  "gold": {
+    "scenarios": 2000,
+    "naive_disagreement_count": 868,
+    "naive_mean_regret_per_scenario": 0.288837,
+    "naive_worst_regret": 1.881418,
+    "underestimated_outage_mean_regret": 0.15571,
+    "underestimated_outage_wrong_decisions": 649,
+    "mc_max_abs_error_first_24_checks": 0.00456
+  },
+  "seo": {
+    "scenarios": 2000,
+    "naive_disagreement_count": 1020,
+    "naive_mean_regret_per_scenario": 0.367594,
+    "naive_worst_regret": 2.006942,
+    "underestimated_outage_mean_regret": 0.173797,
+    "underestimated_outage_wrong_decisions": 707,
+    "mc_max_abs_error_first_24_checks": 0.003227
+  }
+}
