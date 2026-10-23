@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "fixture_id": "lumen365_balanced_overlap_v1",
+  "case_ids": ["C01", "C02", "C03", "C04", "C05", "C06", "C07", "C08"],
+  "groups": {
+    "gA": ["C01", "C02", "C03", "C04"],
+    "gB": ["C03", "C04", "C05", "C06"],
+    "gC": ["C01", "C05", "C07", "C08"],
+    "gD": ["C02", "C06", "C07", "C08"]
+  },
+  "provenance": "Memberships authored and committed before fixture outcome generation; same actor, not independent attestation.",
+  "limitations": "Git history ordering is not external attestation and cannot establish truthful population coverage."
+}
