@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "fixture_id": "lumen365_balanced_overlap_v1",
+  "note": "Explicit lab-declared correction fork; neither source nor timestamp is independently attested.",
+  "versions": [
+    {
+      "id": "v1",
+      "parent": null,
+      "created_at": "2026-10-23T08:00:00Z",
+      "corrections": []
+    },
+    {
+      "id": "v2",
+      "parent": "v1",
+      "created_at": "2026-10-23T12:10:00Z",
+      "corrections": [
+        {
+          "id": "l368-c07-final-correction",
+          "case_id": "C07",
+          "supersedes": "e07c",
+          "label": 0,
+          "recorded_at": "2026-10-23T12:15:00Z",
+          "reason": "synthetic adjudication reversal for final-label correction test",
+          "source": "self_declared_lab_adjudicator"
+        }
+      ]
+    }
+  ]
+}
