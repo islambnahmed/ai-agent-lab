@@ -1,0 +1,49 @@
+--- a/robots_gate.py
++++ b/robots_gate.py
+@@ -22,11 +22,13 @@
+     reason: str
+ 
+ 
+-def _canonical(s: str) -> str:
+-    """Decode percent-encoded unreserved ASCII; encode non-ASCII as UTF-8 percent triplets.
++def _canonical(s: str, *, uri_target: bool = False) -> str:
++    """Normalize unreserved escapes and UTF-8 for robots rule or URI.
+ 
+-    Preserve reserved percent encodings and literal reserved ASCII characters.
+-    This is conservative and deliberately refuses malformed percent escapes.
++    URI literals '*' and '$' must be encoded before matching: in a robots
++    rule these are pattern operators, but in a requested URI they are data.
++    Percent-encoded reserved bytes remain encoded in either context.
++    Malformed percent escapes are rejected conservatively.
+     """
+     out = []
+     i = 0
+@@ -40,7 +42,9 @@
+             out.append(char if char in _UNRESERVED else f'%{value:02X}')
+             i += 3
+             continue
+-        if ord(c) < 128:
++        if uri_target and c in '*$':
++            out.append(f'%{ord(c):02X}')
++        elif ord(c) < 128:
+             out.append(c)
+         else:
+             out.extend(f'%{b:02X}' for b in c.encode('utf-8'))
+@@ -79,6 +83,9 @@
+         raise ValueError('robots text required')
+     if len(robots.encode('utf-8')) > MAX_BYTES:
+         raise ValueError('file exceeds bounded 500 KiB inspection limit')
++    # Google ignores a UTF-8 BOM at the beginning of robots.txt. Without
++    # stripping it, the first User-agent directive is silently discarded.
++    robots = robots.removeprefix('\ufeff')
+     groups = []
+     agents, rules = [], []
+     saw_rule_line = False
+@@ -135,7 +142,7 @@
+             raise ValueError('absolute path required without fragment')
+         if target.split('?', 1)[0] == '/robots.txt':
+             return Decision('allowed', None, None, 'robots.txt is implicitly allowed')
+-        target = _canonical(target)
++        target = _canonical(target, uri_target=True)
+         groups = parse_groups(robots)
+         token = product_token.lower()
