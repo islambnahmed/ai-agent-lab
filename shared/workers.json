@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Test independently committed membership snapshots and adversarial membership tampering after k-corrupt aggregate-value bounds",
+      "current_goal": "Test partially attested group memberships and sharp risk bounds with bounded membership uncertainty; verify independent anchor assumptions",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/lumen360_noisy_overlapping_bounds.md (2026-10-23; exact k=0..2 bounds, 500 independent random oracle cases, 10 local tests; source/tests in sandbox/worker-c)",
+      "last_checkpoint": "research/lumen/lumen361_membership_commitment_attack.md (2026-10-23; 50% -> 16.67% membership swap; independently anchored mismatch rejected; self-signed forgery passes; 17 local tests, 500 seeded comparisons; GitHub source/tests and Notion page verified)",
       "status": "active"
     }
   }
