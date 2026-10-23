@@ -26,15 +26,15 @@ def audit(manifest_bytes, counts, *, oracle=None, max_error_rate=0.4):
     try:
         frame = json.loads(manifest_bytes)
         ids, groups = frame['case_ids'], frame['groups']
-        assert frame['fixture_id'] == 'lumen365_balanced_overlap_v1'
-        assert isinstance(ids, list) and 0 < len(ids) <= 16
-        assert len(ids) == len(set(ids))
-        assert isinstance(groups, dict) and len(groups) > 0
-        assert all(len(m) == len(set(m)) and len(m) > 0 and set(m) <= set(ids)
-                   for m in groups.values())
-        assert type(max_error_rate) in (float, int) and 0 <= max_error_rate <= 1
-        assert isinstance(counts, dict) and set(counts) == set(groups)
-        assert all(type(counts[g]) is int and 0 <= counts[g] <= len(groups[g]) for g in groups)
+        if frame['fixture_id'] != 'lumen365_balanced_overlap_v1': raise ValueError('wrong fixture')
+        if not isinstance(ids, list) or not 0 < len(ids) <= 16: raise ValueError('invalid IDs')
+        if len(ids) != len(set(ids)): raise ValueError('duplicate IDs')
+        if not isinstance(groups, dict) or not groups: raise ValueError('invalid groups')
+        if not all(len(m) == len(set(m)) and len(m) > 0 and set(m) <= set(ids)
+                   for m in groups.values()): raise ValueError('invalid members')
+        if type(max_error_rate) not in (float, int) or not 0 <= max_error_rate <= 1: raise ValueError('invalid threshold')
+        if not isinstance(counts, dict) or set(counts) != set(groups): raise ValueError('invalid counts')
+        if not all(type(counts[g]) is int and 0 <= counts[g] <= len(groups[g]) for g in groups): raise ValueError('invalid values')
     except (ValueError, KeyError, AssertionError, TypeError):
         return result | {'reason': 'invalid_fixture_or_counts'}
     result['membership_verified'] = True
