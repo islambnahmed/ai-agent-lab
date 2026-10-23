@@ -62,10 +62,14 @@ def rankings(rows: list[dict]) -> dict[str, list[str]]:
     # from consuming every early review slot. No ground-truth labels are read.
     segment_order = sorted(by_segment, key=lambda s: (-segment_max[s], s))
     balanced = []
-    while any(by_segment.values()):
-        for segment in segment_order:
+    active = segment_order
+    while active:
+        next_active = []
+        for segment in active:
+            balanced.append(by_segment[segment].popleft())
             if by_segment[segment]:
-                balanced.append(by_segment[segment].popleft())
+                next_active.append(segment)
+        active = next_active
     return {'clicks_desc': [r['url'] for r in ordered], 'segment_round_robin': balanced}
 
 
