@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 from collections import Counter
 from pathlib import Path
 import sys
@@ -19,6 +20,10 @@ def canonical_key(value: str) -> str:
     """Conservative URL equality: normalize scheme/host/default port only."""
     if not value or any(ord(c) <= 32 or ord(c) == 127 for c in value):
         raise ValueError('URL contains whitespace/control characters or is empty')
+    if re.search(r'%(?![0-9A-Fa-f]{2})', value):
+        raise ValueError('URL contains malformed percent escape')
+    # An explicitly empty query (trailing '?') is distinct from no query.
+    has_query_marker = '?' in value.split('#', 1)[0]
     try:
         parts = urlsplit(value)
         if parts.scheme.lower() not in ('http', 'https') or not parts.netloc:
@@ -41,7 +46,7 @@ def canonical_key(value: str) -> str:
     if ':' in normalized_host:
         normalized_host = f'[{normalized_host}]'
     authority = normalized_host + (f':{port}' if port else '')
-    return f'{scheme}://{authority}{parts.path or "/"}' + (f'?{parts.query}' if parts.query else '')
+    return f'{scheme}://{authority}{parts.path or "/"}' + (f'?{parts.query}' if has_query_marker else '')
 
 
 def audit(rows: list[dict[str, str]]) -> dict:
