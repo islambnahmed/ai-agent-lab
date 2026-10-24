@@ -58,7 +58,7 @@ class TestRegressionReceipt(unittest.TestCase):
             "class T(unittest.TestCase):\n"
             " def test_mutate(self):\n"
             "  Path('fixture.json').write_text('changed')\n"
-            "  self.assertTrue(True)\n".replace("\\\n", "\n"),
+            "  self.assertTrue(True)\n",
             encoding="utf-8")
         r, ok = self.receipt()
         self.assertFalse(ok)
@@ -73,7 +73,7 @@ class TestRegressionReceipt(unittest.TestCase):
             "class T(unittest.TestCase):\n"
             " def test_optimized(self):\n"
             "  if not __debug__: Path('fixture.json').write_text('changed')\n"
-            "  self.assertTrue(True)\n".replace("\\\n", "\n"),
+            "  self.assertTrue(True)\n",
             encoding="utf-8")
         r, ok = self.receipt()
         self.assertFalse(ok)
@@ -87,13 +87,12 @@ class TestRegressionReceipt(unittest.TestCase):
             "class T(unittest.TestCase):\n"
             " def test_delete(self):\n"
             "  Path('fixture.json').unlink()\n"
-            "  self.assertTrue(True)\n".replace("\\\n", "\n"),
+            "  self.assertTrue(True)\n",
             encoding="utf-8")
         r, ok = self.receipt()
         self.assertFalse(ok)
         self.assertEqual(r["input_drift"], ["fixture.json"])
         self.assertEqual(r["runs"][0]["missing_inputs_after_run"], ["fixture.json"])
-
 
 
 if __name__ == "__main__":
