@@ -129,6 +129,10 @@ def audit(root: Path, start: str, base_url: str, today: dt.date, *, max_sitemaps
             if doc.tag == NS + 'sitemapindex':
                 summary['indexes'] += 1
                 entries = doc.findall(NS + 'sitemap')
+                # Wrong-namespace entries are otherwise silently skipped by findall.
+                for child in doc:
+                    if child.tag.rsplit('}', 1)[-1] == 'sitemap' and child.tag != NS + 'sitemap':
+                        issue('wrong_entry_namespace', path, str(child.tag)[:200])
                 if len(entries) > MAX_ENTRIES:
                     issue('entry_limit', path, str(len(entries)))
                     return
@@ -145,6 +149,9 @@ def audit(root: Path, start: str, base_url: str, today: dt.date, *, max_sitemaps
             elif doc.tag == NS + 'urlset':
                 summary['urlsets'] += 1
                 entries = doc.findall(NS + 'url')
+                for child in doc:
+                    if child.tag.rsplit('}', 1)[-1] == 'url' and child.tag != NS + 'url':
+                        issue('wrong_entry_namespace', path, str(child.tag)[:200])
                 if len(entries) > MAX_ENTRIES:
                     issue('entry_limit', path, str(len(entries)))
                     return
@@ -158,8 +165,11 @@ def audit(root: Path, start: str, base_url: str, today: dt.date, *, max_sitemaps
                     if not norm:
                         issue('invalid_url', path, loc.strip()[:200])
                         continue
-                    if urlsplit(norm).netloc != urlsplit(base).netloc:
+                    parsed_url, parsed_base = urlsplit(norm), urlsplit(base)
+                    if parsed_url.netloc != parsed_base.netloc:
                         issue('off_host_url', path, norm[:200])
+                    elif parsed_url.scheme != parsed_base.scheme:
+                        issue('off_origin_url', path, norm[:200])
                     if norm in seen_urls:
                         issue('duplicate_url', path, norm[:200] + ' (first: ' + seen_urls[norm] + ')')
                     else:
