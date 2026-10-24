@@ -23,6 +23,8 @@ URL matching lowercases scheme/host, treats default HTTP(S) ports as equivalent,
 
 Blank physical CSV lines are skipped without shifting reported line positions; extra columns still produce `malformed_row` findings.
 
+Input-read failures return a deliberately generic stderr message; local file paths and parser excerpts are not printed. This also applies to nonexistent files, whose OS errors would otherwise expose the supplied filename.
+
 ## Boundaries and next evidence
 
 This is **not** a live redirect crawler. It does not validate HTTP 301/302 behavior, source coverage, redirect deployment, search-engine indexing, canonical tags, server rewrite precedence, cross-domain intent, or SEO outcomes. Duplicate source rows are reported and later duplicates are excluded from graph analysis (**first valid mapping wins**, even when a later row conflicts); fix them before trusting graph results. A conflict is a map ambiguity, not evidence of actual deployed redirect behavior. Run against a separately authorized, representative migration map and compare with a manual reviewer before claiming field utility. No customer URLs or secrets are committed.
