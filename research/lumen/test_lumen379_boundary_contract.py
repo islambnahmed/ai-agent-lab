@@ -1,7 +1,7 @@
 """Lumen 379: adversarial *synthetic* contract tests for copy-only isolation.
 
 All writes stay within the TemporaryDirectory created by each test. These
-cases document observed limitations; they do not attempt privilege escalation,
+cases document observed limitations and the reduced child environment; they do not attempt privilege escalation,
 network access, or writes to any real repository.
 """
 import os
@@ -65,12 +65,22 @@ class TestSnapshotBoundaryContract(unittest.TestCase):
         self.assertEqual(fixture.read_text(), "original")
         self.assertEqual(receipt["source_drift"], [])
 
-    def test_synthetic_environment_variable_reaches_child(self):
-        with patch.dict(os.environ, {"LUMEN379_SYNTHETIC_VALUE": "synthetic-sentinel"}):
+    def test_synthetic_environment_variable_does_not_reach_child(self):
+        with patch.dict(os.environ, {
+            "LUMEN379_SYNTHETIC_VALUE": "synthetic-sentinel",
+            "PYTHONHOME": "/synthetic/invalid/python/home",
+            "PYTHONPATH": "/synthetic/invalid/python/path",
+        }):
             receipt, ok = self.run_case(
                 "import os\n"
+                "from pathlib import Path\n"
                 "class T(unittest.TestCase):\n"
-                " def test_env(self): self.assertEqual(os.environ.get('LUMEN379_SYNTHETIC_VALUE'), 'synthetic-sentinel')")
+                " def test_env(self):\n"
+                "  self.assertNotIn('LUMEN379_SYNTHETIC_VALUE', os.environ)\n"
+                "  self.assertNotIn('PYTHONHOME', os.environ)\n"
+                "  self.assertNotIn('PYTHONPATH', os.environ)\n"
+                "  self.assertEqual(Path(os.environ['HOME']).resolve(), Path.cwd().resolve())\n"
+                "  self.assertEqual(Path(os.environ['TMPDIR']).resolve(), Path.cwd().resolve())")
         self.assertTrue(ok, receipt)
         self.assertEqual(len(receipt["runs"]), 2)
 
