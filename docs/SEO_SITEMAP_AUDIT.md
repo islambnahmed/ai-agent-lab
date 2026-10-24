@@ -22,11 +22,25 @@ python3 tools/seo_sitemap_audit.py \
 python3 -m unittest discover -s tests -p 'test_seo_sitemap_audit.py' -v
 ```
 
+### Optional complete URL inventory (CSV)
+
+The default JSON report summarizes URLs and issues but does **not** list every URL. To export every valid parsed URL entry for offline SEO QA, add:
+
+```bash
+python3 tools/seo_sitemap_audit.py \\
+  --root /path/to/downloaded-sitemaps \\
+  --base-url https://example.com/ \\
+  --as-of 2026-10-24 \\
+  --urls-csv /path/to/inventory.csv > /path/to/report.json
+```
+
+The CSV has four columns: `source_sitemap`, `normalized_url`, `lastmod`, `duplicate`. Duplicates are retained as separate rows, marked `true`, so an analyst can locate their sources. Invalid or missing URL locations remain in the JSON issues but are excluded from CSV rows. `lastmod` is the XML value, not a verified page modification time. Rows stream to a temporary file in the output directory, which is replaced only after the audit finishes; **an existing destination CSV is overwritten on success**. The JSON report and its exit code retain the original meaning (0 clean, 1 issues, 2 invalid configuration/output error). This does not fetch any page or sitemap.
+
 `--as-of` freezes future-date checks for reproducibility; omitted value uses current UTC date. The CLI exits **0** if no issues, **1** for diagnosed sitemap issues, and **2** for invalid CLI configuration. It never attempts to download sitemaps. `.xml.gz` is supported, and `<lastmod>` timestamps must have an explicit offset; a date-only value is also valid. The date is compared after UTC normalization.
 
 ### Demonstrated local cases
 
-12 dependency-free tests cover a valid multi-file index with gzip, duplicate normalized URL, future/invalid `lastmod`, missing child and cycle, off-origin and traversal index entries, malformed XML and DOCTYPE, malformed/off-host URL entries, unexpected root, corrupt gzip, CLI exit codes and deterministic output, and configuration/sitemap-count limits. No real customer sitemap, live HTTP response, browser, ranking data, or production deployment was used.
+15 dependency-free tests cover a valid multi-file index with gzip, duplicate normalized URL, future/invalid `lastmod`, missing child and cycle, off-origin and traversal index entries, malformed XML and DOCTYPE, malformed/off-host URL entries, unexpected root, corrupt gzip, CLI exit codes and deterministic output, and configuration/sitemap-count limits. CSV export tests cover deterministic full inventories, duplicates, invalid URL exclusions and safe behavior on invalid configuration. No real customer sitemap, live HTTP response, browser, ranking data, or production deployment was used.
 
 ## Known limitations and next falsification
 
