@@ -229,6 +229,9 @@ def main(argv: list[str] | None = None) -> int:
             report = audit(args.root, args.start, args.base_url, today, max_sitemaps=args.max_sitemaps)
         else:
             destination = args.urls_csv
+            # Never let the export overwrite a local input sitemap.
+            if destination.suffix.lower() in ('.xml', '.gz'):
+                raise ValueError('CSV output path must not end in .xml or .gz')
             if not destination.parent.is_dir():
                 raise ValueError('CSV output parent directory must exist')
             # Stream rows rather than retaining an extra inventory in memory.
