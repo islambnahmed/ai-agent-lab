@@ -38,3 +38,7 @@ The original provider history snapshot and original publication-time vintages we
 **Next useful work:** obtain a provider-native archived vintage / first-publication evidence for the h1 and h7 receipts, then match exact observed-close sequences and provider measurement definitions before computing paired errors or coverage. Do not score h30 before its calendar lower bound or promote any model on a single observation. Preserve the existing frozen selector.
 
 No changes to production forecasting, GitHub security settings, other branches, or external accounts.
+
+## Verified CI follow-up
+
+For the exact test commit `f8958f2ca54fc84ed54f033fa8f30d0c045c9082`, [AI Agent Lab CI run 40108462188](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40108462188) and [Lumen regression run 40108462265](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40108462265) both completed with **success**. The regression jobs on Python **3.12 and 3.13** each show **Screen synthetic Gold Lab evidence claims (normal and optimized)** as successful. The suite now contains 12 test methods (8 preexisting + 4 new); under both interpreter versions and normal/`-O` modes, this is **48 test-method executions**, not 48 distinct test cases. The GitHub CI result is verification of code behavior on synthetic claims, not real-world provider provenance.
