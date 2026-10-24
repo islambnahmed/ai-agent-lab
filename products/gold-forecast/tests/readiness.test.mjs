@@ -84,3 +84,14 @@ test('provisional same-day price cannot enter the committed receipt vintage',()=
   const receipt=issueReceipt([...rows,{date:'2025-09-18',price:1e7}],7,{issuedAt,source:'test',codeCommit:'a'.repeat(40),sourceManifest:{receivedAt:'2025-09-18T11:59:00Z'}});
   assert.equal(receipt.historyLength,260);assert.equal(receipt.originDate,'2025-09-17');
 });
+
+test('receipt issued just after UTC midnight cannot promote pre-midnight provisional close',()=>{
+  const issuedAt='2025-09-19T00:01:00Z';
+  const receivedAt='2025-09-18T23:59:00Z';
+  const raw=[...data(260),{date:'2025-09-18',price:1e7}];
+  const receipt=issueReceipt(raw,7,{issuedAt,source:'test',codeCommit:'a'.repeat(40),sourceManifest:{receivedAt}});
+  assert.equal(receipt.historyLength,260);
+  assert.equal(receipt.originDate,'2025-09-17');
+  assert.equal(receipt.originClose,data(260).at(-1).price);
+  assert.equal(verifyReceipt(receipt),true);
+});
