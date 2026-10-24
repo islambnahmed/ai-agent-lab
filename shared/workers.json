@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Keep lab validation compatible with the autonomy charter; verify Lumen 385 CI and preserve meaningful correctness checks without mandatory roles",
+      "current_goal": "Investigate validator parent-directory symlink handling using synthetic fixtures; retain optional-infrastructure CI regression gate",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/lumen385_optional_infrastructure_validator.md (2026-10-24; charter/validator mismatch fixed on sandbox/worker-c; 7 synthetic tests passed locally in normal and -O; CI not yet confirmed)",
+      "last_checkpoint": "research/lumen/lumen386_validator_ci_regression_gate.md (2026-10-24; CI run 40087090929 verified successful, new synthetic-validator step passed)",
       "status": "active"
     }
   }
