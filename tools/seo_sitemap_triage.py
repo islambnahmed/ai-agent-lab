@@ -6,6 +6,7 @@ This does not check live URLs, indexation, redirects, or rankings.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import csv
 import json
 from pathlib import Path
@@ -26,10 +27,10 @@ def _urls(items: object, name: str) -> list[str]:
     return items
 
 
-def _rows(details: object) -> tuple[int, set[str], set[str]]:
+def _rows(details: object) -> tuple[int, Counter[str], set[str]]:
     if not isinstance(details, list):
         raise ValueError('invalid changed URL details')
-    total, sources, lastmods = 0, set(), set()
+    total, sources, lastmods = 0, Counter(), set()
     for entry in details:
         if (not isinstance(entry, dict) or
                 not isinstance(entry.get('source_sitemap'), str) or
@@ -37,7 +38,7 @@ def _rows(details: object) -> tuple[int, set[str], set[str]]:
                 type(entry.get('count')) is not int or entry['count'] < 1):
             raise ValueError('invalid changed URL detail row')
         total += entry['count']
-        sources.add(entry['source_sitemap'])
+        sources[entry['source_sitemap']] += entry['count']
         lastmods.add(entry['lastmod'])
     if total < 1:
         raise ValueError('empty changed URL detail rows')

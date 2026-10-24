@@ -46,6 +46,22 @@ class TriageTests(unittest.TestCase):
         self.assertIn('placement', rows[2][3])
         self.assertIn('lastmod', rows[4][3])
 
+    def test_same_sources_with_shifted_multiplicity_is_p2_placement(self):
+        # Same total rows and source-name set, but one duplicate moves from a.xml to b.xml.
+        # A set-only comparison would incorrectly downgrade this to P3.
+        before = {'https://example.com/shift': Counter({
+            ('a.xml', ''): 2, ('b.xml', ''): 1})}
+        after = {'https://example.com/shift': Counter({
+            ('a.xml', ''): 1, ('b.xml', ''): 2})}
+        diff = compare(before, after)
+        diff['verification'] = {'status': 'csv_only_unverified'}
+        rows = build_queue(diff)
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0][:4], [
+            'P2', 'changed', 'https://example.com/shift',
+            'Review sitemap placement change'])
+        self.assertEqual(rows[0][5:], [3, 3])
+
     def test_csv_only_evidence_remains_unverified(self):
         diff = sample()
         diff['verification']['status'] = 'csv_only_unverified'
