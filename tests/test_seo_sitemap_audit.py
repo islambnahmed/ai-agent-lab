@@ -1,0 +1,121 @@
+import datetime as dt
+import gzip
+from pathlib import Path
+import sys
+import json
+import subprocess
+import tempfile
+import unittest
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / 'tools'))
+from seo_sitemap_audit import audit, _local_target, _normalize_url
+
+NS = 'http://www.sitemaps.org/schemas/sitemap/0.9'
+TODAY = dt.date(2026, 10, 24)
+
+
+def urlset(*items):
+    return f'<urlset xmlns="{NS}">' + ''.join(f'<url><loc>{url}</loc>' + (f'<lastmod>{lastmod}</lastmod>' if lastmod is not None else '') + '</url>' for url,lastmod in items) + '</urlset>'
+
+
+def index(*urls):
+    return f'<sitemapindex xmlns="{NS}">' + ''.join(f'<sitemap><loc>{url}</loc></sitemap>' for url in urls) + '</sitemapindex>'
+
+
+class SitemapAuditTests(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory()
+        self.root = Path(self.tmp.name)
+
+    def tearDown(self):
+        self.tmp.cleanup()
+
+    def write(self, name, contents):
+        path = self.root / name
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(contents, encoding='utf-8')
+
+    def run_audit(self, start='sitemap.xml'):
+        return audit(self.root, start, 'https://example.com/', TODAY)
+
+    def codes(self, start='sitemap.xml'):
+        return [i['code'] for i in self.run_audit(start)['issues']]
+
+    def test_valid_nested_index_and_gzip(self):
+        self.write('sitemap.xml', index('https://example.com/a.xml', 'https://example.com/sub/b.xml.gz'))
+        self.write('a.xml', urlset(('https://example.com/a', '2026-10-20')))
+        target = self.root / 'sub/b.xml.gz'
+        target.parent.mkdir()
+        target.write_bytes(gzip.compress(urlset(('https://example.com/b', '2026-10-20T10:00:00+00:00')).encode()))
+        report = self.run_audit()
+        self.assertEqual(report['summary'], {'sitemaps':3,'urlsets':2,'indexes':1,'urls':2,'unique_urls':2,'issues':0})
+
+    def test_duplicates_across_sitemaps_normalized(self):
+        self.write('sitemap.xml', index('https://example.com/a.xml','https://example.com/b.xml'))
+        self.write('a.xml', urlset(('HTTPS://EXAMPLE.COM:443/a#frag', None)))
+        self.write('b.xml', urlset(('https://example.com/a', None)))
+        self.assertEqual(self.codes(), ['duplicate_url'])
+
+    def test_future_and_invalid_lastmod(self):
+        self.write('sitemap.xml', urlset(('https://example.com/a','2026-10-25'),('https://example.com/b','yesterday'),('https://example.com/c','2026-10-24T23:00:00-05:00')))
+        self.assertEqual(sorted(self.codes()), ['future_lastmod','future_lastmod','invalid_lastmod'])
+
+    def test_missing_child_and_index_cycle(self):
+        self.write('sitemap.xml', index('https://example.com/missing.xml','https://example.com/sitemap.xml'))
+        self.assertEqual(sorted(self.codes()), ['index_cycle','missing_sitemap'])
+
+    def test_index_external_and_encoded_traversal_rejected(self):
+        self.write('sitemap.xml', index('https://evil.example/x.xml','https://example.com/%2e%2e/secret.xml'))
+        self.assertEqual(self.codes(), ['unmapped_index_loc','unmapped_index_loc'])
+        self.assertIsNone(_local_target('https://example.com/%2e%2e/secret.xml','https://example.com/',self.root.resolve()))
+
+    def test_malformed_xml_and_unsafe_doctype(self):
+        self.write('sitemap.xml','<urlset>')
+        self.assertEqual(self.codes(), ['malformed_xml'])
+        self.write('sitemap.xml',f'<!DOCTYPE urlset [<!ENTITY x "y">]><urlset xmlns="{NS}"/>')
+        self.assertEqual(self.codes(), ['xml_declaration_unsafe'])
+
+    def test_invalid_urls_wrong_host_and_missing_loc(self):
+        self.write('sitemap.xml', f'<urlset xmlns="{NS}"><url><loc>javascript:alert(1)</loc></url><url><loc>https://other.com/</loc></url><url/></urlset>')
+        self.assertEqual(sorted(self.codes()), ['invalid_url','missing_loc','off_host_url'])
+
+    def test_unexpected_root_and_missing_start(self):
+        self.write('sitemap.xml','<feed/>')
+        self.assertEqual(self.codes(), ['unexpected_root'])
+        self.assertEqual(self.codes('absent.xml'), ['missing_sitemap'])
+
+    def test_url_normalization_and_no_network(self):
+        self.assertEqual(_normalize_url('HTTPS://EXAMPLE.COM:443/x#frag'), 'https://example.com/x')
+        self.assertIsNone(_normalize_url('https://user:pw@example.com/x'))
+        self.assertIsNone(_normalize_url('not-a-url'))
+
+    def test_corrupt_gzip_is_isolated(self):
+        (self.root / 'sitemap.xml.gz').write_bytes(b'\x1f\x8bcorrupt')
+        self.assertEqual(self.codes('sitemap.xml.gz'), ['unreadable_sitemap'])
+
+    def test_cli_exit_status_and_deterministic_json(self):
+        script = str(Path(__file__).resolve().parents[1] / 'tools/seo_sitemap_audit.py')
+        args = [sys.executable, script, '--root', str(self.root), '--base-url', 'https://example.com', '--as-of', '2026-10-24']
+        self.write('sitemap.xml', urlset(('https://example.com/a', '2026-10-20')))
+        good = subprocess.run(args, capture_output=True, text=True)
+        self.assertEqual(good.returncode, 0)
+        self.assertEqual(json.loads(good.stdout)['summary']['urls'], 1)
+        self.assertEqual(good.stdout, subprocess.run(args, capture_output=True, text=True).stdout)
+        self.write('sitemap.xml', urlset(('https://example.com/a', '2026-10-25')))
+        bad = subprocess.run(args, capture_output=True, text=True)
+        self.assertEqual(bad.returncode, 1)
+        self.assertEqual(json.loads(bad.stdout)['issues'][0]['code'], 'future_lastmod')
+
+    def test_limit_and_bad_configuration(self):
+        self.write('sitemap.xml', index('https://example.com/a.xml'))
+        self.write('a.xml', urlset(('https://example.com/a',None)))
+        self.assertEqual(self.run_audit()['summary']['sitemaps'],2)
+        self.assertIn('sitemap_limit', [i['code'] for i in audit(self.root,'sitemap.xml','https://example.com/',TODAY,max_sitemaps=1)['issues']])
+        with self.assertRaises(ValueError):
+            audit(self.root,'sitemap.xml','ftp://example.com/',TODAY)
+        with self.assertRaises(ValueError):
+            audit(self.root,'../sitemap.xml','https://example.com/',TODAY)
+
+
+if __name__ == '__main__':
+    unittest.main()
