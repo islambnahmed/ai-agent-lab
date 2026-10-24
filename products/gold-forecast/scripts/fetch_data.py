@@ -47,7 +47,10 @@ def main():
             result[name] = meta
             dest = ROOT / 'data' / (name + '.json')
             if payload is not None:
-                dest.write_text(json.dumps(payload, ensure_ascii=False), encoding='utf-8')
+                saved = json.dumps(payload, ensure_ascii=False)
+                dest.write_text(saved, encoding='utf-8')
+                # Raw response bytes and normalized on-disk JSON differ; pin both.
+                meta['storedSha256'] = hashlib.sha256(saved.encode('utf-8')).hexdigest()
             else:
                 dest.unlink(missing_ok=True)  # never pass an old failed-fetch snapshot
     result['coveragePolicy'] = {
