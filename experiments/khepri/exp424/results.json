@@ -1,0 +1,99 @@
+{
+  "seed": 424,
+  "replicates": 1200,
+  "rounds": 100,
+  "candidates": 12,
+  "alpha": 0.05,
+  "synthetic": true,
+  "scenarios": {
+    "seo_independent_all_null": {
+      "dependence": "independent",
+      "positive_agents": 0,
+      "counts": {
+        "unadjusted_any_null": 257,
+        "fixed_any_null": 16,
+        "online_any_null": 25,
+        "unadjusted_all_positive": 0,
+        "fixed_all_positive": 0,
+        "online_all_positive": 0
+      },
+      "rates": {
+        "unadjusted_any_null": 0.21417,
+        "fixed_any_null": 0.01333,
+        "online_any_null": 0.02083,
+        "unadjusted_all_positive": 0,
+        "fixed_all_positive": 0,
+        "online_all_positive": 0
+      }
+    },
+    "finance_shared_shock_all_null": {
+      "dependence": "shared",
+      "positive_agents": 0,
+      "counts": {
+        "unadjusted_any_null": 150,
+        "fixed_any_null": 17,
+        "online_any_null": 22,
+        "unadjusted_all_positive": 0,
+        "fixed_all_positive": 0,
+        "online_all_positive": 0
+      },
+      "rates": {
+        "unadjusted_any_null": 0.125,
+        "fixed_any_null": 0.01417,
+        "online_any_null": 0.01833,
+        "unadjusted_all_positive": 0,
+        "fixed_all_positive": 0,
+        "online_all_positive": 0
+      }
+    },
+    "seo_independent_two_positive": {
+      "dependence": "independent",
+      "positive_agents": 2,
+      "counts": {
+        "unadjusted_any_null": 265,
+        "fixed_any_null": 18,
+        "online_any_null": 7,
+        "unadjusted_all_positive": 870,
+        "fixed_all_positive": 374,
+        "online_all_positive": 655
+      },
+      "rates": {
+        "unadjusted_any_null": 0.22083,
+        "fixed_any_null": 0.015,
+        "online_any_null": 0.00583,
+        "unadjusted_all_positive": 0.725,
+        "fixed_all_positive": 0.31167,
+        "online_all_positive": 0.54583
+      }
+    },
+    "finance_shared_shock_two_positive": {
+      "dependence": "shared",
+      "positive_agents": 2,
+      "counts": {
+        "unadjusted_any_null": 111,
+        "fixed_any_null": 9,
+        "online_any_null": 5,
+        "unadjusted_all_positive": 879,
+        "fixed_all_positive": 389,
+        "online_all_positive": 658
+      },
+      "rates": {
+        "unadjusted_any_null": 0.0925,
+        "fixed_any_null": 0.0075,
+        "online_any_null": 0.00417,
+        "unadjusted_all_positive": 0.7325,
+        "fixed_all_positive": 0.32417,
+        "online_all_positive": 0.54833
+      }
+    }
+  },
+  "counterexamples": {
+    "global_shock_unconditional_false_positive_probability": 0.5,
+    "global_shock_sign_outcomes": {
+      "positive_global_shock_crosses": 1,
+      "negative_global_shock_crosses": 0
+    },
+    "selective_positive_only_logging_any_rejection": true,
+    "explanation": "Both violate conditional-null assumptions; no FWER guarantee applies."
+  }
+}
