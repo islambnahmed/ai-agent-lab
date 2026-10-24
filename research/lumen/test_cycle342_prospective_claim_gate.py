@@ -127,5 +127,23 @@ class ClaimGateAdversarialTests(unittest.TestCase):
 
 
 
+    def test_oversized_json_integer_receipt_prices_fail_closed(self):
+        # 10**400 is legal JSON, but math.isfinite(int) raises OverflowError.
+        # Reject it rather than terminating the evidence-screening process.
+        for field in ('point', 'baseline', 'originClose'):
+            with self.subTest(field=field):
+                r, e = fixture()
+                r[field] = 10 ** 400
+                result = screen(r, e)
+                self.assertEqual(result['status'], 'invalid_receipt')
+
+    def test_oversized_json_integer_observation_price_fails_closed(self):
+        r, e = fixture()
+        e['futureObservedCloses'][0]['price'] = 10 ** 400
+        result = screen(r, e)
+        self.assertEqual(result['status'], 'insufficient_evidence')
+        self.assertIn('invalid future provider price', result['reasons'])
+
+
 if __name__ == '__main__':
     unittest.main()
