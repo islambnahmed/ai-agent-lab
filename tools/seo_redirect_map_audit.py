@@ -6,6 +6,7 @@ import argparse
 import csv
 import json
 import re
+import unicodedata
 from collections import Counter
 from pathlib import Path
 import sys
@@ -18,7 +19,7 @@ MAX_ROWS = 50000
 
 def canonical_key(value: str) -> str:
     """Conservative URL equality: normalize scheme/host/default port only."""
-    if not value or any(ord(c) <= 32 or ord(c) == 127 for c in value):
+    if not value or any(c.isspace() or unicodedata.category(c) == 'Cc' for c in value):
         raise ValueError('URL contains whitespace/control characters or is empty')
     if re.search(r'%(?![0-9A-Fa-f]{2})', value):
         raise ValueError('URL contains malformed percent escape')
