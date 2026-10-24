@@ -7,6 +7,7 @@ import {prepareProviderHistory} from '../data.mjs';
 import {preserveFirstObservedTarget} from '../settlement-observations.mjs';
 import {gateSettlement,summarizeSettlements} from '../settlement-eligibility.mjs';
 import {checkReceiptCohort} from '../receipt-cohort.mjs';
+import {evaluateReceiptFile} from '../settlement-file.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=name=>JSON.parse(fs.readFileSync(path.join(root,'data',name+'.json'),'utf8'));
@@ -32,7 +33,7 @@ if(command==='issue'){
   }else{
     const files=['forecast.mjs','models.mjs','data.mjs','historical-integrity.mjs','calendar_contract.mjs',
       'journal.mjs','receipt-cohort.mjs','scripts/journal.mjs','scripts/fetch_data.py',
-      'settlement-observations.mjs','settlement-eligibility.mjs','package.json'];
+      'settlement-observations.mjs','settlement-eligibility.mjs','settlement-file.mjs','package.json'];
     const dirty=execFileSync('git',['status','--porcelain','--',...files],{cwd:root,encoding:'utf8'});
     if(dirty.trim())throw Error('Commit implementation before issuing forecasts');
     const codeCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
@@ -57,10 +58,11 @@ if(command==='issue'){
     }
   }
 }else if(command==='settle'){
-  const outcomes=fs.readdirSync(dir).filter(f=>f.endsWith('.json')).map(f=>{
-    const receipt=JSON.parse(fs.readFileSync(path.join(dir,f),'utf8'));
-    try{
-      // Verify the receipt ID and digest syntax before using historyHash in a path.
+  const outcomes=fs.readdirSync(dir).filter(f=>f.endsWith('.json')).map(f=>
+    evaluateReceiptFile(path.join(dir,f),receipt=>{
+      // A malformed JSON file or unreadable receipt is quarantined locally;
+      // it must not prevent evaluation of the remaining valid receipts.
+      // Verify receipt ID and digest syntax before using historyHash in a path.
       const frozen=JSON.parse(fs.readFileSync(verifiedVintagePath(vintages,receipt),'utf8'));
       if(hash(frozen)!==receipt.historyHash)throw Error('Original local vintage corrupted');
       const appended=appendVerifiedVintage(frozen,prepared.series,receipt.originDate);
@@ -69,9 +71,8 @@ if(command==='issue'){
       const guarded=preserveFirstObservedTarget(outcome,{directory:firstObserved,
         observedAt:new Date().toISOString(),sourceDigest:manifest.history.storedSha256});
       return gateSettlement(guarded);
-    }
-    catch(e){return {id:receipt.id,horizon:receipt.horizon,status:'quarantined',error:e.message};}
-  });
+    })
+  );
   // No authenticated publication-before-close evidence yet: headline MAE stays null.
   const summaries=summarizeSettlements(outcomes);
   const report={asOf,outcomes,summaries,
