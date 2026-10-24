@@ -3,6 +3,9 @@
 from __future__ import annotations
 
 import argparse
+import csv
+import os
+import tempfile
 import datetime as dt
 import gzip
 import json
@@ -17,6 +20,17 @@ MAX_UNCOMPRESSED_BYTES = 50 * 1024 * 1024
 MAX_SITEMAPS = 200
 MAX_ENTRIES = 50_000
 NS = '{http://www.sitemaps.org/schemas/sitemap/0.9}'
+
+
+class ExportFailure(RuntimeError):
+    """A CSV output failure must not be mislabeled as a sitemap read error."""
+
+
+def _csv_safe_cell(value: str) -> str:
+    """Avoid treating untrusted sitemap metadata as a spreadsheet formula."""
+    if value and (value[0] in '\t\r\n' or value.lstrip().startswith(('=', '+', '-', '@'))):
+        return "'" + value
+    return value
 
 
 def _date(value: str, today: dt.date) -> str | None:
@@ -73,7 +87,7 @@ def _local_target(raw: str, base: str, root: Path) -> Path | None:
     return candidate
 
 
-def audit(root: Path, start: str, base_url: str, today: dt.date, *, max_sitemaps: int = MAX_SITEMAPS) -> dict:
+def audit(root: Path, start: str, base_url: str, today: dt.date, *, max_sitemaps: int = MAX_SITEMAPS, on_url=None) -> dict:
     root = root.resolve()
     base = _normalize_url(base_url)
     if not root.is_dir() or not base or urlsplit(base).path != '/' or urlsplit(base).query:
@@ -170,11 +184,14 @@ def audit(root: Path, start: str, base_url: str, today: dt.date, *, max_sitemaps
                         issue('off_host_url', path, norm[:200])
                     elif parsed_url.scheme != parsed_base.scheme:
                         issue('off_origin_url', path, norm[:200])
-                    if norm in seen_urls:
+                    duplicate = norm in seen_urls
+                    if duplicate:
                         issue('duplicate_url', path, norm[:200] + ' (first: ' + seen_urls[norm] + ')')
                     else:
                         seen_urls[norm] = path.relative_to(root).as_posix()
                     lastmod = entry.findtext(NS + 'lastmod')
+                    if on_url is not None:
+                        on_url(path.relative_to(root).as_posix(), norm, lastmod, duplicate)
                     if lastmod is not None:
                         code = _date(lastmod.strip(), today)
                         if code:
@@ -203,13 +220,44 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('--base-url', required=True, help='HTTP(S) origin matching sitemap-index loc URLs')
     parser.add_argument('--as-of', default=dt.datetime.now(dt.timezone.utc).date().isoformat())
     parser.add_argument('--max-sitemaps', type=int, default=MAX_SITEMAPS)
+    parser.add_argument('--urls-csv', type=Path, help='Optional atomic CSV export of valid URL entries, including duplicates')
     args = parser.parse_args(argv)
+    temporary_csv = None
     try:
         today = dt.date.fromisoformat(args.as_of)
-        report = audit(args.root, args.start, args.base_url, today, max_sitemaps=args.max_sitemaps)
-    except ValueError as exc:
+        if args.urls_csv is None:
+            report = audit(args.root, args.start, args.base_url, today, max_sitemaps=args.max_sitemaps)
+        else:
+            destination = args.urls_csv
+            if not destination.parent.is_dir():
+                raise ValueError('CSV output parent directory must exist')
+            # Stream rows rather than retaining an extra inventory in memory.
+            # Only replace the requested output after the audit completes.
+            with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', newline='',
+                                             dir=destination.parent, prefix='.sitemap-audit-',
+                                             suffix='.csv', delete=False) as stream:
+                temporary_csv = Path(stream.name)
+                writer = csv.writer(stream)
+                writer.writerow(['source_sitemap', 'normalized_url', 'lastmod', 'duplicate'])
+                def record_url(source, url, lastmod, duplicate):
+                    try:
+                        writer.writerow([_csv_safe_cell(source), url, _csv_safe_cell(lastmod or ''),
+                                         'true' if duplicate else 'false'])
+                    except (OSError, ValueError) as exc:
+                        raise ExportFailure('CSV write failed') from exc
+                report = audit(args.root, args.start, args.base_url, today,
+                               max_sitemaps=args.max_sitemaps, on_url=record_url)
+            os.replace(temporary_csv, destination)
+            temporary_csv = None
+    except (ValueError, OSError, ExportFailure) as exc:
         print(json.dumps({'error': str(exc)}), file=sys.stderr)
         return 2
+    finally:
+        if temporary_csv is not None:
+            try:
+                temporary_csv.unlink(missing_ok=True)
+            except OSError:
+                pass
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
     return 1 if report['summary']['issues'] else 0
 
