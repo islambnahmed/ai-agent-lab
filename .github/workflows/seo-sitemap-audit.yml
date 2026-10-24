@@ -10,6 +10,7 @@ on:
       - "tests/test_seo_sitemap_triage.py"
       - "tools/seo_sitemap_budget_eval.py"
       - "tests/test_seo_sitemap_budget_eval.py"
+      - "tests/test_seo_sitemap_pipeline.py"
       - ".github/workflows/seo-sitemap-audit.yml"
   pull_request:
     paths:
@@ -21,6 +22,7 @@ on:
       - "tests/test_seo_sitemap_triage.py"
       - "tools/seo_sitemap_budget_eval.py"
       - "tests/test_seo_sitemap_budget_eval.py"
+      - "tests/test_seo_sitemap_pipeline.py"
       - ".github/workflows/seo-sitemap-audit.yml"
 permissions:
   contents: read
@@ -40,3 +42,5 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_seo_sitemap_triage.py' -v
       - name: Offline sitemap budgeted ranking evaluation tests
         run: python -m unittest discover -s tests -p 'test_seo_sitemap_budget_eval.py' -v
+      - name: Complete offline sitemap CLI pipeline contract tests
+        run: python -m unittest discover -s tests -p 'test_seo_sitemap_pipeline.py' -v
