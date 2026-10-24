@@ -165,7 +165,7 @@ class CompareTests(unittest.TestCase):
         self.assertEqual(p.returncode, 1, p.stderr)
         data = json.loads(p.stdout)
         self.assertEqual(data['removed_urls'], ['https://example.com/removed'])
-        self.assertEqual(data['verification']['status'], 'clean_audit_csv_sha256_checked')
+        self.assertEqual(data['verification']['status'], 'complete_audit_csv_sha256_checked')
         self.assertEqual(data['verification']['base_url'], 'https://example.com/')
 
     def test_missing_sitemap_child_rejects_apparent_removals(self):
@@ -175,7 +175,17 @@ class CompareTests(unittest.TestCase):
         p = self.verified_cli(old, new)
         self.assertEqual(p.returncode, 2, p.stderr)
         self.assertEqual(p.stdout, '')
-        self.assertIn('not complete', p.stderr)
+        self.assertIn('incomplete', p.stderr)
+
+    def test_duplicate_url_diagnostic_does_not_invalidate_complete_snapshot(self):
+        old = self.export_snapshot('old', ['keep', 'keep'])
+        new = self.export_snapshot('new', ['keep', 'keep'])
+        self.assertEqual(old[2], 1)
+        self.assertEqual(new[2], 1)
+        p = self.verified_cli(old, new)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertEqual(json.loads(p.stdout)['verification']['status'],
+                         'complete_audit_csv_sha256_checked')
 
     def test_changed_csv_bytes_rejected_even_with_same_row_count(self):
         old = self.export_snapshot('old', ['keep', 'removed'])
