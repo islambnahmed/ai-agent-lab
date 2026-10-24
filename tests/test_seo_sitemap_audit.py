@@ -89,6 +89,20 @@ class SitemapAuditTests(unittest.TestCase):
         self.assertIsNone(_normalize_url('https://user:pw@example.com/x'))
         self.assertIsNone(_normalize_url('not-a-url'))
 
+    def test_wrong_namespace_entries_cannot_disappear_silently(self):
+        self.write('sitemap.xml', f'<urlset xmlns="{NS}"><url xmlns="urn:wrong"><loc>https://example.com/a</loc></url></urlset>')
+        self.assertEqual(self.codes(), ['wrong_entry_namespace'])
+        self.write('sitemap.xml', f'<sitemapindex xmlns="{NS}"><sitemap xmlns="urn:wrong"><loc>https://example.com/a.xml</loc></sitemap></sitemapindex>')
+        self.assertEqual(self.codes(), ['wrong_entry_namespace'])
+        self.write('sitemap.xml', f'<urlset xmlns="{NS}"><url><loc>https://example.com/a</loc></url><url xmlns="urn:wrong"><loc>https://example.com/b</loc></url></urlset>')
+        self.assertEqual(self.codes(), ['wrong_entry_namespace'])
+
+    def test_mixed_scheme_same_host_is_reported(self):
+        self.write('sitemap.xml', urlset(('http://example.com/a', None), ('https://example.com/b', None)))
+        report = self.run_audit()
+        self.assertEqual([i['code'] for i in report['issues']], ['off_origin_url'])
+        self.assertEqual(report['summary']['urls'], 2)
+
     def test_corrupt_gzip_is_isolated(self):
         (self.root / 'sitemap.xml.gz').write_bytes(b'\x1f\x8bcorrupt')
         self.assertEqual(self.codes('sitemap.xml.gz'), ['unreadable_sitemap'])
