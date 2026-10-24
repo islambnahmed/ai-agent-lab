@@ -17,6 +17,12 @@ Use opaque IDs such as p1, u1, r1. Keep the mapping to real URLs and raw input C
 
 Per arm the output reports sessions, active seconds, inspected/flagged counts, TP, FP, FN, uncertain flagged, high-impact misses, precision, recall, and seconds per true finding. Uncertain references are excluded from binary denominators; undefined metrics are JSON null. Exit 2 means malformed or incomplete input, not a zero score.
 
+## Paired recall diagnostic (not a causal estimate)
+
+The pooled per-arm recall is micro-averaged across all labeled URLs and reviewer sessions. A large sitemap pair can dominate it. The additional `paired_recall` block reports each reviewer × snapshot-pair's recall for manual and triage on the *same* independent labels, then computes equal-weight means and the mean triage-minus-manual difference. It also counts how many paired sessions favor either arm or tie, and excludes sessions with zero positive labels (reported separately). All output remains aggregate; no pair, URL, or reviewer IDs are emitted.
+
+**Synthetic counterexample:** A large pair has 100 positive labels (manual finds 80, triage 90); a small pair has one (manual finds 1, triage 0). Pooled recall favors triage (90/101 versus 81/101), while equally weighted paired-session mean recall favors manual (45% versus 90%). Neither weighting is automatically correct: pre-register the unit of inference and report both, plus site/pair-level uncertainty in private study records. Multiple reviewers on the same pair are correlated; the equal-weight diagnostic is **per reviewer × pair**, not an independent-site average or a statistical significance test.
+
 ## Limits and safeguards
 
 This tool does not authenticate snapshot capture, verify that independent labels cover the entire source queue, establish reviewer blinding, counterbalance arm order, calculate statistical significance, or prove causal benefit. The study operator must verify these conditions separately. A paired reviewer may have carryover effects, and observations across reviewers/pairs may be correlated. Synthetic test success is not evidence of SEO lift, live page status, or customer value.
