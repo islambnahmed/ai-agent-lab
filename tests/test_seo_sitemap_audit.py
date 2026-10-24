@@ -163,6 +163,24 @@ class SitemapAuditTests(unittest.TestCase):
             self.assertEqual([row['normalized_url'] for row in csv.DictReader(handle)],
                              ['https://example.com/good'])
 
+    def test_csv_spreadsheet_formula_cells_are_escaped(self):
+        self.write('sitemap.xml', index('https://example.com/=1+1.xml'))
+        self.write('=1+1.xml', urlset(('https://example.com/page', '=1+1')))
+        destination = self.root / 'inventory.csv'
+        script = str(Path(__file__).resolve().parents[1] / 'tools/seo_sitemap_audit.py')
+        result = subprocess.run([sys.executable, script, '--root', str(self.root),
+                                 '--base-url', 'https://example.com/',
+                                 '--as-of', '2026-10-24', '--urls-csv', str(destination)],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual([i['code'] for i in json.loads(result.stdout)['issues']],
+                         ['invalid_lastmod'])
+        with destination.open(newline='', encoding='utf-8') as handle:
+            row = list(csv.DictReader(handle))[0]
+        self.assertEqual(row['source_sitemap'], "'=1+1.xml")
+        self.assertEqual(row['lastmod'], "'=1+1")
+        self.assertEqual(row['normalized_url'], 'https://example.com/page')
+
     def test_invalid_csv_configuration_does_not_replace_existing_output(self):
         self.write('sitemap.xml', urlset(('https://example.com/a', None)))
         destination = self.root / 'inventory.csv'
