@@ -52,5 +52,49 @@ class TestRegressionReceipt(unittest.TestCase):
             run_receipt(self.dir, tests=("test_sample.py",), inputs=("fixture.json",))
 
 
+    def test_mutated_fixture_fails_closed_even_when_unittest_passes(self):
+        (self.dir / "test_sample.py").write_text(
+            "import unittest\\nfrom pathlib import Path\\n"
+            "class T(unittest.TestCase):\\n"
+            " def test_mutate(self):\\n"
+            "  Path('fixture.json').write_text('changed')\\n"
+            "  self.assertTrue(True)\\n".replace("\\\\n", "\\n"),
+            encoding="utf-8")
+        r, ok = self.receipt()
+        self.assertFalse(ok)
+        self.assertFalse(r["inputs_stable"])
+        self.assertEqual(len(r["runs"]), 1)
+        self.assertEqual(r["runs"][0]["exit_code"], 0)
+        self.assertEqual(r["input_drift"], ["fixture.json"])
+
+    def test_optimized_only_mutation_detected(self):
+        (self.dir / "test_sample.py").write_text(
+            "import unittest\\nfrom pathlib import Path\\n"
+            "class T(unittest.TestCase):\\n"
+            " def test_optimized(self):\\n"
+            "  if not __debug__: Path('fixture.json').write_text('changed')\\n"
+            "  self.assertTrue(True)\\n".replace("\\\\n", "\\n"),
+            encoding="utf-8")
+        r, ok = self.receipt()
+        self.assertFalse(ok)
+        self.assertEqual([x["exit_code"] for x in r["runs"]], [0, 0])
+        self.assertEqual(r["runs"][0]["input_drift"], [])
+        self.assertEqual(r["runs"][1]["input_drift"], ["fixture.json"])
+
+    def test_deleted_fixture_detected_after_test(self):
+        (self.dir / "test_sample.py").write_text(
+            "import unittest\\nfrom pathlib import Path\\n"
+            "class T(unittest.TestCase):\\n"
+            " def test_delete(self):\\n"
+            "  Path('fixture.json').unlink()\\n"
+            "  self.assertTrue(True)\\n".replace("\\\\n", "\\n"),
+            encoding="utf-8")
+        r, ok = self.receipt()
+        self.assertFalse(ok)
+        self.assertEqual(r["input_drift"], ["fixture.json"])
+        self.assertEqual(r["runs"][0]["missing_inputs_after_run"], ["fixture.json"])
+
+
+
 if __name__ == "__main__":
     unittest.main()
