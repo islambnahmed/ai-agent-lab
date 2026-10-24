@@ -12,7 +12,10 @@ export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest
   if(typeof source!=='string'||!source.trim())throw Error('Source required');
   const fetched=parseInstant(sourceManifest.receivedAt,'Source receipt time');
   if(fetched>issued||issued-fetched>60*60000)throw Error('Use a snapshot fetched before issue and within one hour');
-  series=prepareHistory(series,{asOf:issuedAt}).series;
+  // The source snapshot cannot contain a completed close from its own UTC day.
+  // Gate against the fetch time, not the later issue time: a midnight crossing
+  // must not promote a provisional source-day observation into history.
+  series=prepareHistory(series,{asOf:sourceManifest.receivedAt}).series;
   const result=forecast(series,h,{asOf:issuedAt});
   if(result.targetDate&&result.targetDate<issuedAt.slice(0,10))throw Error('Target date has already passed');
   const record={schemaVersion:1,issuedAt,source,codeCommit,sourceManifest,modelVersion:result.version,
