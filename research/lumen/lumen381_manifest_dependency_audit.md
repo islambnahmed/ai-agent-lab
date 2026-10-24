@@ -32,3 +32,13 @@ Do **not** add another overlapping receipt wrapper or expand the manifest merely
 - Runner: `research/lumen/lumen377_isolated_receipt.py`
 - Workflow: `.github/workflows/lumen-regression.yml`
 - Boundary test: `research/lumen/test_lumen379_boundary_contract.py`
+
+## Follow-up: independently checked CI runs (2026-10-24)
+
+This section **supersedes only the CI-status uncertainty** in limitation 4 above; the original audit's conclusions about static dependencies and security boundaries remain unchanged. Queried the GitHub Actions repository run collection, then fetched run jobs and decoded job logs via the authorized GitHub connector. Empty commit-status / PR-only workflow queries were not evidence of CI failure.
+
+- **Lumen 380 final documentation commit** `31a99ef4648ae61058ed9293c59090e4633c4247`: [run 40063731795](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40063731795) completed **success**, with Python 3.12 and 3.13 jobs both successful. This validates the corrected no-inherited-environment contract as exercised by that workflow; it does not prove OS isolation.
+- **Lumen 381 audit commit** `8d889c0f315ee13d4c21f454dba6733e6f60fcfe`: [run 40067463087](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40067463087) completed **success**. Both Python 3.12 and 3.13 jobs succeeded. Decoded job logs for each confirm **7 receipt self-tests, 6 isolated-runner self-tests, 4 synthetic boundary tests**, and **79 regression tests in each of normal and optimized mode**, with `all_passed: true`, empty snapshot/source drift arrays, and the declared checkout SHA matching the audit commit. This is **316 regression executions** across the four Python/mode combinations, not 316 distinct test cases.
+- **Transient failure explained:** the first Lumen 380 code-only commit `7823e001c095dd0555623770eacb2281c607041d` had [run 40063668146](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40063668146) **failure** in both matrix jobs. Logs show the *old* synthetic boundary test still expected the environment sentinel to reach the child, which correctly stopped inheriting it. A subsequent commit updated the test expectation; later runs passed. **Lesson:** make code and contract-test expectation changes together, or explicitly expect a red intermediate CI run.
+
+Evidence limitations: GitHub Actions success is evidence for the tested commit and environment only; it is neither an independent custody attestation nor proof against unmanifested inputs, transient changes, absolute-path writes, or a malicious process. No additional security boundary is claimed.
