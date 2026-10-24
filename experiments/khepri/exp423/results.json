@@ -1,0 +1,95 @@
+{
+  "alpha": 0.05,
+  "clusters_per_trial": 80,
+  "replicates_per_scenario": 2000,
+  "scenarios": {
+    "finance_null_noisy_variable": {
+      "cluster_level_rate": 0.0175,
+      "cluster_level_rejections": 35,
+      "event_level_rate": 0.5065,
+      "event_level_rejections": 1013,
+      "params": {
+        "noise": 0.12,
+        "p": 0.5,
+        "variable_size": true
+      }
+    },
+    "finance_positive_noisy_variable": {
+      "cluster_level_rate": 0.475,
+      "cluster_level_rejections": 950,
+      "event_level_rate": 0.955,
+      "event_level_rejections": 1910,
+      "params": {
+        "noise": 0.12,
+        "p": 0.65,
+        "variable_size": true
+      }
+    },
+    "persistent_regime_counterexample": {
+      "cluster_level_rate": 0.5,
+      "cluster_level_rejections": 1000,
+      "event_level_rate": 0.7105,
+      "event_level_rejections": 1421,
+      "params": {
+        "noise": 0.12,
+        "p": 0.5,
+        "persistence": 0.95
+      }
+    },
+    "persistent_regime_randomized_clusters": {
+      "cluster_level_rate": 0.014,
+      "cluster_level_rejections": 28,
+      "event_level_rate": 0.5295,
+      "event_level_rejections": 1059,
+      "params": {
+        "noise": 0.12,
+        "p": 0.5,
+        "persistence": 0.95,
+        "randomize_cluster": true
+      }
+    },
+    "seo_null_8_identical": {
+      "cluster_level_rate": 0.0255,
+      "cluster_level_rejections": 51,
+      "event_level_rate": 0.7175,
+      "event_level_rejections": 1435,
+      "params": {
+        "noise": 0.0,
+        "p": 0.5
+      }
+    },
+    "seo_null_singletons": {
+      "cluster_level_rate": 0.021,
+      "cluster_level_rejections": 42,
+      "event_level_rate": 0.021,
+      "event_level_rejections": 42,
+      "params": {
+        "cluster_size": 1,
+        "p": 0.5
+      }
+    },
+    "seo_positive_8_identical": {
+      "cluster_level_rate": 0.3515,
+      "cluster_level_rejections": 703,
+      "event_level_rate": 0.9765,
+      "event_level_rejections": 1953,
+      "params": {
+        "noise": 0.0,
+        "p": 0.62
+      }
+    },
+    "shared_global_shock_counterexample": {
+      "cluster_level_rate": 0.5085,
+      "cluster_level_rejections": 1017,
+      "event_level_rate": 0.5085,
+      "event_level_rejections": 1017,
+      "params": {
+        "global_shock": true,
+        "noise": 0.0,
+        "p": 0.5
+      }
+    }
+  },
+  "seed": 423,
+  "synthetic": true
+}
