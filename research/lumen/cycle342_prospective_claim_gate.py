@@ -25,7 +25,14 @@ def date(s: str) -> dt.date:
     return d
 
 def finite_positive(x: Any) -> bool:
-    return isinstance(x,(int,float)) and not isinstance(x,bool) and math.isfinite(x) and x>0
+    # JSON permits arbitrary-size integers; math.isfinite(10**400) raises
+    # OverflowError. Untrusted evidence must fail closed, never crash screening.
+    if type(x) not in (int, float) or x <= 0:
+        return False
+    try:
+        return math.isfinite(x)
+    except OverflowError:
+        return False
 
 def screen(receipt: dict, evidence: dict) -> dict:
     """Screen supplied evidence without network access; fail closed on missing proof."""
