@@ -26,6 +26,13 @@ class ExportFailure(RuntimeError):
     """A CSV output failure must not be mislabeled as a sitemap read error."""
 
 
+def _csv_safe_cell(value: str) -> str:
+    """Avoid treating untrusted sitemap metadata as a spreadsheet formula."""
+    if value and (value[0] in '\t\r\n' or value.lstrip().startswith(('=', '+', '-', '@'))):
+        return "'" + value
+    return value
+
+
 def _date(value: str, today: dt.date) -> str | None:
     try:
         if re.fullmatch(r'\d{4}-\d{2}-\d{2}', value):
@@ -234,7 +241,8 @@ def main(argv: list[str] | None = None) -> int:
                 writer.writerow(['source_sitemap', 'normalized_url', 'lastmod', 'duplicate'])
                 def record_url(source, url, lastmod, duplicate):
                     try:
-                        writer.writerow([source, url, lastmod or '', 'true' if duplicate else 'false'])
+                        writer.writerow([_csv_safe_cell(source), url, _csv_safe_cell(lastmod or ''),
+                                         'true' if duplicate else 'false'])
                     except (OSError, ValueError) as exc:
                         raise ExportFailure('CSV write failed') from exc
                 report = audit(args.root, args.start, args.base_url, today,
