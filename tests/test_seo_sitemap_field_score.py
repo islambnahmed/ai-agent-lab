@@ -63,6 +63,21 @@ class FieldScoreTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, 'duplicate review decision'):
             score(refs, sessions, decisions + decisions[:1])
 
+    def test_rejects_reference_pair_with_no_sessions(self):
+        refs, sessions, decisions = self.fixtures()
+        refs.append(dict(zip(REF_COLS, ('p2', 'u5', 'yes', 'high'))))
+        with self.assertRaisesRegex(ValueError, 'reference pair has no paired review sessions'):
+            score(refs, sessions, decisions)
+
+        # Adding both arms for the second pair restores complete accounting.
+        sessions.extend(dict(zip(SESSION_COLS, ('p2', 'r2', arm, '5', '1')))
+                        for arm in ('manual', 'triage'))
+        result = score(refs, sessions, decisions)
+        self.assertEqual(result['reference_pairs'], 2)
+        self.assertEqual(result['paired_sessions'], 2)
+        self.assertEqual(result['arms']['manual']['fn'], 3)
+        self.assertEqual(result['arms']['triage']['fn'], 1)
+
     def test_undefined_metrics_when_no_positive_labels(self):
         refs, sessions, decisions = self.fixtures()
         for row in refs:
