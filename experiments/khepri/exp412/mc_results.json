@@ -1,0 +1,49 @@
+{
+  "trials": 100000,
+  "seed": 412,
+  "optimal_expected_analytic": 69.36818051413829,
+  "myopic_expected_analytic": 66.92910349722911,
+  "optimal_mc": 69.36919,
+  "myopic_mc": 66.90865,
+  "difference_mc": 2.46054,
+  "difference_95pct_normal_CI": [
+    2.3730683636130596,
+    2.5480116363869403
+  ],
+  "optimal_actions": [
+    [
+      "c",
+      "d"
+    ],
+    [
+      "c",
+      "d"
+    ],
+    [
+      "a",
+      "b"
+    ],
+    [
+      "c",
+      "d"
+    ]
+  ],
+  "myopic_actions": [
+    [
+      "c",
+      "d"
+    ],
+    [
+      "c",
+      "d"
+    ],
+    [
+      "c",
+      "d"
+    ],
+    [
+      "c",
+      "d"
+    ]
+  ]
+}
