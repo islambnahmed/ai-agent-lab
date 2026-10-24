@@ -52,12 +52,18 @@ def canonical_key(value: str) -> str:
     return f'{scheme}://{authority}{parts.path or "/"}' + (f'?{parts.query}' if has_query_marker else '')
 
 
-def audit(rows: list[dict[str, str]]) -> dict:
-    """Return aggregate counts and row indices only; never emit URL strings."""
+def audit(rows: list[dict[str, str]], *, line_numbers: list[int] | None = None) -> dict:
+    """Return aggregate counts and CSV physical line numbers; never emit URL strings.
+
+    Direct in-memory callers without line_numbers retain record-ordinal numbering.
+    """
+    if line_numbers is not None and len(line_numbers) != len(rows):
+        raise ValueError('line_numbers must match rows length')
     issues: list[dict] = []
     sources: dict[str, tuple[int, str]] = {}
     valid_rows = 0
-    for number, row in enumerate(rows, start=2):
+    for index, row in enumerate(rows):
+        number = line_numbers[index] if line_numbers is not None else index + 2
         if set(row) != set(COLUMNS) or any(row.get(c) is None for c in COLUMNS):
             issues.append({'row': number, 'type': 'malformed_row'})
             continue
@@ -113,19 +119,37 @@ def audit(rows: list[dict[str, str]]) -> dict:
                             'Conservative URL equivalence; no path or query rewriting.')}
 
 
-def read_rows(path: Path) -> list[dict[str, str]]:
+def read_rows(path: Path) -> tuple[list[dict[str, str]], list[int]]:
+    """Parse records with their physical start lines, including after blank lines."""
     if not path.is_file() or path.stat().st_size > MAX_BYTES:
         raise ValueError('missing or oversized CSV')
     with path.open('r', newline='', encoding='utf-8-sig') as handle:
-        reader = csv.DictReader(handle, strict=True)
-        if reader.fieldnames != COLUMNS:
+        reader = csv.reader(handle, strict=True)
+        if next(reader, None) != COLUMNS:
             raise ValueError(f'expected header: {COLUMNS}')
-        rows = []
-        for row in reader:
+        rows: list[dict[str, str]] = []
+        line_numbers: list[int] = []
+        while True:
+            start_line = reader.line_num + 1
+            try:
+                fields = next(reader)
+            except StopIteration:
+                break
+            # Unlike DictReader, csv.reader exposes empty records, so the
+            # physical start line stays accurate after skipped blank lines.
+            if not fields:
+                continue
             if len(rows) >= MAX_ROWS:
                 raise ValueError('too many rows')
+            row = dict(zip(COLUMNS, fields))
+            if len(fields) < len(COLUMNS):
+                for column in COLUMNS[len(fields):]:
+                    row[column] = None
+            if len(fields) > len(COLUMNS):
+                row[None] = fields[len(COLUMNS):]
             rows.append(row)
-    return rows
+            line_numbers.append(start_line)
+    return rows, line_numbers
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -133,7 +157,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('--map', required=True, type=Path, help='CSV source_url,target_url')
     args = parser.parse_args(argv)
     try:
-        result = audit(read_rows(args.map))
+        rows, line_numbers = read_rows(args.map)
+        result = audit(rows, line_numbers=line_numbers)
     except (OSError, ValueError, UnicodeError, csv.Error) as exc:
         print(f'Cannot audit redirect map: {exc}', file=sys.stderr)
         return 2

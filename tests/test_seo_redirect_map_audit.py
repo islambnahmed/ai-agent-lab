@@ -105,6 +105,64 @@ class RedirectAuditTests(unittest.TestCase):
         result = audit(rows)
         self.assertEqual(result['issue_counts'], {'redirect_chain': 2999})
 
+    def test_cli_uses_physical_line_numbers_after_multiline_csv(self):
+        script = Path(__file__).resolve().parents[1] / 'tools' / 'seo_redirect_map_audit.py'
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / 'redirects.csv'
+            # Record 1 begins on line 2 but spans lines 2-3.
+            # Record 2 begins on line 4; conflicting record 3 begins on line 5.
+            path.write_text(
+                'source_url,target_url\n'
+                '"https://a.test/bad\nline",https://a.test/ok\n'
+                'https://a.test/old,https://a.test/new\n'
+                'https://a.test/old,https://a.test/other\n',
+                encoding='utf-8')
+            result = subprocess.run(
+                [sys.executable, str(script), '--map', str(path)],
+                capture_output=True, text=True)
+            self.assertEqual(result.returncode, 1, result.stderr)
+            report = json.loads(result.stdout)
+            self.assertEqual(report['issue_counts'], {
+                'invalid_url': 1, 'conflicting_duplicate_source': 1})
+            self.assertEqual(report['issues'], [
+                {'row': 2, 'type': 'invalid_url'},
+                {'row': 5, 'type': 'conflicting_duplicate_source', 'first_row': 4}])
+            self.assertNotIn('a.test', result.stdout)
+
+    def test_cli_physical_line_numbers_after_blank_records(self):
+        script = Path(__file__).resolve().parents[1] / 'tools' / 'seo_redirect_map_audit.py'
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / 'redirects.csv'
+            path.write_text(
+                'source_url,target_url\n'
+                '\n'
+                'https://a.test/old,https://a.test/new\n'
+                '\n'
+                'https://a.test/old,https://a.test/other\n',
+                encoding='utf-8')
+            result = subprocess.run(
+                [sys.executable, str(script), '--map', str(path)],
+                capture_output=True, text=True)
+            self.assertEqual(result.returncode, 1, result.stderr)
+            report = json.loads(result.stdout)
+            self.assertEqual(report['issues'], [
+                {'row': 5, 'type': 'conflicting_duplicate_source', 'first_row': 3}])
+            self.assertNotIn('a.test', result.stdout)
+
+    def test_cli_preserves_malformed_extra_field_detection(self):
+        script = Path(__file__).resolve().parents[1] / 'tools' / 'seo_redirect_map_audit.py'
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / 'redirects.csv'
+            path.write_text('source_url,target_url\n'
+                            'https://a.test/a,https://a.test/b,extra\n',
+                            encoding='utf-8')
+            result = subprocess.run(
+                [sys.executable, str(script), '--map', str(path)],
+                capture_output=True, text=True)
+            self.assertEqual(result.returncode, 1, result.stderr)
+            self.assertEqual(json.loads(result.stdout)['issues'],
+                             [{'row': 2, 'type': 'malformed_row'}])
+
     def test_cli_clean_and_invalid_header(self):
         script = Path(__file__).resolve().parents[1] / 'tools' / 'seo_redirect_map_audit.py'
         with tempfile.TemporaryDirectory() as td:
