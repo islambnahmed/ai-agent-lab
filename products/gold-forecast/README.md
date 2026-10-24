@@ -35,7 +35,11 @@ ignored `runs/settlements.json`; it cannot edit receipts. Preserve local
 `data/vintages/` until settlement, because a rolling one-year feed cannot
 reconstruct the exact original vintage. Source revisions quarantine outcomes.
 A receipt hash detects changes; the externally timestamped Git commit anchors
-issuance. No task schedule or worker configuration is changed by these commands.
+issuance. Fresh fetch manifests record both the provider's raw-response SHA-256
+and the normalized on-disk history SHA-256; receipt issue/settlement fail closed
+if the stored history no longer matches its manifest. Re-run `npm run data`
+after upgrading from manifests without `storedSha256`. The clean-code gate also
+covers the issuer CLI and fetcher, not just the forecasting modules. No task schedule or worker configuration is changed by these commands.
 
 ## Observation and source contract
 

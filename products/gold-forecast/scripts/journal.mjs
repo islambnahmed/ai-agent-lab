@@ -2,19 +2,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import {issueReceipt,settleReceipt,hash} from '../journal.mjs';
+import {issueReceipt,settleReceipt,hash,parseVerifiedHistorySnapshot,appendVerifiedVintage} from '../journal.mjs';
 import {prepareProviderHistory} from '../data.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=name=>JSON.parse(fs.readFileSync(path.join(root,'data',name+'.json'),'utf8'));
 const manifest=read('fetch-manifest');
 const asOf=manifest.history.receivedAt;
-const prepared=prepareProviderHistory(read('history'),asOf);
+const historyBytes=fs.readFileSync(path.join(root,'data','history.json'));
+const prepared=prepareProviderHistory(parseVerifiedHistorySnapshot(historyBytes,manifest.history),asOf);
 const dir=path.join(root,'reports','prospective');fs.mkdirSync(dir,{recursive:true});
 const vintages=path.join(root,'data','vintages');fs.mkdirSync(vintages,{recursive:true});
 const command=process.argv[2];
 if(command==='issue'){
-  const files=['forecast.mjs','models.mjs','data.mjs','historical-integrity.mjs','calendar_contract.mjs','journal.mjs'];
+  const files=['forecast.mjs','models.mjs','data.mjs','historical-integrity.mjs','calendar_contract.mjs','journal.mjs',
+    'scripts/journal.mjs','scripts/fetch_data.py','package.json'];
   const dirty=execFileSync('git',['status','--porcelain','--',...files],{cwd:root,encoding:'utf8'});
   if(dirty.trim())throw Error('Commit implementation before issuing forecasts');
   const codeCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
@@ -34,11 +36,7 @@ if(command==='issue'){
     try{
       const frozen=JSON.parse(fs.readFileSync(path.join(vintages,receipt.historyHash+'.json'),'utf8'));
       if(hash(frozen)!==receipt.historyHash)throw Error('Original local vintage corrupted');
-      const frozenDates=new Map(frozen.map(r=>[r.date,r.price]));
-      if(!prepared.series.some(r=>r.date===receipt.originDate))throw Error('Origin missing from refreshed source');
-      for(const row of prepared.series)if(frozenDates.has(row.date)&&frozenDates.get(row.date)!==row.price)
-        throw Error('Provider revised historical vintage: '+row.date);
-      const appended=frozen.concat(prepared.series.filter(r=>r.date>receipt.originDate));
+      const appended=appendVerifiedVintage(frozen,prepared.series,receipt.originDate);
       return settleReceipt(receipt,appended,{asOf});
     }
     catch(e){return {id:receipt.id,status:'quarantined',error:e.message};}

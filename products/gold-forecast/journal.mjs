@@ -6,13 +6,51 @@ import {parseInstant} from './historical-integrity.mjs';
 import {prepareHistory} from './data.mjs';
 export const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
+// The fetcher preserves the provider's raw digest, but stores normalized JSON.
+// Check the digest of the *stored* bytes before issuing receipts so a stale or
+// edited history.json cannot be silently attributed to a different fetch.
+export function parseVerifiedHistorySnapshot(rawBytes,manifest){
+  if(!Buffer.isBuffer(rawBytes))throw Error('History snapshot bytes required');
+  if(manifest?.status!=='fetched'||!(/^[0-9a-f]{64}$/.test(manifest.rawSha256))||
+     !(/^[0-9a-f]{64}$/.test(manifest.storedSha256)))
+    throw Error('History snapshot manifest missing fetched status or SHA-256 digests; re-fetch data');
+  const actual=createHash('sha256').update(rawBytes).digest('hex');
+  if(actual!==manifest.storedSha256)throw Error('History snapshot / manifest SHA-256 mismatch; re-fetch data');
+  return JSON.parse(rawBytes.toString('utf8'));
+}
+
+// A rolling provider feed may legitimately lose old dates outside its window,
+// but any changed, missing, or inserted date *inside* the overlapping vintage
+// is a source revision. Quarantine rather than silently score a mixed vintage.
+export function appendVerifiedVintage(frozen,refreshed,originDate){
+  const original=new Map(frozen.map(row=>[row.date,row.price]));
+  const latest=new Map(refreshed.map(row=>[row.date,row.price]));
+  if(!latest.has(originDate))throw Error('Origin missing from refreshed source');
+  const firstRefreshed=refreshed[0].date;
+  const firstFrozen=frozen[0].date;
+  for(const row of frozen){
+    if(row.date>=firstRefreshed&&row.date<=originDate&&!latest.has(row.date))
+      throw Error('Provider omitted historical vintage: '+row.date);
+    if(latest.has(row.date)&&latest.get(row.date)!==row.price)
+      throw Error('Provider revised historical vintage: '+row.date);
+  }
+  for(const row of refreshed){
+    if(row.date>=firstFrozen&&row.date<=originDate&&!original.has(row.date))
+      throw Error('Provider inserted historical vintage: '+row.date);
+  }
+  return frozen.concat(refreshed.filter(row=>row.date>originDate));
+}
+
 export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest}){
   const issued=parseInstant(issuedAt,'Issue timestamp');
   if(!/^[0-9a-f]{40}$/.test(codeCommit))throw Error('Pinned Git code commit required');
   if(typeof source!=='string'||!source.trim())throw Error('Source required');
   const fetched=parseInstant(sourceManifest.receivedAt,'Source receipt time');
   if(fetched>issued||issued-fetched>60*60000)throw Error('Use a snapshot fetched before issue and within one hour');
-  series=prepareHistory(series,{asOf:issuedAt}).series;
+  // The source snapshot cannot contain a completed close from its own UTC day.
+  // Gate against the fetch time, not the later issue time: a midnight crossing
+  // must not promote a provisional source-day observation into history.
+  series=prepareHistory(series,{asOf:sourceManifest.receivedAt}).series;
   const result=forecast(series,h,{asOf:issuedAt});
   if(result.targetDate&&result.targetDate<issuedAt.slice(0,10))throw Error('Target date has already passed');
   const record={schemaVersion:1,issuedAt,source,codeCommit,sourceManifest,modelVersion:result.version,
