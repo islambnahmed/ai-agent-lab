@@ -45,6 +45,19 @@ class RedirectAuditTests(unittest.TestCase):
         self.assertEqual(result['issue_counts'], {'invalid_url': len(bad)})
         self.assertNotIn('a.test', json.dumps(result))
 
+    def test_explicit_empty_port_is_invalid_not_silently_normalized(self):
+        for url in ('https://a.test:/old', 'https://[::1]:/old'):
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                canonical_key(url)
+        self.assertEqual(canonical_key('https://a.test:443/old'),
+                         'https://a.test/old')
+        self.assertEqual(canonical_key('https://[::1]/old'),
+                         'https://[::1]/old')
+        result = audit([row('https://a.test:/old', 'https://a.test/old'),
+                        row('https://a.test/old', 'https://a.test:/new')])
+        self.assertEqual(result['issue_counts'], {'invalid_url': 2})
+        self.assertNotIn('a.test', json.dumps(result))
+
     def test_conflicting_duplicates_keep_empty_query_target_distinct(self):
         result = audit([row('https://a.test/a', 'https://a.test/b?'),
                         row('https://a.test/a', 'https://a.test/b')])
