@@ -1,0 +1,42 @@
+{
+  "model": "SQLite local paired deterministic scenarios",
+  "cases_per_domain": 240,
+  "scenarios": [
+    "clean",
+    "peer_write",
+    "aba",
+    "delete_recreate",
+    "unrelated",
+    "absent_create"
+  ],
+  "by_domain": {
+    "seo": {
+      "aba_stale": 40,
+      "absent_create_stale": 40,
+      "baseline_stale_overwrites": 160,
+      "clean_ok": 40,
+      "delete_recreate_stale": 40,
+      "peer_write_stale": 40,
+      "unrelated_ok": 40
+    },
+    "gold": {
+      "aba_stale": 40,
+      "absent_create_stale": 40,
+      "baseline_stale_overwrites": 160,
+      "clean_ok": 40,
+      "delete_recreate_stale": 40,
+      "peer_write_stale": 40,
+      "unrelated_ok": 40
+    }
+  },
+  "totals": {
+    "aba_stale": 80,
+    "absent_create_stale": 80,
+    "baseline_stale_overwrites": 320,
+    "clean_ok": 80,
+    "delete_recreate_stale": 80,
+    "peer_write_stale": 80,
+    "unrelated_ok": 80
+  },
+  "caveat": "All events deliberately constructed. Not real-world frequency, throughput or security guarantee."
+}
