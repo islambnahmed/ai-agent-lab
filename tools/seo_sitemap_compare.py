@@ -68,8 +68,15 @@ def verify_audit_report(path: Path, csv_path: Path, inventory: dict) -> dict:
     summary, exported = report.get('summary'), report.get('csv_export')
     if not isinstance(summary, dict) or not isinstance(exported, dict):
         raise ValueError(f'audit report missing CSV export metadata: {path}')
-    if summary.get('issues') != 0 or report.get('issues') != []:
-        raise ValueError(f'audit has diagnosed sitemap issues; snapshot is not complete: {path}')
+    # Duplicates and lastmod/origin warnings do not omit CSV rows.
+    # All unknown or structural issues fail closed, because they may hide URLs.
+    non_omitting_codes = {'duplicate_url', 'future_lastmod', 'invalid_lastmod',
+                          'off_host_url', 'off_origin_url'}
+    issues = report.get('issues')
+    if (not isinstance(issues, list) or summary.get('issues') != len(issues)
+            or any(not isinstance(issue, dict)
+                   or issue.get('code') not in non_omitting_codes for issue in issues)):
+        raise ValueError(f'audit has incomplete or unmapped sitemap entries: {path}')
     rows = sum(sum(counts.values()) for counts in inventory.values())
     if (summary.get('urls') != rows or summary.get('unique_urls') != len(inventory)
             or exported.get('rows') != rows or exported.get('bytes') != csv_path.stat().st_size):
@@ -145,7 +152,7 @@ def main(argv: list[str] | None = None) -> int:
                 raise ValueError('audit origins differ; snapshots cannot be compared as one site')
             if previous['as_of'] > current['as_of']:
                 raise ValueError('before audit date is after the after audit date')
-            verification = {'status': 'clean_audit_csv_sha256_checked',
+            verification = {'status': 'complete_audit_csv_sha256_checked',
                             'base_url': previous['base_url'],
                             'before_as_of': previous['as_of'],
                             'after_as_of': current['as_of'],
