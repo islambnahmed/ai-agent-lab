@@ -12,43 +12,64 @@ fail).
 """
 from itertools import product, combinations
 
-EPS = 1e-12
-FEAS_TOL = 1e-12
-
 def _solve_linear_vertices(c, aeq, beq):
-    """Min/max c.x over x>=0, Aeq x=b using basic feasible vertices."""
-    import itertools
+    """Exact small-n LP vertex enumeration, with no numerical feasibility slack.
+
+    Binary-world constraint coefficients are integers. Interpret user-supplied
+    probabilities via their decimal spelling, then solve every basis using
+    rational arithmetic. A float tolerance can otherwise turn a genuinely
+    infeasible cyclic model (e.g. contradictions of size 5e-13) into a false
+    reliability certificate. The cyclic solver is deliberately limited to
+    four modes, so exact enumeration remains practical.
+    """
+    from fractions import Fraction
+
     n = len(c)
     m = len(aeq)
-    best_min = (float("inf"), None)
-    best_max = (-float("inf"), None)
-    # Gaussian solve tiny square systems without numpy.
-    def solve(mat, rhs):
-        a=[list(map(float,row))+[float(r)] for row,r in zip(mat,rhs)]
-        for col in range(len(a)):
-            pivot=max(range(col,len(a)), key=lambda r: abs(a[r][col]))
-            if abs(a[pivot][col]) < EPS: return None
-            a[col],a[pivot]=a[pivot],a[col]
-            d=a[col][col]
-            a[col]=[v/d for v in a[col]]
-            for r in range(len(a)):
-                if r==col: continue
-                f=a[r][col]
-                a[r]=[x-f*y for x,y in zip(a[r],a[col])]
-        return [row[-1] for row in a]
-    for basis in itertools.combinations(range(n), m):
-        mat=[[row[j] for j in basis] for row in aeq]
-        sol=solve(mat,beq)
-        if sol is None or min(sol) < -FEAS_TOL: continue
-        x=[0.0]*n
-        for j,v in zip(basis,sol): x[j]=max(0.0,v)
-        if any(abs(sum(row[j]*x[j] for j in range(n))-b)>FEAS_TOL for row,b in zip(aeq,beq)):
+    rhs = [Fraction(str(b)) for b in beq]
+    matrix = [[Fraction(v) for v in row] for row in aeq]
+    objective = [Fraction(str(v)) for v in c]
+    best_min = None
+    best_max = None
+
+    def solve_basis(basis):
+        a = [[matrix[i][j] for j in basis] + [rhs[i]]
+             for i in range(m)]
+        for col in range(m):
+            pivot = next((r for r in range(col, m) if a[r][col]), None)
+            if pivot is None:
+                return None
+            a[col], a[pivot] = a[pivot], a[col]
+            scale = 1 / a[col][col]
+            for j in range(col, m + 1):
+                a[col][j] *= scale
+            for r in range(m):
+                if r == col:
+                    continue
+                factor = a[r][col]
+                if factor:
+                    for j in range(col, m + 1):
+                        a[r][j] -= factor * a[col][j]
+        return [a[i][-1] for i in range(m)]
+
+    for basis in combinations(range(n), m):
+        sol = solve_basis(basis)
+        if sol is None or any(v < 0 for v in sol):
             continue
-        val=sum(ci*xi for ci,xi in zip(c,x))
-        if val < best_min[0]: best_min=(val,x)
-        if val > best_max[0]: best_max=(val,x)
-    if best_min[1] is None: raise ValueError("constraints are infeasible")
-    return best_min, best_max
+        x = [Fraction(0)] * n
+        for j, v in zip(basis, sol):
+            x[j] = v
+        value = sum(ci * xi for ci, xi in zip(objective, x))
+        if best_min is None or value < best_min[0]:
+            best_min = (value, x)
+        if best_max is None or value > best_max[0]:
+            best_max = (value, x)
+
+    if best_min is None:
+        raise ValueError("constraints are infeasible")
+    return ((float(best_min[0]), [float(v) for v in best_min[1]]),
+            (float(best_max[0]), [float(v) for v in best_max[1]]))
+
 
 def all_fail_bounds(marginals, pairwise=None):
     """Return tight bounds on probability all latent modes fail (n<=4).
@@ -210,4 +231,23 @@ if __name__ == "__main__":
         raise AssertionError("expected globally infeasible four-mode cycle")
     except ValueError:
         pass
+    # Cross-review: a numeric 1e-12 feasibility tolerance previously accepted
+    # impossible cyclic constraints when the contradiction was only 5e-13.
+    # In a four-cycle, the first three equal-joint edges force all four
+    # events to coincide, contradicting a zero joint on the closing edge.
+    tiny = 5e-13
+    for impossible_edges in (
+        {(0,1):0.0, (0,2):tiny, (1,2):tiny},
+        {(0,1):tiny, (1,2):tiny, (2,3):tiny, (0,3):0.0},
+    ):
+        try:
+            all_fail_bounds([tiny]*4, impossible_edges)
+            raise AssertionError("expected sub-tolerance cyclic infeasibility")
+        except ValueError:
+            pass
+    # Exact enumeration must still accept a truly feasible tiny four-cycle.
+    lo,hi = all_fail_bounds([tiny]*4,
+                            {(0,1):tiny, (1,2):tiny,
+                             (2,3):tiny, (0,3):tiny})
+    assert lo == tiny and hi == tiny
     print("dependence_bounds: all tests passed")
