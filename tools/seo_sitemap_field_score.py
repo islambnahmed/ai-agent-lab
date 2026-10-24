@@ -127,6 +127,28 @@ def score(references: list[dict[str, str]], sessions: list[dict[str, str]],
             elif worthy == 'uncertain' and found:
                 a['uncertain_flagged'] += 1
 
+    # Paired diagnostics: pooled recall weights large reference sets heavily.
+    # Compare both arms on the same reviewer/pair without exposing identifiers.
+    paired = []
+    for pair, reviewer in pairs_by_reviewer:
+        positives = {url for url in per_pair[pair] if labels[pair, url][0] == 'yes'}
+        if not positives:
+            continue
+        manual = len(positives & flagged[pair, reviewer, 'manual']) / len(positives)
+        triage = len(positives & flagged[pair, reviewer, 'triage']) / len(positives)
+        paired.append((manual, triage))
+    deltas = [triage - manual for manual, triage in paired]
+    paired_recall = {
+        'eligible_sessions': len(paired),
+        'excluded_no_positive_reference': len(pairs_by_reviewer) - len(paired),
+        'triage_better': sum(delta > 0 for delta in deltas),
+        'manual_better': sum(delta < 0 for delta in deltas),
+        'tied': sum(delta == 0 for delta in deltas),
+        'manual_mean': ratio(sum(manual for manual, _ in paired), len(paired)),
+        'triage_mean': ratio(sum(triage for _, triage in paired), len(paired)),
+        'mean_delta': ratio(sum(deltas), len(deltas)),
+    }
+
     for a in aggregates.values():
         a['active_seconds'] = round(a['active_seconds'], 3)
         a['recall'] = ratio(a['tp'], a['tp'] + a['fn'])
@@ -137,6 +159,7 @@ def score(references: list[dict[str, str]], sessions: list[dict[str, str]],
         'paired_sessions': len(pairs_by_reviewer),
         'reference_pairs': len(per_pair),
         'arms': aggregates,
+        'paired_recall': paired_recall,
         'limitations': ('Aggregate review-session accounting only; inputs require independently '
                         'adjudicated complete reference sets and prospectively fixed budgets. '
                         'This does not validate sitemap capture, reviewer blinding, '
