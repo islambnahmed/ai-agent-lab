@@ -84,7 +84,7 @@ def coverage(retiring: list[tuple[int, str]], map_rows: list[dict],
         if source not in seen:
             issues.append({'row': line, 'type': 'unlisted_redirect_source'})
 
-    issues.sort(key=lambda i: (i['type'], i['row']))
+    issues.sort(key=lambda i: (i['row'], i['type']))
     return {
         'kind': 'offline_redirect_retirement_coverage',
         'status': 'complete',
