@@ -60,8 +60,13 @@ def audit(rows: list[dict[str, str]]) -> dict:
             continue
         valid_rows += 1
         if src in sources:
-            issues.append({'row': number, 'type': 'duplicate_source',
-                           'first_row': sources[src][0]})
+            first_row, first_target = sources[src]
+            # Conflicting destinations are more dangerous than repeated identical rows.
+            # Keep first-wins graph semantics so duplicate input cannot hide a cycle.
+            issue_type = ('duplicate_source' if dst == first_target
+                          else 'conflicting_duplicate_source')
+            issues.append({'row': number, 'type': issue_type,
+                           'first_row': first_row})
             continue
         sources[src] = (number, dst)
         if src == dst:
