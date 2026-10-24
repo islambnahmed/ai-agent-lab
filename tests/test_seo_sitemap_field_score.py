@@ -78,6 +78,42 @@ class FieldScoreTests(unittest.TestCase):
         self.assertEqual(result['arms']['manual']['fn'], 3)
         self.assertEqual(result['arms']['triage']['fn'], 1)
 
+    def test_pooled_recall_can_reverse_paired_session_conclusion(self):
+        # A large pair dominates pooled recall even when the average paired
+        # session moves the opposite direction (Simpson-style reversal).
+        refs = [dict(zip(REF_COLS, ('large', f'u{i}', 'yes', 'normal')))
+                for i in range(100)]
+        refs.append(dict(zip(REF_COLS, ('small', 'u0', 'yes', 'high'))))
+        sessions = [dict(zip(SESSION_COLS, (pair, reviewer, arm, '100', budget)))
+                    for pair, reviewer, budget in (('large', 'r1', '100'),
+                                                   ('small', 'r2', '1'))
+                    for arm in ('manual', 'triage')]
+        decisions = [dict(zip(DECISION_COLS, ('large', 'r1', arm, f'u{i}', 'yes', 'yes')))
+                     for arm, count in (('manual', 80), ('triage', 90))
+                     for i in range(count)]
+        decisions.append(dict(zip(DECISION_COLS,
+                                  ('small', 'r2', 'manual', 'u0', 'yes', 'yes'))))
+        result = score(refs, sessions, decisions)
+        self.assertGreater(result['arms']['triage']['recall'],
+                           result['arms']['manual']['recall'])
+        paired = result['paired_recall']
+        self.assertEqual(paired['eligible_sessions'], 2)
+        self.assertEqual(paired['manual_mean'], 0.9)
+        self.assertEqual(paired['triage_mean'], 0.45)
+        self.assertEqual(paired['mean_delta'], -0.45)
+        self.assertEqual(paired['triage_better'], 1)
+        self.assertEqual(paired['manual_better'], 1)
+        self.assertNotIn('large', json.dumps(result))
+
+    def test_paired_recall_undefined_for_no_positive_reference(self):
+        refs, sessions, decisions = self.fixtures()
+        for row in refs:
+            row['review_worthy'] = 'no'
+        paired = score(refs, sessions, decisions)['paired_recall']
+        self.assertEqual(paired['eligible_sessions'], 0)
+        self.assertEqual(paired['excluded_no_positive_reference'], 1)
+        self.assertIsNone(paired['mean_delta'])
+
     def test_undefined_metrics_when_no_positive_labels(self):
         refs, sessions, decisions = self.fixtures()
         for row in refs:
