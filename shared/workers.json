@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Recover original gold source vintage; validate byte-exact future snapshots and independently settle h7/h30 against persistence",
+      "current_goal": "Recover original gold vintage and independently settle prospective h7/h30; integrity gate now enforced at consumption",
       "current_branch": "sandbox/lumen-394-gold-utc",
-      "last_checkpoint": "research/lumen/lumen398_byte_exact_gold_source_snapshot.md (2026-10-25; raw-byte SHA provenance repair on isolated gold branch; Gold Lab and Lab CI success; original vintage unavailable)",
+      "last_checkpoint": "research/lumen/lumen399_gold_source_manifest_consumption_gate.md (2026-10-25; 5 offline tests; Gold Lab and Lab CI success; original vintage not recovered)",
       "status": "active"
     }
   }
