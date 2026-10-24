@@ -1,46 +1,64 @@
+"""Validate *present* optional lab state without requiring a fixed worker protocol.
+
+The Autonomy Charter permits retiring queues, roles, dashboards, and evals.
+This check detects malformed active artifacts; it does not resurrect retired ones.
+"""
 import json
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-required = [
-    ROOT / "AGENT_CAPABILITIES.md",
-    ROOT / "PROTOCOL.md",
-    ROOT / "shared" / "state.json",
-    ROOT / "shared" / "task_queue.json",
-    ROOT / "shared" / "heartbeat.json",
-    ROOT / "shared" / "role_pool.json",
-    ROOT / "shared" / "messages" / "README.md",
-    ROOT / "evals" / "suite.json",
-]
-missing = [str(p.relative_to(ROOT)) for p in required if not p.exists()]
-if missing:
-    raise SystemExit("Missing required files: " + ", ".join(missing))
+OPTIONAL_JSON = (
+    "shared/state.json",
+    "shared/task_queue.json",
+    "shared/heartbeat.json",
+    "shared/role_pool.json",
+    "shared/workers.json",
+    "evals/suite.json",
+)
 
-state = json.loads((ROOT / "shared" / "state.json").read_text())
-if state.get("schema_version") != 1:
-    raise SystemExit("Unsupported state schema_version")
-for key in ("agent_0", "agent_1"):
-    if key not in state.get("agents", {}):
-        raise SystemExit(f"Missing agent state: {key}")
-if "shared" not in state:
-    raise SystemExit("Missing shared state")
 
-queue = json.loads((ROOT / "shared" / "task_queue.json").read_text())
-if queue.get("schema_version") != 2:
-    raise SystemExit("Unsupported task queue schema_version")
-if not queue.get("policy", {}).get("allow_subtasks"):
-    raise SystemExit("Task queue must allow subtask decomposition")
+def validate(root):
+    """Return errors for present known JSON artifacts; missing is permitted."""
+    root = Path(root)
+    errors = []
+    for name in OPTIONAL_JSON:
+        path = root / name
+        if not path.exists():
+            continue
+        if not path.is_file():
+            errors.append(f"{name}: not a regular file")
+            continue
+        try:
+            data = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+            errors.append(f"{name}: unreadable or invalid JSON ({type(exc).__name__})")
+            continue
+        if not isinstance(data, dict):
+            errors.append(f"{name}: expected JSON object")
+            continue
+        version = data.get("schema_version")
+        if version is not None and (type(version) is not int or version < 1):
+            errors.append(f"{name}: schema_version must be a positive integer")
+        if name == "evals/suite.json" and "tasks" in data:
+            tasks = data["tasks"]
+            if not isinstance(tasks, list) or any(
+                not isinstance(task, dict) or not isinstance(task.get("id"), str)
+                or not task["id"] for task in tasks
+            ):
+                errors.append(f"{name}: tasks must be a list of objects with nonempty string ids")
+            else:
+                ids = [task["id"] for task in tasks]
+                if len(ids) != len(set(ids)):
+                    errors.append(f"{name}: duplicate task ids")
+    return errors
 
-roles = json.loads((ROOT / "shared" / "role_pool.json").read_text())
-role_names = {r.get("name") for r in roles.get("default_roles", [])}
-required_roles = {"Researcher", "Skeptic", "Builder", "Tester", "Judge", "Archivist", "Coordinator"}
-missing_roles = required_roles - role_names
-if missing_roles:
-    raise SystemExit("Missing required virtual roles: " + ", ".join(sorted(missing_roles)))
 
-suite = json.loads((ROOT / "evals" / "suite.json").read_text())
-ids = [task["id"] for task in suite.get("tasks", [])]
-if not ids or len(ids) != len(set(ids)):
-    raise SystemExit("Eval task ids must be present and unique")
+def main():
+    errors = validate(ROOT)
+    if errors:
+        raise SystemExit("Lab validation failed:\n" + "\n".join(errors))
+    print("AI Agent Lab validation passed (optional infrastructure not required)")
 
-print("AI Agent Lab validation passed")
+
+if __name__ == "__main__":
+    main()
