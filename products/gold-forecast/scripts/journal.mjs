@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import {issueReceipt,settleReceipt,hash,parseVerifiedHistorySnapshot} from '../journal.mjs';
+import {issueReceipt,settleReceipt,hash,parseVerifiedHistorySnapshot,appendVerifiedVintage} from '../journal.mjs';
 import {prepareProviderHistory} from '../data.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
@@ -36,11 +36,7 @@ if(command==='issue'){
     try{
       const frozen=JSON.parse(fs.readFileSync(path.join(vintages,receipt.historyHash+'.json'),'utf8'));
       if(hash(frozen)!==receipt.historyHash)throw Error('Original local vintage corrupted');
-      const frozenDates=new Map(frozen.map(r=>[r.date,r.price]));
-      if(!prepared.series.some(r=>r.date===receipt.originDate))throw Error('Origin missing from refreshed source');
-      for(const row of prepared.series)if(frozenDates.has(row.date)&&frozenDates.get(row.date)!==row.price)
-        throw Error('Provider revised historical vintage: '+row.date);
-      const appended=frozen.concat(prepared.series.filter(r=>r.date>receipt.originDate));
+      const appended=appendVerifiedVintage(frozen,prepared.series,receipt.originDate);
       return settleReceipt(receipt,appended,{asOf});
     }
     catch(e){return {id:receipt.id,status:'quarantined',error:e.message};}
