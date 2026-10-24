@@ -121,5 +121,107 @@ class CompareTests(unittest.TestCase):
 
 
 
+    def export_snapshot(self, label, pages, *, base_url='https://example.com/',
+                        as_of='2026-10-24', missing_child=False):
+        """Exercise the real exporter rather than inventing report metadata."""
+        folder = self.root / label
+        folder.mkdir()
+        namespace = 'http://www.sitemaps.org/schemas/sitemap/0.9'
+        urlset = '<urlset xmlns="' + namespace + '">' + ''.join(
+            '<url><loc>' + base_url + page + '</loc></url>' for page in pages
+        ) + '</urlset>'
+        if missing_child:
+            (folder / 'sitemap.xml').write_text(
+                '<sitemapindex xmlns="' + namespace + '">'
+                '<sitemap><loc>' + base_url + 'child.xml</loc></sitemap>'
+                '<sitemap><loc>' + base_url + 'missing.xml</loc></sitemap>'
+                '</sitemapindex>', encoding='utf-8')
+            (folder / 'child.xml').write_text(urlset, encoding='utf-8')
+        else:
+            (folder / 'sitemap.xml').write_text(urlset, encoding='utf-8')
+        csv_path = self.root / (label + '.csv')
+        report_path = self.root / (label + '.json')
+        audit_script = SCRIPT.with_name('seo_sitemap_audit.py')
+        p = subprocess.run([sys.executable, str(audit_script), '--root', str(folder),
+                            '--base-url', base_url, '--as-of', as_of,
+                            '--urls-csv', str(csv_path)], capture_output=True, text=True)
+        self.assertIn(p.returncode, (0, 1), p.stderr)
+        report_path.write_text(p.stdout, encoding='utf-8')
+        return csv_path, report_path, p.returncode
+
+    def verified_cli(self, old, new):
+        return subprocess.run([sys.executable, str(SCRIPT),
+                               '--before', str(old[0]), '--after', str(new[0]),
+                               '--before-report', str(old[1]),
+                               '--after-report', str(new[1])],
+                              capture_output=True, text=True)
+
+    def test_clean_bound_reports_verify_real_export_and_detect_removal(self):
+        old = self.export_snapshot('old', ['keep', 'removed'])
+        new = self.export_snapshot('new', ['keep'])
+        self.assertEqual(old[2], 0)
+        self.assertEqual(new[2], 0)
+        p = self.verified_cli(old, new)
+        self.assertEqual(p.returncode, 1, p.stderr)
+        data = json.loads(p.stdout)
+        self.assertEqual(data['removed_urls'], ['https://example.com/removed'])
+        self.assertEqual(data['verification']['status'], 'complete_audit_csv_sha256_checked')
+        self.assertEqual(data['verification']['base_url'], 'https://example.com/')
+
+    def test_missing_sitemap_child_rejects_apparent_removals(self):
+        old = self.export_snapshot('old', ['keep', 'removed'])
+        new = self.export_snapshot('new', ['keep'], missing_child=True)
+        self.assertEqual(new[2], 1)
+        p = self.verified_cli(old, new)
+        self.assertEqual(p.returncode, 2, p.stderr)
+        self.assertEqual(p.stdout, '')
+        self.assertIn('incomplete', p.stderr)
+
+    def test_duplicate_url_diagnostic_does_not_invalidate_complete_snapshot(self):
+        old = self.export_snapshot('old', ['keep', 'keep'])
+        new = self.export_snapshot('new', ['keep', 'keep'])
+        self.assertEqual(old[2], 1)
+        self.assertEqual(new[2], 1)
+        p = self.verified_cli(old, new)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertEqual(json.loads(p.stdout)['verification']['status'],
+                         'complete_audit_csv_sha256_checked')
+
+    def test_changed_csv_bytes_rejected_even_with_same_row_count(self):
+        old = self.export_snapshot('old', ['keep', 'removed'])
+        new = self.export_snapshot('new', ['keep', 'removed'])
+        csv_path = new[0]
+        csv_path.write_bytes(csv_path.read_bytes().replace(
+            b'https://example.com/keep', b'https://example.com/krep'))
+        p = self.verified_cli(old, new)
+        self.assertEqual(p.returncode, 2, p.stderr)
+        self.assertIn('SHA-256', p.stderr)
+
+    def test_mismatched_site_and_reversed_audit_dates_rejected(self):
+        old = self.export_snapshot('old', ['keep'], as_of='2026-10-24')
+        new = self.export_snapshot('new', ['keep'], base_url='https://another.example/')
+        p = self.verified_cli(old, new)
+        self.assertEqual(p.returncode, 2, p.stderr)
+        self.assertIn('origins differ', p.stderr)
+        new = self.export_snapshot('earlier', ['keep'], as_of='2026-10-23')
+        p = self.verified_cli(old, new)
+        self.assertEqual(p.returncode, 2, p.stderr)
+        self.assertIn('after audit date', p.stderr)
+
+    def test_csv_only_mode_is_explicitly_unverified(self):
+        old = self.write('old.csv', [['a.xml', 'https://example.com/a', '', 'false']])
+        new = self.write('new.csv', [['a.xml', 'https://example.com/a', '', 'false']])
+        p = self.cli(old, new)
+        self.assertEqual(p.returncode, 0, p.stderr)
+        self.assertEqual(json.loads(p.stdout)['verification']['status'], 'csv_only_unverified')
+        p = subprocess.run([sys.executable, str(SCRIPT), '--before', str(old),
+                            '--after', str(new), '--before-report', str(self.root / 'x.json')],
+                           capture_output=True, text=True)
+        self.assertEqual(p.returncode, 2)
+        self.assertEqual(p.stdout, '')
+
+
+
+
 if __name__ == '__main__':
     unittest.main()

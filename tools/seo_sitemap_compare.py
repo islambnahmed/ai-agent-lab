@@ -5,6 +5,8 @@ from __future__ import annotations
 import argparse
 from collections import Counter, defaultdict
 import csv
+import datetime as dt
+import hashlib
 import json
 from pathlib import Path
 import sys
@@ -12,6 +14,7 @@ import sys
 COLUMNS = ['source_sitemap', 'normalized_url', 'lastmod', 'duplicate']
 MAX_INPUT_BYTES = 64 * 1024 * 1024
 MAX_ROWS = 1_000_000
+MAX_REPORT_BYTES = 8 * 1024 * 1024
 
 
 def load_inventory(path: Path) -> dict[str, Counter[tuple[str, str]]]:
@@ -46,6 +49,54 @@ def load_inventory(path: Path) -> dict[str, Counter[tuple[str, str]]]:
         if first_markers[url] != 1:
             raise ValueError(f'inconsistent duplicate markers for URL {url!r}: {path}')
     return dict(result)
+
+
+
+def verify_audit_report(path: Path, csv_path: Path, inventory: dict) -> dict:
+    """Check a clean audit report and its SHA-256 binding to the exact CSV bytes.
+
+    This detects accidental file swaps and partial audits, not forged reports.
+    """
+    if not path.is_file() or path.stat().st_size > MAX_REPORT_BYTES:
+        raise ValueError(f'audit report missing or exceeds {MAX_REPORT_BYTES} bytes: {path}')
+    try:
+        report = json.loads(path.read_text(encoding='utf-8'))
+    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        raise ValueError(f'cannot parse audit report {path}: {type(exc).__name__}') from exc
+    if not isinstance(report, dict) or report.get('schema_version') != 1 or report.get('kind') != 'offline_sitemap_inventory':
+        raise ValueError(f'unsupported audit report: {path}')
+    summary, exported = report.get('summary'), report.get('csv_export')
+    if not isinstance(summary, dict) or not isinstance(exported, dict):
+        raise ValueError(f'audit report missing CSV export metadata: {path}')
+    # Duplicates and lastmod/origin warnings do not omit CSV rows.
+    # All unknown or structural issues fail closed, because they may hide URLs.
+    non_omitting_codes = {'duplicate_url', 'future_lastmod', 'invalid_lastmod',
+                          'off_host_url', 'off_origin_url'}
+    issues = report.get('issues')
+    if (not isinstance(issues, list) or summary.get('issues') != len(issues)
+            or any(not isinstance(issue, dict)
+                   or issue.get('code') not in non_omitting_codes for issue in issues)):
+        raise ValueError(f'audit has incomplete or unmapped sitemap entries: {path}')
+    rows = sum(sum(counts.values()) for counts in inventory.values())
+    if (summary.get('urls') != rows or summary.get('unique_urls') != len(inventory)
+            or exported.get('rows') != rows or exported.get('bytes') != csv_path.stat().st_size):
+        raise ValueError(f'CSV inventory counts differ from audit report: {path}')
+    if summary.get('sitemaps', 0) < 1 or summary.get('urlsets', 0) < 1:
+        raise ValueError(f'audit has no complete URL set: {path}')
+    with csv_path.open('rb') as stream:
+        actual_digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+    if exported.get('sha256') != actual_digest:
+        raise ValueError(f'CSV SHA-256 differs from audit report: {path}')
+    base_url, as_of = report.get('base_url'), report.get('as_of')
+    if not isinstance(base_url, str) or not base_url.startswith(('http://', 'https://')):
+        raise ValueError(f'invalid audit origin: {path}')
+    try:
+        day = dt.date.fromisoformat(as_of)
+        if day.isoformat() != as_of:
+            raise ValueError('noncanonical date')
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f'invalid audit as_of date: {path}') from exc
+    return {'base_url': base_url, 'as_of': as_of}
 
 
 def _details(counts: Counter[tuple[str, str]]) -> list[dict]:
@@ -86,9 +137,31 @@ def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--before', required=True, type=Path)
     parser.add_argument('--after', required=True, type=Path)
+    parser.add_argument('--before-report', type=Path, help='Optional paired JSON audit report for verified comparison')
+    parser.add_argument('--after-report', type=Path, help='Optional paired JSON audit report for verified comparison')
     args = parser.parse_args(argv)
     try:
-        result = compare(load_inventory(args.before), load_inventory(args.after))
+        if (args.before_report is None) != (args.after_report is None):
+            raise ValueError('both --before-report and --after-report are required together')
+        before = load_inventory(args.before)
+        after = load_inventory(args.after)
+        if args.before_report is not None:
+            previous = verify_audit_report(args.before_report, args.before, before)
+            current = verify_audit_report(args.after_report, args.after, after)
+            if previous['base_url'] != current['base_url']:
+                raise ValueError('audit origins differ; snapshots cannot be compared as one site')
+            if previous['as_of'] > current['as_of']:
+                raise ValueError('before audit date is after the after audit date')
+            verification = {'status': 'complete_audit_csv_sha256_checked',
+                            'base_url': previous['base_url'],
+                            'before_as_of': previous['as_of'],
+                            'after_as_of': current['as_of'],
+                            'limitation': 'Local JSON reports are not authenticated; this does not prove capture time or live-site completeness'}
+        else:
+            verification = {'status': 'csv_only_unverified',
+                            'limitation': 'Without paired clean audit reports, apparent removals may reflect incomplete sitemap exports'}
+        result = compare(before, after)
+        result['verification'] = verification
     except ValueError as exc:
         print(json.dumps({'error': str(exc)}), file=sys.stderr)
         return 2
