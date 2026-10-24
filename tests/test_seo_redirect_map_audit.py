@@ -163,6 +163,20 @@ class RedirectAuditTests(unittest.TestCase):
             self.assertEqual(json.loads(result.stdout)['issues'],
                              [{'row': 2, 'type': 'malformed_row'}])
 
+    def test_cli_input_error_does_not_expose_private_file_path(self):
+        script = Path(__file__).resolve().parents[1] / 'tools' / 'seo_redirect_map_audit.py'
+        with tempfile.TemporaryDirectory() as td:
+            # OSError normally includes the missing path in its message.
+            private_path = Path(td) / 'private_client_migration_map.csv'
+            result = subprocess.run(
+                [sys.executable, str(script), '--map', str(private_path)],
+                capture_output=True, text=True)
+            self.assertEqual(result.returncode, 2)
+            self.assertEqual(result.stdout, '')
+            self.assertIn('invalid or unreadable input', result.stderr)
+            self.assertNotIn('private_client_migration_map.csv', result.stderr)
+            self.assertNotIn(td, result.stderr)
+
     def test_cli_clean_and_invalid_header(self):
         script = Path(__file__).resolve().parents[1] / 'tools' / 'seo_redirect_map_audit.py'
         with tempfile.TemporaryDirectory() as td:
