@@ -29,28 +29,23 @@ export function gateSettlement(outcome) {
 
 export function summarizeSettlements(outcomes) {
   if (!Array.isArray(outcomes)) throw new TypeError('Settlement outcomes must be an array');
-  for (const outcome of outcomes) {
+  // Reapply the gate here too: direct callers must not bypass CLI classification.
+  const safe = outcomes.map(gateSettlement);
+  for (const outcome of safe) {
     if (!outcome || !VALID.has(outcome.status) || !HORIZONS.includes(outcome.horizon)) {
       throw new TypeError('Invalid outcome status or horizon');
     }
   }
   return HORIZONS.map(horizon => {
-    const group = outcomes.filter(row => row.horizon === horizon);
-    const verified = group.filter(row => row.status === 'matured');
-    const avg = key => verified.length
-      ? verified.reduce((sum, row) => {
-          if (!Number.isFinite(row[key]) || row[key] < 0) throw new TypeError('Invalid error metric');
-          return sum + row[key];
-        }, 0) / verified.length
-      : null;
+    const group = safe.filter(row => row.horizon === horizon);
     return {
       horizon,
-      matured: verified.length,
+      matured: 0, // No authenticated publication-before-close verifier exists yet.
       provisional: group.filter(row => row.status === 'provisional').length,
       pending: group.filter(row => row.status === 'pending').length,
       quarantined: group.filter(row => row.status === 'quarantined').length,
-      modelMae: avg('modelAbsError'),
-      baselineMae: avg('baselineAbsError')
+      modelMae: null,
+      baselineMae: null
     };
   });
 }
