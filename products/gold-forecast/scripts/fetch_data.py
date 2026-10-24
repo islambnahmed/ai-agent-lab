@@ -31,9 +31,13 @@ def fetch(name, url):
             if len(raw) > 5_000_000:
                 raise ValueError('Provider response too large')
             payload = json.loads(raw)
+            # The provider-body hash differs from the parsed JSON saved locally.
+            # Record both so subsequent consumers can detect a swapped/stale file.
+            stored = json.dumps(payload, ensure_ascii=False).encode('utf-8')
             meta = {'url': url, 'requestedAt': requested_at, 'receivedAt': timestamp(),
                     'httpStatus': response.status, 'cors': response.headers.get('Access-Control-Allow-Origin'),
-                    'rawSha256': hashlib.sha256(raw).hexdigest(), 'status': 'fetched'}
+                    'rawSha256': hashlib.sha256(raw).hexdigest(),
+                    'storedSha256': hashlib.sha256(stored).hexdigest(), 'status': 'fetched'}
             return name, payload, meta
     except Exception as exc:
         return name, None, {'url': url, 'requestedAt': requested_at, 'status': 'unavailable', 'error': str(exc)}

@@ -5,10 +5,11 @@ import {execFileSync} from 'node:child_process';
 import {forecast,sample,metrics} from '../forecast.mjs';
 import {prepareProviderHistory,validatedSpot,crossCheck} from '../data.mjs';
 import {hash} from '../journal.mjs';
+import {readVerifiedSnapshot} from '../snapshot-integrity.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const read=name=>JSON.parse(fs.readFileSync(path.join(root,'data',name+'.json'),'utf8'));
-const manifest=read('fetch-manifest');
+const manifest=JSON.parse(fs.readFileSync(path.join(root,'data','fetch-manifest.json'),'utf8'));
+const read=name=>readVerifiedSnapshot(root,manifest,name);
 const asOf=manifest.history.receivedAt;
 const history=read('history'),prepared=prepareProviderHistory(history,asOf);
 let sourceCheck;
