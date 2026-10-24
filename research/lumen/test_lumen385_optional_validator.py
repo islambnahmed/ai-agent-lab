@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 import tempfile
 import unittest
+from unittest.mock import patch
 
 VALIDATOR = Path(__file__).resolve().parents[2] / "tools" / "validate_lab.py"
 spec = importlib.util.spec_from_file_location("lumen385_validator", VALIDATOR)
@@ -53,6 +54,40 @@ class OptionalInfrastructureValidatorTests(unittest.TestCase):
     def test_valid_present_data_passes(self):
         self.write("evals/suite.json", {"schema_version": 1, "tasks": [{"id": "t1"}]})
         self.assertEqual(module.validate(self.root), [])
+
+
+    def test_symlinked_shared_directory_rejected_without_read(self):
+        external = self.root / "synthetic_external"
+        external.mkdir()
+        (external / "state.json").write_text('{"schema_version": 1}', encoding="utf-8")
+        (self.root / "shared").symlink_to(external, target_is_directory=True)
+        with patch.object(Path, "read_text", side_effect=AssertionError("must not read")):
+            errors = module.validate(self.root)
+        self.assertTrue(any("shared/state.json" in e and "parent directories" in e for e in errors))
+
+    def test_symlinked_evals_directory_rejected_without_read(self):
+        external = self.root / "synthetic_evals"
+        external.mkdir()
+        (external / "suite.json").write_text('{"tasks": []}', encoding="utf-8")
+        (self.root / "evals").symlink_to(external, target_is_directory=True)
+        with patch.object(Path, "read_text", side_effect=AssertionError("must not read")):
+            errors = module.validate(self.root)
+        self.assertTrue(any("evals/suite.json" in e and "parent directories" in e for e in errors))
+
+    def test_dangling_parent_symlink_rejected(self):
+        (self.root / "shared").symlink_to(self.root / "missing", target_is_directory=True)
+        self.assertTrue(any("parent directories" in e for e in module.validate(self.root)))
+
+    def test_symlinked_root_rejected_without_read(self):
+        actual = self.root / "actual"
+        actual.mkdir()
+        (actual / "shared").mkdir()
+        (actual / "shared" / "state.json").write_text("{}", encoding="utf-8")
+        alias = self.root / "alias"
+        alias.symlink_to(actual, target_is_directory=True)
+        with patch.object(Path, "read_text", side_effect=AssertionError("must not read")):
+            errors = module.validate(alias)
+        self.assertTrue(any("lab root" in e and "symbolic links" in e for e in errors))
 
 
 if __name__ == "__main__":
