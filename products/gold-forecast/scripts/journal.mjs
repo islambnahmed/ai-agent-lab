@@ -2,10 +2,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import {issueReceipt,settleReceipt,hash,parseVerifiedHistorySnapshot,appendVerifiedVintage} from '../journal.mjs';
+import {issueReceipt,verifyReceipt,settleReceipt,hash,parseVerifiedHistorySnapshot,appendVerifiedVintage} from '../journal.mjs';
 import {prepareProviderHistory} from '../data.mjs';
 import {preserveFirstObservedTarget} from '../settlement-observations.mjs';
 import {gateSettlement,summarizeSettlements} from '../settlement-eligibility.mjs';
+import {checkReceiptCohort} from '../receipt-cohort.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=name=>JSON.parse(fs.readFileSync(path.join(root,'data',name+'.json'),'utf8'));
@@ -18,21 +19,42 @@ const vintages=path.join(root,'data','vintages');fs.mkdirSync(vintages,{recursiv
 const firstObserved=path.join(root,'data','settlement-observations');
 const command=process.argv[2];
 if(command==='issue'){
-  const files=['forecast.mjs','models.mjs','data.mjs','historical-integrity.mjs','calendar_contract.mjs','journal.mjs',
-    'scripts/journal.mjs','scripts/fetch_data.py','settlement-observations.mjs',
-    'settlement-eligibility.mjs','package.json'];
-  const dirty=execFileSync('git',['status','--porcelain','--',...files],{cwd:root,encoding:'utf8'});
-  if(dirty.trim())throw Error('Commit implementation before issuing forecasts');
-  const codeCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
-  const issuedAt=new Date().toISOString();
-  for(const h of [1,7,30]){
-    const filename=path.join(dir,prepared.latestDate+'-h'+h+'.json');
-    if(fs.existsSync(filename)){console.log('Existing receipt preserved: '+path.basename(filename));continue;}
-    const receipt=issueReceipt(prepared.series,h,{issuedAt,source:'Standard Bullion',codeCommit,sourceManifest:manifest.history});
-    const vintagePath=path.join(vintages,receipt.historyHash+'.json');
-    if(!fs.existsSync(vintagePath))fs.writeFileSync(vintagePath,JSON.stringify(prepared.series),{flag:'wx'});
-    fs.writeFileSync(filename,JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
-    console.log(JSON.stringify({file:filename,id:receipt.id,targetDate:receipt.targetDate,point:receipt.point}));
+  const horizons=[1,7,30];
+  const filenames=horizons.map(h=>path.join(dir,prepared.latestDate+'-h'+h+'.json'));
+  // Verify the entire original cohort before deciding whether to issue any
+  // missing receipt. A partial cohort must not be silently filled from a new
+  // snapshot or a different code revision.
+  const existing=filenames.map(filename=>fs.existsSync(filename)
+    ?JSON.parse(fs.readFileSync(filename,'utf8')):null);
+  const cohortState=checkReceiptCohort(existing,prepared.latestDate,verifyReceipt);
+  if(cohortState==='complete'){
+    for(const filename of filenames)console.log('Existing receipt preserved: '+path.basename(filename));
+  }else{
+    const files=['forecast.mjs','models.mjs','data.mjs','historical-integrity.mjs','calendar_contract.mjs',
+      'journal.mjs','receipt-cohort.mjs','scripts/journal.mjs','scripts/fetch_data.py',
+      'settlement-observations.mjs','settlement-eligibility.mjs','package.json'];
+    const dirty=execFileSync('git',['status','--porcelain','--',...files],{cwd:root,encoding:'utf8'});
+    if(dirty.trim())throw Error('Commit implementation before issuing forecasts');
+    const codeCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
+    const issuedAt=new Date().toISOString();
+    // Prepare and validate every horizon before any receipt is created.
+    const receipts=horizons.map(h=>issueReceipt(prepared.series,h,
+      {issuedAt,source:'Standard Bullion',codeCommit,sourceManifest:manifest.history}));
+    checkReceiptCohort(receipts,prepared.latestDate,verifyReceipt);
+    const vintagePath=path.join(vintages,receipts[0].historyHash+'.json');
+    if(fs.existsSync(vintagePath)){
+      if(hash(JSON.parse(fs.readFileSync(vintagePath,'utf8')))!==receipts[0].historyHash)
+        throw Error('Existing frozen vintage corrupted; do not issue receipts');
+    }else{
+      fs.writeFileSync(vintagePath,JSON.stringify(prepared.series),{flag:'wx'});
+    }
+    // These create-only writes are not a transaction. If interrupted, a
+    // later invocation refuses to fill the partial cohort automatically.
+    for(let i=0;i<receipts.length;i++){
+      const receipt=receipts[i],filename=filenames[i];
+      fs.writeFileSync(filename,JSON.stringify(receipt,null,2)+'\n',{flag:'wx'});
+      console.log(JSON.stringify({file:filename,id:receipt.id,targetDate:receipt.targetDate,point:receipt.point}));
+    }
   }
 }else if(command==='settle'){
   const outcomes=fs.readdirSync(dir).filter(f=>f.endsWith('.json')).map(f=>{
