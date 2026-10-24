@@ -93,5 +93,39 @@ class ClaimGateAdversarialTests(unittest.TestCase):
         self.assertEqual(screen(r, e)['status'], 'insufficient_evidence')
 
 
+    def test_future_issued_at_is_invalid_receipt(self):
+        r, e = fixture()
+        r['issuedAt'] = '2099-01-01T00:00:00Z'
+        self.assertEqual(screen(r, e)['status'], 'invalid_receipt')
+
+    def test_future_external_anchor_is_not_eligible(self):
+        r, e = fixture()
+        e['anchorObservedAt'] = '2099-01-01T00:00:00Z'
+        e['targetFirstAvailableAt'] = '2099-01-02T00:00:00Z'
+        result = screen(r, e)
+        self.assertEqual(result['status'], 'insufficient_evidence')
+        self.assertIn('external anchor timestamp is in the future', result['reasons'])
+
+    def test_future_target_publication_is_not_eligible(self):
+        r, e = fixture()
+        e['targetFirstAvailableAt'] = '2099-01-01T00:00:00Z'
+        result = screen(r, e)
+        self.assertEqual(result['status'], 'insufficient_evidence')
+        self.assertIn('target first availability timestamp is in the future', result['reasons'])
+
+    def test_unmatured_thirty_close_target_cannot_score(self):
+        r, e = fixture()
+        r['horizon'] = 30
+        e['futureObservedCloses'] = [
+            {'date': f'2099-01-{day:02d}', 'price': 2700.0}
+            for day in range(1, 31)
+        ]
+        e['targetFirstAvailableAt'] = '2099-01-31T00:00:00Z'
+        result = screen(r, e)
+        self.assertEqual(result['status'], 'insufficient_evidence')
+        self.assertIn('target first availability timestamp is in the future', result['reasons'])
+
+
+
 if __name__ == '__main__':
     unittest.main()
