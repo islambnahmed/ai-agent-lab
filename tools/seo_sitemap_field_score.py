@@ -76,6 +76,10 @@ def score(references: list[dict[str, str]], sessions: list[dict[str, str]],
         pairs_by_reviewer[pair, reviewer].add(arm)
     if not active or any(arms != set(ARMS) for arms in pairs_by_reviewer.values()):
         raise ValueError('each pair/reviewer requires both review arms')
+    # Reject labeled pairs that would otherwise silently disappear from every metric.
+    session_pairs = {pair for pair, _reviewer in pairs_by_reviewer}
+    if session_pairs != set(per_pair):
+        raise ValueError('reference pair has no paired review sessions')
     for pair, reviewer in pairs_by_reviewer:
         if active[pair, reviewer, 'manual'][1] != active[pair, reviewer, 'triage'][1]:
             raise ValueError('paired arms must use equal inspection budgets')
