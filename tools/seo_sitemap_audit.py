@@ -209,6 +209,7 @@ def audit(root: Path, start: str, base_url: str, today: dt.date, *, max_sitemaps
     issues.sort(key=lambda i: (i['file'], i['code'], i['detail']))
     summary['issues'] = len(issues)
     return {'schema_version': 1, 'kind': 'offline_sitemap_inventory', 'base_url': base,
+            'start_sitemap': start_path.relative_to(root).as_posix(),
             'as_of': today.isoformat(), 'summary': summary, 'issues': issues,
             'limitations': ['No network fetch, HTTP status, robots.txt, canonical, noindex or search-index verification',
                             'Duplicate detection is URL-normalized but does not infer semantic canonical equivalence']}
