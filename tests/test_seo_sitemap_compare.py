@@ -182,7 +182,7 @@ class CompareTests(unittest.TestCase):
         new = self.export_snapshot('new', ['keep', 'removed'])
         csv_path = new[0]
         csv_path.write_text(csv_path.read_text(encoding='utf-8').replace(
-            'https://example.com/keep', 'https://example.com/kept'), encoding='utf-8')
+            'https://example.com/keep', 'https://example.com/krep'), encoding='utf-8')
         p = self.verified_cli(old, new)
         self.assertEqual(p.returncode, 2, p.stderr)
         self.assertIn('SHA-256', p.stderr)
