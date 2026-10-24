@@ -25,6 +25,7 @@ def simulate(kind, policy, seed, days=90, misspecified=False):
     total = 0.
     found = 0
     spent = 0
+    ever_checked = set()
     for day in range(days):
         for i, x in enumerate(initial):
             age[i] += 1
@@ -40,12 +41,13 @@ def simulate(kind, policy, seed, days=90, misspecified=False):
         for i, x in enumerate(initial):
             if x.id in ids:
                 spent += x.cost
+                ever_checked.add(x.id)
                 if pending[i]:
                     found += 1
                     total += x.impact
                 pending[i] = False
                 age[i] = 0
-    return dict(impact=total, discoveries=found, spent=spent)
+    return dict(impact=total, discoveries=found, spent=spent, coverage=len(ever_checked))
 
 
 def run():
@@ -53,10 +55,10 @@ def run():
            'cases': {}}
     for kind in ('seo', 'feeds'):
         summary = {}
-        for policy, wrong in (('dp', False), ('ratio', False), ('oldest', False), ('dp', True)):
+        for policy, wrong in (('dp', False), ('ratio', False), ('oldest', False), ('fair_dp', False), ('dp', True)):
             label = 'dp_misspecified' if wrong else policy
             vals = [simulate(kind, policy, seed, misspecified=wrong) for seed in range(100)]
-            summary[label] = {k: round(sum(v[k] for v in vals)/len(vals), 4) for k in ('impact','discoveries','spent')}
+            summary[label] = {k: round(sum(v[k] for v in vals)/len(vals), 4) for k in ('impact','discoveries','spent','coverage')}
         baseline = [simulate(kind, 'dp', seed)['impact'] for seed in range(100)]
         summary['paired_dp_minus_ratio'] = {
             'mean_impact': round(sum(a-simulate(kind, 'ratio', seed)['impact'] for seed,a in enumerate(baseline))/100, 4),
