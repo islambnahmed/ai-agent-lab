@@ -1,0 +1,18 @@
+{
+  "domains": {
+    "github_issue": 5000,
+    "seo_html": 5000
+  },
+  "notes": "All 10,000 attacks deliberately differ from approved plan and/or payload. No real API writes.",
+  "results": {
+    "cases": 10000,
+    "path_only_false_accepts": 5000,
+    "receipt_false_accepts": 0,
+    "receipt_legitimate_accepts": 10000,
+    "receipt_outside_denied": 100,
+    "receipt_replays_accepted": 0,
+    "scope_only_false_accepts": 10000,
+    "scope_only_outside_denied": 100
+  },
+  "seed": 417
+}
