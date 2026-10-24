@@ -42,6 +42,14 @@ class OptionalInfrastructureValidatorTests(unittest.TestCase):
         self.write("shared/workers.json", {"schema_version": True})
         self.assertTrue(any("schema_version" in e for e in module.validate(self.root)))
 
+    def test_symlink_to_external_synthetic_fixture_is_rejected(self):
+        external = self.root / "synthetic_external.json"
+        external.write_text("{}", encoding="utf-8")
+        path = self.root / "shared" / "state.json"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.symlink_to(external)
+        self.assertTrue(any("symbolic links" in e for e in module.validate(self.root)))
+
     def test_valid_present_data_passes(self):
         self.write("evals/suite.json", {"schema_version": 1, "tasks": [{"id": "t1"}]})
         self.assertEqual(module.validate(self.root), [])
