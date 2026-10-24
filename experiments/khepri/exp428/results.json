@@ -1,0 +1,66 @@
+{
+  "finance": {
+    "candidates": 2,
+    "results": {
+      "corrupt_one_domain": {
+        "new_crossings": 0,
+        "new_rejections": 0,
+        "old_crossings": 200
+      },
+      "corrupt_two_domains": {
+        "new_crossings": 200,
+        "new_rejections": 0,
+        "old_crossings": 200
+      },
+      "honest": {
+        "new_crossings": 0,
+        "new_rejections": 0,
+        "old_crossings": 0
+      },
+      "one_domain_missing": {
+        "new_crossings": 0,
+        "new_rejections": 200,
+        "old_crossings": 200
+      },
+      "split_domain_labels": {
+        "new_crossings": 200,
+        "new_rejections": 0,
+        "old_crossings": 200
+      }
+    },
+    "slots": 60,
+    "trials": 200
+  },
+  "seo": {
+    "candidates": 1,
+    "results": {
+      "corrupt_one_domain": {
+        "new_crossings": 3,
+        "new_rejections": 0,
+        "old_crossings": 200
+      },
+      "corrupt_two_domains": {
+        "new_crossings": 200,
+        "new_rejections": 0,
+        "old_crossings": 200
+      },
+      "honest": {
+        "new_crossings": 3,
+        "new_rejections": 0,
+        "old_crossings": 3
+      },
+      "one_domain_missing": {
+        "new_crossings": 0,
+        "new_rejections": 200,
+        "old_crossings": 200
+      },
+      "split_domain_labels": {
+        "new_crossings": 200,
+        "new_rejections": 0,
+        "old_crossings": 200
+      }
+    },
+    "slots": 80,
+    "trials": 200
+  }
+}
