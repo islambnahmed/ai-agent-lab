@@ -47,7 +47,12 @@ def main():
             result[name] = meta
             dest = ROOT / 'data' / (name + '.json')
             if payload is not None:
-                dest.write_text(json.dumps(payload, ensure_ascii=False), encoding='utf-8')
+                # Hash the exact persisted bytes, not only the HTTP response.
+                # json.dumps normalizes whitespace, so rawSha256 alone cannot
+                # verify the local file used by prospective receipts.
+                stored = json.dumps(payload, ensure_ascii=False).encode('utf-8')
+                dest.write_bytes(stored)
+                meta['storedSha256'] = hashlib.sha256(stored).hexdigest()
             else:
                 dest.unlink(missing_ok=True)  # never pass an old failed-fetch snapshot
     result['coveragePolicy'] = {
