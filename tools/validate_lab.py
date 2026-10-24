@@ -23,6 +23,9 @@ def validate(root):
     errors = []
     for name in OPTIONAL_JSON:
         path = root / name
+        if path.is_symlink():
+            errors.append(f"{name}: symbolic links are not permitted")
+            continue
         if not path.exists():
             continue
         if not path.is_file():
