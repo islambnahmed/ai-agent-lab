@@ -1,0 +1,126 @@
+{
+  "gold": {
+    "after_ack": {
+      "atomic_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      },
+      "no_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      }
+    },
+    "after_sink": {
+      "atomic_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      },
+      "no_sink_dedupe": {
+        "effects": 400,
+        "expected": 200,
+        "extra": 200
+      }
+    },
+    "before_sink": {
+      "atomic_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      },
+      "no_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      }
+    },
+    "clean": {
+      "atomic_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      },
+      "no_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      }
+    },
+    "two_after_sink": {
+      "atomic_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      },
+      "no_sink_dedupe": {
+        "effects": 600,
+        "expected": 200,
+        "extra": 400
+      }
+    }
+  },
+  "seo": {
+    "after_ack": {
+      "atomic_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      },
+      "no_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      }
+    },
+    "after_sink": {
+      "atomic_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      },
+      "no_sink_dedupe": {
+        "effects": 400,
+        "expected": 200,
+        "extra": 200
+      }
+    },
+    "before_sink": {
+      "atomic_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      },
+      "no_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      }
+    },
+    "clean": {
+      "atomic_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      },
+      "no_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      }
+    },
+    "two_after_sink": {
+      "atomic_sink_dedupe": {
+        "effects": 200,
+        "expected": 200,
+        "extra": 0
+      },
+      "no_sink_dedupe": {
+        "effects": 600,
+        "expected": 200,
+        "extra": 400
+      }
+    }
+  }
+}
