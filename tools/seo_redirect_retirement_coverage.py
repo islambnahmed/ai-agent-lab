@@ -43,6 +43,8 @@ def read_retiring(path: Path) -> list[tuple[int, str]]:
             except ValueError:
                 raise ValueError(f'invalid retirement URL at line {line}') from None
             result.append((line, key))
+    if not result:
+        raise ValueError('retirement inventory is empty')
     return result
 
 
