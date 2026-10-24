@@ -122,7 +122,7 @@ class CompareTests(unittest.TestCase):
 
 
     def export_snapshot(self, label, pages, *, base_url='https://example.com/',
-                        as_of='2026-10-24', missing_child=False):
+                        as_of='2026-10-24', missing_child=False, start='sitemap.xml'):
         """Exercise the real exporter rather than inventing report metadata."""
         folder = self.root / label
         folder.mkdir()
@@ -138,13 +138,13 @@ class CompareTests(unittest.TestCase):
                 '</sitemapindex>', encoding='utf-8')
             (folder / 'child.xml').write_text(urlset, encoding='utf-8')
         else:
-            (folder / 'sitemap.xml').write_text(urlset, encoding='utf-8')
+            (folder / start).write_text(urlset, encoding='utf-8')
         csv_path = self.root / (label + '.csv')
         report_path = self.root / (label + '.json')
         audit_script = SCRIPT.with_name('seo_sitemap_audit.py')
         p = subprocess.run([sys.executable, str(audit_script), '--root', str(folder),
                             '--base-url', base_url, '--as-of', as_of,
-                            '--urls-csv', str(csv_path)], capture_output=True, text=True)
+                            '--start', start, '--urls-csv', str(csv_path)], capture_output=True, text=True)
         self.assertIn(p.returncode, (0, 1), p.stderr)
         report_path.write_text(p.stdout, encoding='utf-8')
         return csv_path, report_path, p.returncode
@@ -207,6 +207,27 @@ class CompareTests(unittest.TestCase):
         p = self.verified_cli(old, new)
         self.assertEqual(p.returncode, 2, p.stderr)
         self.assertIn('after audit date', p.stderr)
+
+    def test_clean_audits_with_different_start_sitemaps_reject_false_removals(self):
+        old = self.export_snapshot('full', ['keep', 'removed'])
+        new = self.export_snapshot('subset', ['keep'], start='subset.xml')
+        self.assertEqual(old[2], 0)
+        self.assertEqual(new[2], 0)
+        p = self.verified_cli(old, new)
+        self.assertEqual(p.returncode, 2, p.stderr)
+        self.assertEqual(p.stdout, '')
+        self.assertIn('entrypoints differ', p.stderr)
+
+    def test_malformed_audit_summary_counts_fail_without_traceback(self):
+        old = self.export_snapshot('old', ['keep'])
+        new = self.export_snapshot('new', ['keep'])
+        report = json.loads(new[1].read_text(encoding='utf-8'))
+        report['summary']['urlsets'] = 'one'
+        new[1].write_text(json.dumps(report), encoding='utf-8')
+        p = self.verified_cli(old, new)
+        self.assertEqual(p.returncode, 2, p.stderr)
+        self.assertEqual(p.stdout, '')
+        self.assertNotIn('Traceback', p.stderr)
 
     def test_csv_only_mode_is_explicitly_unverified(self):
         old = self.write('old.csv', [['a.xml', 'https://example.com/a', '', 'false']])
