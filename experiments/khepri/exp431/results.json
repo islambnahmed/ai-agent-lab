@@ -1,0 +1,34 @@
+{
+  "domains": {
+    "gold": {
+      "exact": {"mean_cost": 10.102, "mean_covered_value": 103.294},
+      "example": {
+        "exact": {"cost": 8, "covered_value": 77.0, "tasks": ["fx_cross", "source_check", "tick_integrity"]},
+        "marginal": {"cost": 8, "covered_value": 77.0, "tasks": ["fx_cross", "source_check", "tick_integrity"]},
+        "static": {"cost": 7, "covered_value": 69.0, "tasks": ["outlier_probe", "source_check", "tick_integrity"]}
+      },
+      "marginal": {"mean_cost": 10.03, "mean_covered_value": 101.606},
+      "marginal_beats_static": 202,
+      "marginal_equal_optimum": 409,
+      "static": {"mean_cost": 11.844, "mean_covered_value": 95.184},
+      "static_beats_marginal": 14,
+      "static_equal_optimum": 243
+    },
+    "seo": {
+      "exact": {"mean_cost": 7.02, "mean_covered_value": 82.292},
+      "example": {
+        "exact": {"cost": 5, "covered_value": 57.0, "tasks": ["cross_check", "duplicate_scan"]},
+        "marginal": {"cost": 5, "covered_value": 57.0, "tasks": ["cross_check", "duplicate_scan"]},
+        "static": {"cost": 7, "covered_value": 57.0, "tasks": ["cross_check", "duplicate_scan", "quick_scan"]}
+      },
+      "marginal": {"mean_cost": 7.246, "mean_covered_value": 81.31},
+      "marginal_beats_static": 99,
+      "marginal_equal_optimum": 444,
+      "static": {"mean_cost": 11.27, "mean_covered_value": 79.334},
+      "static_beats_marginal": 7,
+      "static_equal_optimum": 362
+    }
+  },
+  "seed": 431,
+  "trials_per_domain": 500
+}
