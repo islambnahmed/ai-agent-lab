@@ -1,0 +1,178 @@
+{
+  "method": "exact expected rewards for independent Poisson change process; 300 seeded synthetic small cases per domain; no live data",
+  "cases": {
+    "seo": {
+      "n": 300,
+      "optimal_beats_myopic": 188,
+      "ties": 112,
+      "mean_absolute_expected_gain": 1.12969,
+      "mean_gain_pct_of_myopic": null,
+      "max_case": {
+        "items": [
+          {
+            "id": "page-0",
+            "cost": 1,
+            "impact": 38.60743865041594,
+            "rate": 0.3
+          },
+          {
+            "id": "page-1",
+            "cost": 2,
+            "impact": 23.93968414916457,
+            "rate": 0.3
+          },
+          {
+            "id": "page-2",
+            "cost": 3,
+            "impact": 29.196640861585703,
+            "rate": 0.7
+          },
+          {
+            "id": "page-3",
+            "cost": 2,
+            "impact": 38.717479301904135,
+            "rate": 0.7
+          }
+        ],
+        "budget": 3,
+        "horizon": 5,
+        "optimal_actions": [
+          [
+            "page-0",
+            "page-3"
+          ],
+          [
+            "page-2"
+          ],
+          [
+            "page-0",
+            "page-3"
+          ],
+          [
+            "page-2"
+          ],
+          [
+            "page-0",
+            "page-3"
+          ]
+        ],
+        "myopic_actions": [
+          [
+            "page-0",
+            "page-3"
+          ],
+          [
+            "page-0",
+            "page-3"
+          ],
+          [
+            "page-0",
+            "page-3"
+          ],
+          [
+            "page-0",
+            "page-3"
+          ],
+          [
+            "page-0",
+            "page-3"
+          ]
+        ],
+        "optimal_expected": 166.669156,
+        "myopic_expected": 147.486464,
+        "absolute_gain": 19.182692
+      },
+      "misspecified_optimal_worse_than_misspecified_myopic": 44,
+      "mean_misspecified_gain": 0.979843
+    },
+    "feeds": {
+      "n": 300,
+      "optimal_beats_myopic": 167,
+      "ties": 133,
+      "mean_absolute_expected_gain": 0.699913,
+      "mean_gain_pct_of_myopic": null,
+      "max_case": {
+        "items": [
+          {
+            "id": "feed-0",
+            "cost": 1,
+            "impact": 14.56225509430174,
+            "rate": 0.4
+          },
+          {
+            "id": "feed-1",
+            "cost": 3,
+            "impact": 6.372794649041759,
+            "rate": 1
+          },
+          {
+            "id": "feed-2",
+            "cost": 3,
+            "impact": 10.313703641228859,
+            "rate": 0.4
+          },
+          {
+            "id": "feed-3",
+            "cost": 2,
+            "impact": 3.788787259431243,
+            "rate": 0.15
+          },
+          {
+            "id": "feed-4",
+            "cost": 1,
+            "impact": 5.490140495053847,
+            "rate": 1
+          }
+        ],
+        "budget": 3,
+        "horizon": 5,
+        "optimal_actions": [
+          [
+            "feed-0",
+            "feed-4"
+          ],
+          [
+            "feed-1"
+          ],
+          [
+            "feed-0",
+            "feed-4"
+          ],
+          [
+            "feed-2"
+          ],
+          [
+            "feed-0",
+            "feed-4"
+          ]
+        ],
+        "myopic_actions": [
+          [
+            "feed-0",
+            "feed-4"
+          ],
+          [
+            "feed-0",
+            "feed-4"
+          ],
+          [
+            "feed-0",
+            "feed-4"
+          ],
+          [
+            "feed-0",
+            "feed-4"
+          ],
+          [
+            "feed-2"
+          ]
+        ],
+        "optimal_expected": 47.545333,
+        "myopic_expected": 42.003153,
+        "absolute_gain": 5.542181
+      },
+      "misspecified_optimal_worse_than_misspecified_myopic": 24,
+      "mean_misspecified_gain": 0.47214
+    }
+  }
+}
