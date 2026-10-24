@@ -27,12 +27,14 @@ python3 -m unittest discover -s tests -p 'test_seo_sitemap_audit.py' -v
 The default JSON report summarizes URLs and issues but does **not** list every URL. To export every valid parsed URL entry for offline SEO QA, add:
 
 ```bash
-python3 tools/seo_sitemap_audit.py \\
-  --root /path/to/downloaded-sitemaps \\
-  --base-url https://example.com/ \\
-  --as-of 2026-10-24 \\
+python3 tools/seo_sitemap_audit.py \
+  --root /path/to/downloaded-sitemaps \
+  --base-url https://example.com/ \
+  --as-of 2026-10-24 \
   --urls-csv /path/to/inventory.csv > /path/to/report.json
 ```
+
+For safety, `--urls-csv` refuses destinations ending in `.xml` or `.gz`, so it cannot replace an input sitemap.
 
 The CSV has four columns: `source_sitemap`, `normalized_url`, `lastmod`, `duplicate`. Duplicates are retained as separate rows, marked `true`, so an analyst can locate their sources. Invalid or missing URL locations remain in the JSON issues but are excluded from CSV rows. `lastmod` is the XML value, not a verified page modification time. Spreadsheet-formula-like values in the untrusted source filename and lastmod cells are prefixed with an apostrophe; import the CSV as text when using spreadsheet software. Rows stream to a temporary file in the output directory, which is replaced only after the audit finishes; **an existing destination CSV is overwritten on success**. The JSON report and its exit code retain the original meaning (0 clean, 1 issues, 2 invalid configuration/output error). This does not fetch any page or sitemap.
 
