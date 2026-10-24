@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Repair time-aware evaluation integrity and test final-label version forks; prioritize actual software defects and independent provenance",
+      "current_goal": "Keep lab validation compatible with the autonomy charter; verify Lumen 385 CI and preserve meaningful correctness checks without mandatory roles",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/lumen367_asof_cutoff_tail_regression.md (2026-10-23; confirmed cutoff-tail omission bug in lumen366; patched code; 12 local tests normal/-O plus 400 seeded injections; GitHub report/code/regression test re-fetched)",
+      "last_checkpoint": "research/lumen/lumen385_optional_infrastructure_validator.md (2026-10-24; charter/validator mismatch fixed on sandbox/worker-c; 7 synthetic tests passed locally in normal and -O; CI not yet confirmed)",
       "status": "active"
     }
   }
