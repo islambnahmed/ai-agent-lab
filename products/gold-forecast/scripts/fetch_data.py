@@ -30,11 +30,11 @@ def fetch(name, url):
             raw = response.read(5_000_001)
             if len(raw) > 5_000_000:
                 raise ValueError('Provider response too large')
-            payload = json.loads(raw)
+            json.loads(raw.decode('utf-8'))  # validate JSON without altering source bytes
             meta = {'url': url, 'requestedAt': requested_at, 'receivedAt': timestamp(),
                     'httpStatus': response.status, 'cors': response.headers.get('Access-Control-Allow-Origin'),
                     'rawSha256': hashlib.sha256(raw).hexdigest(), 'status': 'fetched'}
-            return name, payload, meta
+            return name, raw, meta
     except Exception as exc:
         return name, None, {'url': url, 'requestedAt': requested_at, 'status': 'unavailable', 'error': str(exc)}
 
@@ -43,11 +43,11 @@ def main():
     result = {}
     with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
         for future in [pool.submit(fetch, name, url) for name, url in URLS.items()]:
-            name, payload, meta = future.result()
+            name, raw, meta = future.result()
             result[name] = meta
             dest = ROOT / 'data' / (name + '.json')
-            if payload is not None:
-                dest.write_text(json.dumps(payload, ensure_ascii=False), encoding='utf-8')
+            if raw is not None:
+                dest.write_bytes(raw)  # preserve exact bytes matching rawSha256
             else:
                 dest.unlink(missing_ok=True)  # never pass an old failed-fetch snapshot
     result['coveragePolicy'] = {
