@@ -1,0 +1,26 @@
+{
+  "finance": {
+    "opportunities_per_trial": 60,
+    "outcomes": {
+      "baseline_forged_agent": {"crossing": 200},
+      "honest": {"crossing": 0, "dissent": 0, "rejected": 0},
+      "offline_plus_poisoned": {"crossing": 0, "dissent": 0, "rejected": 200},
+      "one_honest_witness_offline": {"crossing": 0, "dissent": 0, "rejected": 0},
+      "one_poisoned_witness": {"crossing": 0, "dissent": 12000, "rejected": 0},
+      "two_colluding_witnesses": {"crossing": 200, "dissent": 12000, "rejected": 0}
+    },
+    "trials": 200
+  },
+  "seo": {
+    "opportunities_per_trial": 80,
+    "outcomes": {
+      "baseline_forged_agent": {"crossing": 200},
+      "honest": {"crossing": 0, "dissent": 0, "rejected": 0},
+      "offline_plus_poisoned": {"crossing": 0, "dissent": 0, "rejected": 200},
+      "one_honest_witness_offline": {"crossing": 0, "dissent": 0, "rejected": 0},
+      "one_poisoned_witness": {"crossing": 0, "dissent": 16000, "rejected": 0},
+      "two_colluding_witnesses": {"crossing": 200, "dissent": 16000, "rejected": 0}
+    },
+    "trials": 200
+  }
+}
