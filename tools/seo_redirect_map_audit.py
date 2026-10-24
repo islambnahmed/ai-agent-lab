@@ -159,8 +159,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         rows, line_numbers = read_rows(args.map)
         result = audit(rows, line_numbers=line_numbers)
-    except (OSError, ValueError, UnicodeError, csv.Error) as exc:
-        print(f'Cannot audit redirect map: {exc}', file=sys.stderr)
+    except (OSError, ValueError, UnicodeError, csv.Error):
+        # OSError messages can contain private local paths. Avoid echoing any
+        # caller-supplied filename, URL, or parser excerpt on input failure.
+        print('Cannot audit redirect map: invalid or unreadable input', file=sys.stderr)
         return 2
     print(json.dumps(result, indent=2, sort_keys=True))
     return 1 if result['issues'] else 0
