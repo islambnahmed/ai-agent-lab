@@ -53,6 +53,14 @@ class RetirementCoverageTests(unittest.TestCase):
                 self.assertNotIn('issues', report)
                 self.assertNotIn('a.test', json.dumps(report))
 
+    def test_unicode_whitespace_in_map_blocks_coverage(self):
+        retiring = [(2, 'https://a.test/old')]
+        mapping = [row('https://a.test/old', 'https://a.test/new\u00a0')]
+        report = coverage(retiring, mapping, [2])
+        self.assertEqual(report['status'], 'blocked')
+        self.assertEqual(report['blocking_map_issue_types'], ['invalid_url'])
+        self.assertNotIn('a.test', json.dumps(report))
+
     def test_chain_is_warning_not_coverage_failure(self):
         retiring = [(2, 'https://a.test/a'), (3, 'https://a.test/b')]
         mapping = [row('https://a.test/a', 'https://a.test/b'),

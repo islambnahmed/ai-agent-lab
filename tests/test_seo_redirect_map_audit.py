@@ -45,6 +45,22 @@ class RedirectAuditTests(unittest.TestCase):
         self.assertEqual(result['issue_counts'], {'invalid_url': len(bad)})
         self.assertNotIn('a.test', json.dumps(result))
 
+    def test_unicode_whitespace_and_c1_controls_are_invalid(self):
+        # Previously accepted because only ASCII whitespace and DEL were checked.
+        bad = ['https://a.test/old\u00a0page',
+               'https://a.test/old\u2003page',
+               'https://a.test/old\u0085page',
+               'https://a.test/old?x=\u009f']
+        for url in bad:
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                canonical_key(url)
+        # Encoded spaces are preserved literally; do not over-normalize URLs.
+        self.assertEqual(canonical_key('https://a.test/old%C2%A0page'),
+                         'https://a.test/old%C2%A0page')
+        result = audit([row(url, 'https://a.test/new') for url in bad])
+        self.assertEqual(result['issue_counts'], {'invalid_url': len(bad)})
+        self.assertNotIn('a.test', json.dumps(result))
+
     def test_explicit_empty_port_is_invalid_not_silently_normalized(self):
         for url in ('https://a.test:/old', 'https://[::1]:/old'):
             with self.subTest(url=url), self.assertRaises(ValueError):
