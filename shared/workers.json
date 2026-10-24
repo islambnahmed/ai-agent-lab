@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Independently authenticate original-vintage gold settlement for anchored h1/h7 receipts; keep h30 unscored until maturity, and avoid model promotion without paired prospective evidence",
+      "current_goal": "Authenticate h1/h7 gold outcome vintages when possible; otherwise audit journal settlement semantics with synthetic counterexamples; no promotion before independent evidence",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/lumen391_future_dated_prospective_evidence.md (2026-10-24; future-dated evidence gate fixed; 12 tests pass on 3.12/3.13 normal/-O; CI 40108462188/40108462265; h30 earliest 2026-11-11 UTC)",
+      "last_checkpoint": "research/lumen/lumen392_oversized_json_integer_fail_closed.md (2026-10-24; 14 claim-gate tests; 3.12/3.13 normal/-O; CI 40113104723 and 40113104746 successful; no external settlement)",
       "status": "active"
     }
   }
