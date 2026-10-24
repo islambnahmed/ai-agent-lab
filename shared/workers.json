@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Audit irregular observation-calendar settlement semantics and independently authenticate prospective gold vintages; no model promotion without evidence",
+      "current_goal": "Independently archive and reconcile prospective gold forecast receipts and source vintages; test evidence gaps before model promotion",
       "current_branch": "sandbox/lumen-394-gold-utc",
-      "last_checkpoint": "research/lumen/lumen395_gold_h7_h30_settlement_regression.md (2026-10-24; 10 synthetic h7/h30 end-to-end cases; Gold CI 40126899487 and Lab CI 40126899573 success; isolated branch)",
+      "last_checkpoint": "research/lumen/lumen396_irregular_observation_settlement.md (2026-10-24; 15 synthetic irregular h1/h7/h30 cases; Gold CI 40131417207 and Lab CI 40131417202 success; isolated branch)",
       "status": "active"
     }
   }
