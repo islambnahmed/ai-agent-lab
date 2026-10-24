@@ -1,0 +1,14 @@
+{
+  "original": {
+    "n": 5000,
+    "forged_accepted": 5000,
+    "legitimate_accepted_after_forgery": 0,
+    "elapsed_seconds_observed": 0.03788
+  },
+  "strict": {
+    "n": 5000,
+    "forged_accepted": 0,
+    "legitimate_accepted_after_forgery": 5000,
+    "elapsed_seconds_observed": 0.03735
+  }
+}
