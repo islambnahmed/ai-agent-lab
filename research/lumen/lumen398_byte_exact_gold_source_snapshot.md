@@ -18,7 +18,7 @@ Added `products/gold-forecast/scripts/test_fetch_data.py` with two offline `unit
 
 **Commits:** [byte-preserving fix](https://github.com/islambnahmed/ai-agent-lab/commit/be6c38803adfb99e004b8870afb2ca462786e01e), [offline regression tests](https://github.com/islambnahmed/ai-agent-lab/commit/24faa843984eb8d71d80a0cce7dbac45e354eee8).
 
-**CI:** [Gold Lab run](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40140435121), [AI Agent Lab run](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40140435159). Consult run conclusions rather than treating trigger/queued status as success.
+**CI:** [Gold Lab run](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40140435121), [AI Agent Lab run](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40140435159). **Both completed successfully** on commit `24faa843984eb8d71d80a0cce7dbac45e354eee8` (verified via GitHub Actions run metadata).
 
 ## Original receipt evidence and hard limit
 
