@@ -16,7 +16,8 @@ On `main`, `products/gold-forecast/scripts/journal.mjs` issues horizons `h1`, `h
 
 - Local `node --test tests/receipt-cohort.test.mjs`: **9/9 passed** (empty, complete, partial, horizon mismatch, history hash mismatch, issue/code mismatch, snapshot mismatch, malformed slots, verifier callback).
 - Local `node --check` passed for helper, test and modified CLI source.
-- No provider fetch, live issuance, CI pass, or full repository test is claimed here. CI must be checked on the published branch.
+- GitHub Actions **push** run 40062182006 and **pull_request** run 40062182065 both completed successfully for commit 58c8455ec2433b1bac93b7ef365449c71d633f92. The workflow executes Node syntax checks, the full Gold Lab Node test glob (including the 9 new tests), Python syntax checks, and Python source tests. Evidence: https://github.com/islambnahmed/ai-agent-lab/actions/runs/40062182006 and https://github.com/islambnahmed/ai-agent-lab/actions/runs/40062182065 .
+- No provider fetch, live issuance, production data change, or verified prospective forecast skill is claimed.
 
 ## Limitations and recovery
 
