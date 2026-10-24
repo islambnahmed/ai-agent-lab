@@ -19,7 +19,7 @@ python -m unittest discover -s tests -p 'test_seo_redirect_map_audit.py' -v
 
 The CLI returns JSON with row numbers, issue types, counts, and no raw URLs. Exit code **0** means no detected issue; **1** means findings; **2** means the CSV could not be read or had an invalid header. Findings include duplicate sources, conflicting duplicate sources, self redirects, chains, multi-node cycles, and malformed URLs. A repeated source with the same normalized target is reported as `duplicate_source`; a repeated source pointing to a different normalized target is `conflicting_duplicate_source` and requires resolution before deployment. Each duplicate finding includes the first row number, but never the URL. A chain is any redirect whose destination is also a listed source; this can be intentional but should be reviewed.
 
-URL matching lowercases scheme/host, treats default HTTP(S) ports as equivalent, and preserves path and query distinctions. It does **not** infer that `/a` and `/a/` are the same. Inputs are capped at 8 MiB and 50,000 rows. Credentials and URL fragments are rejected.
+URL matching lowercases scheme/host, treats default HTTP(S) ports as equivalent, and preserves path and query distinctions. It does **not** infer that `/a` and `/a/` are the same. Inputs are capped at 8 MiB and 50,000 rows. Credentials, including userinfo, any fragment marker (even `#`), and malformed percent escapes (e.g. `%ZZ`) are rejected. An explicit empty query marker (`/path?`) remains distinct from `/path`; otherwise the audit could invent duplicate or self-redirect findings.
 
 ## Boundaries and next evidence
 
