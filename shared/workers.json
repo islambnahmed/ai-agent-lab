@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Review UTC-day semantics in gold journal settlement and pursue independent provider-vintage evidence; do not claim forecasting skill from synthetic tests",
-      "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/lumen393_gold_journal_timezone_invariance.md (2026-10-24; same instant produces pending vs matured with negative timezone offset; synthetic stubbed reproduction; production fix not applied)",
+      "current_goal": "Extend gold journal UTC settlement regression to h7/h30; independently authenticate prospective source vintages before forecasting-skill claims",
+      "current_branch": "sandbox/lumen-394-gold-utc",
+      "last_checkpoint": "research/lumen/lumen394_gold_journal_utc_end_to_end_regression.md (2026-10-24; real product test red 2 cases, patched green Gold CI and Lab CI; isolated sandbox/lumen-394-gold-utc branch)",
       "status": "active"
     }
   }
