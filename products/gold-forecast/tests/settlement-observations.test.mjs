@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import {preserveFirstObservedTarget as preserve} from '../settlement-observations.mjs';
+import {issueReceipt,settleReceipt,appendVerifiedVintage} from '../journal.mjs';
 const id='a'.repeat(64),digest='b'.repeat(64);
 const mature={id,horizon:1,status:'matured',targetDate:'2026-10-12',actual:4200,
   modelAbsError:10,baselineAbsError:20};
@@ -48,4 +49,25 @@ test('invalid receipt IDs and invalid maturity values are rejected',t=>{
   const opt=options(t);
   assert.throws(()=>preserve({...mature,id:'../../foo'},opt),TypeError);
   assert.throws(()=>preserve({...mature,actual:Infinity},opt),TypeError);
+});
+
+test('end-to-end: post-origin provider revision changes arithmetic but is quarantined',t=>{
+  const opt=options(t);
+  const rows=Array.from({length:260},(_,i)=>({
+    date:new Date(Date.UTC(2025,0,1+i)).toISOString().slice(0,10),price:2500+i
+  }));
+  const receipt=issueReceipt(rows,1,{issuedAt:'2025-09-18T12:00:00Z',
+    source:'test',codeCommit:'a'.repeat(40),
+    sourceManifest:{receivedAt:'2025-09-18T11:59:00Z'}});
+  const first=appendVerifiedVintage(rows,[...rows,{date:'2025-09-18',price:2800}],receipt.originDate);
+  const firstOutcome=settleReceipt(receipt,first,{asOf:'2025-09-19T12:00:00Z'});
+  assert.equal(firstOutcome.status,'matured');
+  assert.equal(preserve(firstOutcome,opt).status,'matured');
+  // The issuance vintage is unchanged, so the historical-prefix guard alone
+  // cannot detect a later revision to the target price.
+  const revised=appendVerifiedVintage(rows,[...rows,{date:'2025-09-18',price:2900}],receipt.originDate);
+  const revisedOutcome=settleReceipt(receipt,revised,{asOf:'2025-09-19T12:00:00Z'});
+  assert.equal(revisedOutcome.status,'matured');
+  assert.notEqual(revisedOutcome.actual,firstOutcome.actual);
+  assert.equal(preserve(revisedOutcome,opt).status,'quarantined');
 });
