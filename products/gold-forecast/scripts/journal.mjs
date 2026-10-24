@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
-import {issueReceipt,verifyReceipt,settleReceipt,hash,parseVerifiedHistorySnapshot,appendVerifiedVintage} from '../journal.mjs';
+import {issueReceipt,verifyReceipt,verifiedVintagePath,settleReceipt,hash,parseVerifiedHistorySnapshot,appendVerifiedVintage} from '../journal.mjs';
 import {prepareProviderHistory} from '../data.mjs';
 import {preserveFirstObservedTarget} from '../settlement-observations.mjs';
 import {gateSettlement,summarizeSettlements} from '../settlement-eligibility.mjs';
@@ -60,7 +60,8 @@ if(command==='issue'){
   const outcomes=fs.readdirSync(dir).filter(f=>f.endsWith('.json')).map(f=>{
     const receipt=JSON.parse(fs.readFileSync(path.join(dir,f),'utf8'));
     try{
-      const frozen=JSON.parse(fs.readFileSync(path.join(vintages,receipt.historyHash+'.json'),'utf8'));
+      // Verify the receipt ID and digest syntax before using historyHash in a path.
+      const frozen=JSON.parse(fs.readFileSync(verifiedVintagePath(vintages,receipt),'utf8'));
       if(hash(frozen)!==receipt.historyHash)throw Error('Original local vintage corrupted');
       const appended=appendVerifiedVintage(frozen,prepared.series,receipt.originDate);
       const outcome=settleReceipt(receipt,appended,{asOf});
