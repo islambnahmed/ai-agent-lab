@@ -1,0 +1,95 @@
+{
+  "seed": 413,
+  "tests_passed": 13,
+  "estimator": {
+    "low-rate": {
+      "true_rate": 0.05,
+      "exposure": 2,
+      "map_mae": 0.013508298642693596,
+      "naive_mae": 0.012358208955223882
+    },
+    "moderate": {
+      "true_rate": 0.4,
+      "exposure": 3,
+      "map_mae": 0.04112119696613925,
+      "naive_mae": 0.16582059800664453
+    },
+    "saturated": {
+      "true_rate": 2,
+      "exposure": 4,
+      "map_mae": 0.41696165727917606,
+      "naive_mae": 1.749426433915212
+    },
+    "saturation-by-interval": {
+      "1": {
+        "map_mean": 2.0287173224064046,
+        "map_mae": 0.21350217334660754
+      },
+      "2": {
+        "map_mean": 2.0612665684151366,
+        "map_mae": 0.30410586492896846
+      },
+      "4": {
+        "map_mean": 1.576728299289385,
+        "map_mae": 0.423271700710615
+      },
+      "8": {
+        "map_mean": 0.9317942108204222,
+        "map_mae": 1.0682057891795778
+      }
+    }
+  },
+  "policy": {
+    "seo": {
+      "runs": 150,
+      "days": 90,
+      "means": {
+        "censored": 421,
+        "naive": 373.9533333333333,
+        "oracle": 464.53333333333336
+      },
+      "map_minus_naive_mean": 47.04666666666667,
+      "map_minus_naive_ci95": [
+        44.551040774417565,
+        49.54229255891577
+      ],
+      "map_wins": 150,
+      "map_ties": 0,
+      "map_losses": 0
+    },
+    "feed": {
+      "runs": 150,
+      "days": 90,
+      "means": {
+        "censored": 782.0133333333333,
+        "naive": 746.2666666666667,
+        "oracle": 814.82
+      },
+      "map_minus_naive_mean": 35.74666666666667,
+      "map_minus_naive_ci95": [
+        31.945218028407645,
+        39.548115304925695
+      ],
+      "map_wins": 136,
+      "map_ties": 2,
+      "map_losses": 12
+    },
+    "counterexample-low-observation": {
+      "runs": 150,
+      "days": 90,
+      "means": {
+        "censored": 16.666666666666668,
+        "naive": 16.7,
+        "oracle": 16.98
+      },
+      "map_minus_naive_mean": -0.03333333333333333,
+      "map_minus_naive_ci95": [
+        -0.15265515548194547,
+        0.08598848881527879
+      ],
+      "map_wins": 27,
+      "map_ties": 91,
+      "map_losses": 32
+    }
+  }
+}
