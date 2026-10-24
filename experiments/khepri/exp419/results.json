@@ -1,0 +1,45 @@
+{
+  "seed": 419,
+  "conditional_attacks": [
+    "holder of genuine receipt supplies Plan subclass",
+    "caller can mutate originally approved Plan reference after issuance"
+  ],
+  "results": {
+    "seo:original417": {
+      "attempts": 3000,
+      "redirects_accepted": 3000,
+      "mutated_plans_accepted": 3000,
+      "fresh_legitimate_accepted": 3000
+    },
+    "seo:strict418": {
+      "attempts": 3000,
+      "redirects_accepted": 3000,
+      "mutated_plans_accepted": 3000,
+      "fresh_legitimate_accepted": 3000
+    },
+    "seo:guard419": {
+      "attempts": 3000,
+      "redirects_accepted": 0,
+      "mutated_plans_accepted": 0,
+      "fresh_legitimate_accepted": 3000
+    },
+    "gold:original417": {
+      "attempts": 3000,
+      "redirects_accepted": 3000,
+      "mutated_plans_accepted": 3000,
+      "fresh_legitimate_accepted": 3000
+    },
+    "gold:strict418": {
+      "attempts": 3000,
+      "redirects_accepted": 3000,
+      "mutated_plans_accepted": 3000,
+      "fresh_legitimate_accepted": 3000
+    },
+    "gold:guard419": {
+      "attempts": 3000,
+      "redirects_accepted": 0,
+      "mutated_plans_accepted": 0,
+      "fresh_legitimate_accepted": 3000
+    }
+  }
+}
