@@ -51,6 +51,8 @@ def read_retiring(path: Path) -> list[tuple[int, str]]:
 def coverage(retiring: list[tuple[int, str]], map_rows: list[dict],
              map_lines: list[int]) -> dict:
     """Report line-only coverage gaps; input URLs never enter the result."""
+    if not retiring:
+        raise ValueError('retirement inventory is empty')
     if len(map_rows) != len(map_lines):
         raise ValueError('map line-number count mismatch')
     map_report = audit(map_rows, line_numbers=map_lines)
