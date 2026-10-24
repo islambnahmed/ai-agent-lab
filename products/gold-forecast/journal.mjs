@@ -19,6 +19,28 @@ export function parseVerifiedHistorySnapshot(rawBytes,manifest){
   return JSON.parse(rawBytes.toString('utf8'));
 }
 
+// A rolling provider feed may legitimately lose old dates outside its window,
+// but any changed, missing, or inserted date *inside* the overlapping vintage
+// is a source revision. Quarantine rather than silently score a mixed vintage.
+export function appendVerifiedVintage(frozen,refreshed,originDate){
+  const original=new Map(frozen.map(row=>[row.date,row.price]));
+  const latest=new Map(refreshed.map(row=>[row.date,row.price]));
+  if(!latest.has(originDate))throw Error('Origin missing from refreshed source');
+  const firstRefreshed=refreshed[0].date;
+  const firstFrozen=frozen[0].date;
+  for(const row of frozen){
+    if(row.date>=firstRefreshed&&row.date<=originDate&&!latest.has(row.date))
+      throw Error('Provider omitted historical vintage: '+row.date);
+    if(latest.has(row.date)&&latest.get(row.date)!==row.price)
+      throw Error('Provider revised historical vintage: '+row.date);
+  }
+  for(const row of refreshed){
+    if(row.date>=firstFrozen&&row.date<=originDate&&!original.has(row.date))
+      throw Error('Provider inserted historical vintage: '+row.date);
+  }
+  return frozen.concat(refreshed.filter(row=>row.date>originDate));
+}
+
 export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest}){
   const issued=parseInstant(issuedAt,'Issue timestamp');
   if(!/^[0-9a-f]{40}$/.test(codeCommit))throw Error('Pinned Git code commit required');
