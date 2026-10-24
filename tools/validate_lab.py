@@ -23,6 +23,10 @@ def validate(root):
     errors = []
     if root.is_symlink():
         return ["lab root: symbolic links are not permitted"]
+    # Optional files may be absent, but the lab directory itself must exist.
+    # Otherwise a misspelled/unmounted root would silently pass validation.
+    if not root.is_dir():
+        return ["lab root: expected an existing directory"]
     for name in OPTIONAL_JSON:
         path = root / name
         parts = Path(name).parts
