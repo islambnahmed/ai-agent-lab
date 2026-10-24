@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {forecast,predict} from '../forecast.mjs';
 import {features} from '../models.mjs';
 import {prepareProviderHistory,prepareCsvHistory,validatedSpot,crossCheck,UNIT} from '../data.mjs';
-import {issueReceipt,settleReceipt,verifyReceipt} from '../journal.mjs';
+import {issueReceipt,settleReceipt,verifyReceipt,parseVerifiedHistorySnapshot} from '../journal.mjs';
+import {createHash} from 'node:crypto';
 const data=(n=360)=>Array.from({length:n},(_,i)=>({date:new Date(Date.UTC(2025,0,1+i)).toISOString().slice(0,10),price:2500+i+20*Math.sin(i*.3)}));
 const asOf='2026-01-01T12:00:00Z';
 
@@ -83,6 +84,16 @@ test('provisional same-day price cannot enter the committed receipt vintage',()=
   const rows=data(260),issuedAt='2025-09-18T12:00:00Z';
   const receipt=issueReceipt([...rows,{date:'2025-09-18',price:1e7}],7,{issuedAt,source:'test',codeCommit:'a'.repeat(40),sourceManifest:{receivedAt:'2025-09-18T11:59:00Z'}});
   assert.equal(receipt.historyLength,260);assert.equal(receipt.originDate,'2025-09-17');
+});
+
+test('issuer rejects stale or altered stored history even with a valid raw provider digest',()=>{
+  const bytes=Buffer.from(JSON.stringify({metal:'XAU',points:data(260)}));
+  const manifest={status:'fetched',rawSha256:'a'.repeat(64),
+    storedSha256:createHash('sha256').update(bytes).digest('hex')};
+  assert.equal(parseVerifiedHistorySnapshot(bytes,manifest).points.length,260);
+  assert.throws(()=>parseVerifiedHistorySnapshot(Buffer.concat([bytes,Buffer.from(' ')]),manifest),/SHA-256 mismatch/);
+  assert.throws(()=>parseVerifiedHistorySnapshot(bytes,{...manifest,storedSha256:undefined}),/manifest missing/);
+  assert.throws(()=>parseVerifiedHistorySnapshot(bytes,{...manifest,status:'unavailable'}),/manifest missing/);
 });
 
 test('receipt issued just after UTC midnight cannot promote pre-midnight provisional close',()=>{
