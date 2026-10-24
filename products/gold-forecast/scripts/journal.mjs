@@ -3,20 +3,25 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {issueReceipt,settleReceipt,hash} from '../journal.mjs';
-import {prepareProviderHistory} from '../data.mjs';
+import {prepareProviderHistory,HISTORY_URL} from '../data.mjs';
+import {readVerifiedSnapshot} from '../snapshot-integrity.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=name=>JSON.parse(fs.readFileSync(path.join(root,'data',name+'.json'),'utf8'));
 const manifest=read('fetch-manifest');
-const asOf=manifest.history.receivedAt;
-const prepared=prepareProviderHistory(read('history'),asOf);
+const asOf=manifest?.history?.receivedAt;
+// The HTTP raw hash and JSON saved to disk have different bytes. Verify the
+// exact saved payload before issuing or settling any prospective receipt.
+const prepared=prepareProviderHistory(
+  readVerifiedSnapshot(path.join(root,'data'),'history',manifest,{expectedUrl:HISTORY_URL}),asOf);
 const dir=path.join(root,'reports','prospective');fs.mkdirSync(dir,{recursive:true});
 const vintages=path.join(root,'data','vintages');fs.mkdirSync(vintages,{recursive:true});
 const command=process.argv[2];
 if(command==='issue'){
-  const files=['forecast.mjs','models.mjs','data.mjs','historical-integrity.mjs','calendar_contract.mjs','journal.mjs'];
+  const files=['forecast.mjs','models.mjs','data.mjs','historical-integrity.mjs','calendar_contract.mjs',
+    'journal.mjs','snapshot-integrity.mjs','scripts/journal.mjs','scripts/fetch_data.py','package.json'];
   const dirty=execFileSync('git',['status','--porcelain','--',...files],{cwd:root,encoding:'utf8'});
-  if(dirty.trim())throw Error('Commit implementation before issuing forecasts');
+  if(dirty.trim())throw Error('Commit implementation and provenance scripts before issuing forecasts');
   const codeCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
   const issuedAt=new Date().toISOString();
   for(const h of [1,7,30]){
