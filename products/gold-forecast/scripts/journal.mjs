@@ -4,6 +4,7 @@ import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {issueReceipt,settleReceipt,hash,parseVerifiedHistorySnapshot,appendVerifiedVintage} from '../journal.mjs';
 import {prepareProviderHistory} from '../data.mjs';
+import {preserveFirstObservedTarget} from '../settlement-observations.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
 const read=name=>JSON.parse(fs.readFileSync(path.join(root,'data',name+'.json'),'utf8'));
@@ -13,10 +14,11 @@ const historyBytes=fs.readFileSync(path.join(root,'data','history.json'));
 const prepared=prepareProviderHistory(parseVerifiedHistorySnapshot(historyBytes,manifest.history),asOf);
 const dir=path.join(root,'reports','prospective');fs.mkdirSync(dir,{recursive:true});
 const vintages=path.join(root,'data','vintages');fs.mkdirSync(vintages,{recursive:true});
+const firstObserved=path.join(root,'data','settlement-observations');
 const command=process.argv[2];
 if(command==='issue'){
   const files=['forecast.mjs','models.mjs','data.mjs','historical-integrity.mjs','calendar_contract.mjs','journal.mjs',
-    'scripts/journal.mjs','scripts/fetch_data.py','package.json'];
+    'scripts/journal.mjs','scripts/fetch_data.py','settlement-observations.mjs','package.json'];
   const dirty=execFileSync('git',['status','--porcelain','--',...files],{cwd:root,encoding:'utf8'});
   if(dirty.trim())throw Error('Commit implementation before issuing forecasts');
   const codeCommit=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();
@@ -37,9 +39,11 @@ if(command==='issue'){
       const frozen=JSON.parse(fs.readFileSync(path.join(vintages,receipt.historyHash+'.json'),'utf8'));
       if(hash(frozen)!==receipt.historyHash)throw Error('Original local vintage corrupted');
       const appended=appendVerifiedVintage(frozen,prepared.series,receipt.originDate);
-      return settleReceipt(receipt,appended,{asOf});
+      const outcome=settleReceipt(receipt,appended,{asOf});
+      return preserveFirstObservedTarget(outcome,{directory:firstObserved,observedAt:asOf,
+        sourceDigest:manifest.history.storedSha256});
     }
-    catch(e){return {id:receipt.id,status:'quarantined',error:e.message};}
+    catch(e){return {id:receipt.id,horizon:receipt.horizon,status:'quarantined',error:e.message};}
   });
   // Keep horizons separate; never pool them to select a winner.
   const summaries=[1,7,30].map(h=>{
@@ -47,7 +51,7 @@ if(command==='issue'){
     const avg=key=>rows.length?rows.reduce((s,r)=>s+r[key],0)/rows.length:null;
     return {horizon:h,matured:rows.length,modelMae:avg('modelAbsError'),baselineMae:avg('baselineAbsError')};
   });
-  const report={asOf,outcomes,summaries,caveat:'Descriptive prospective outcomes; receipt Git timestamps must precede target close'};
+  const report={asOf,outcomes,summaries,caveat:'Local first-seen target checks are mutable and not independent timing evidence. Receipt Git publication and provider close times must be verified before claiming prospective skill'};
   const out=path.join(root,'runs');fs.mkdirSync(out,{recursive:true});fs.writeFileSync(path.join(out,'settlements.json'),JSON.stringify(report,null,2));
   console.log(JSON.stringify(report,null,2));
 }else throw Error('Use: node scripts/journal.mjs issue|settle');
