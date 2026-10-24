@@ -94,6 +94,13 @@ class RetirementCoverageTests(unittest.TestCase):
                              [{'row': 4, 'type': 'unmapped_retiring_url'}])
             self.assertNotIn('a.test', good.stdout)
 
+    def test_empty_inventory_is_not_misreported_as_complete(self):
+        with tempfile.TemporaryDirectory() as td:
+            retirement = Path(td) / 'retiring.csv'
+            retirement.write_text('url\\n\\n', encoding='utf-8')
+            with self.assertRaisesRegex(ValueError, 'empty'):
+                read_retiring(retirement)
+
     def test_invalid_map_blocks_cli_without_exposing_urls(self):
         with tempfile.TemporaryDirectory() as td:
             retirement = Path(td) / 'retiring.csv'
