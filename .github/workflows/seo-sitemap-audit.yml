@@ -1,0 +1,42 @@
+name: Offline SEO sitemap audit tests
+on:
+  push:
+    paths:
+      - "tools/seo_sitemap_audit.py"
+      - "tests/test_seo_sitemap_audit.py"
+      - "tools/seo_sitemap_compare.py"
+      - "tests/test_seo_sitemap_compare.py"
+      - "tools/seo_sitemap_triage.py"
+      - "tests/test_seo_sitemap_triage.py"
+      - "tools/seo_sitemap_budget_eval.py"
+      - "tests/test_seo_sitemap_budget_eval.py"
+      - ".github/workflows/seo-sitemap-audit.yml"
+  pull_request:
+    paths:
+      - "tools/seo_sitemap_audit.py"
+      - "tests/test_seo_sitemap_audit.py"
+      - "tools/seo_sitemap_compare.py"
+      - "tests/test_seo_sitemap_compare.py"
+      - "tools/seo_sitemap_triage.py"
+      - "tests/test_seo_sitemap_triage.py"
+      - "tools/seo_sitemap_budget_eval.py"
+      - "tests/test_seo_sitemap_budget_eval.py"
+      - ".github/workflows/seo-sitemap-audit.yml"
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Offline sitemap QA regression tests
+        run: python -m unittest discover -s tests -p 'test_seo_sitemap_audit.py' -v
+      - name: Offline sitemap snapshot diff regression tests
+        run: python -m unittest discover -s tests -p 'test_seo_sitemap_compare.py' -v
+      - name: Offline sitemap review queue regression tests
+        run: python -m unittest discover -s tests -p 'test_seo_sitemap_triage.py' -v
+      - name: Offline sitemap budgeted ranking evaluation tests
+        run: python -m unittest discover -s tests -p 'test_seo_sitemap_budget_eval.py' -v

@@ -1,0 +1,35 @@
+# Offline sitemap snapshot comparison (Worker A)
+
+## Purpose
+
+The sitemap auditor's CSV export makes a URL inventory. Comparing two snapshots helps SEO reviewers spot URL additions/removals, moved entries, modified `<lastmod>` values, and changed duplicate multiplicity. The tool does not access the network, inspect page content, or infer rankings or indexation.
+
+## Usage
+
+First export two inventories with `tools/seo_sitemap_audit.py --urls-csv` (from two separately saved, authorized local sitemap exports). Then run:
+
+```bash
+python3 tools/seo_sitemap_compare.py --before snapshot-1.csv --after snapshot-2.csv > sitemap-diff.json
+```
+
+### Verified comparison with paired audit reports
+
+When exporting each CSV, save the corresponding JSON report from `seo_sitemap_audit.py`. To avoid false URL removal alerts from partially downloaded or malformed sitemaps, run:
+
+```bash
+python3 tools/seo_sitemap_compare.py \
+  --before snapshot-1.csv --before-report snapshot-1.json \
+  --after snapshot-2.csv --after-report snapshot-2.json > sitemap-diff.json
+```
+
+Both reports are required together. The tool rejects structural or omitted-entry audit issues but permits non-omitting diagnostics (duplicate URLs, off-origin URLs, and lastmod warnings). It checks the CSV byte size, row and unique-URL counts, SHA-256 of the exact CSV bytes, the same site origin, the same normalized starting sitemap path (`start_sitemap`), and nondecreasing `as_of` dates. Re-export older snapshots whose reports lack `start_sitemap`. It returns exit code **2** without a diff if any check fails. This detects incomplete audited snapshots and accidental CSV/report swaps, but **does not authenticate the reports or prove when the original website data was captured**. A complete offline export can still differ from a live site. Matching entrypoint names do not prove identical sitemap coverage if source XML contents changed. Comparing CSVs without reports remains supported, but JSON explicitly labels the result `csv_only_unverified`. With paired reports, the status is `complete_audit_csv_sha256_checked`.
+
+Exit codes: **0** means identical URL/source/lastmod multisets, **1** means differences, **2** means invalid or unreadable input. The JSON contains sorted `added_urls`, `removed_urls`, and `changed_existing_urls` with per-source/lastmod row counts before and after. Row ordering and the `duplicate` marker's first-occurrence position are ignored; multiplicity is not. Each URL must have exactly one `duplicate=false` row (the exporter invariant), even if rows were reordered; otherwise the input is rejected with exit code 2 rather than treated as a trustworthy snapshot. Inputs must have the exact four-column exporter schema. File size and row count are bounded (64 MiB and 1,000,000 rows per CSV). No files are overwritten.
+
+## Evidence and limitations
+
+Five dependency-free unit tests cover additions/removals, source/lastmod and duplicate changes, order-invariance, deterministic output, and invalid input handling. Synthetic offline fixtures establish program behavior, **not** actual website SEO impact. Lastmod values are unverified sitemap claims. URL equality is exact on the exporter's `normalized_url` field; no canonical inference or HTTP fetch occurs. Snapshot differences can reflect export incompleteness or sitemap publication changes rather than actual page changes.
+
+## Next useful validation
+
+Compare two authorized local exports with a manual URL-level review, then evaluate whether the diff helps an SEO practitioner identify genuine sitemap regressions faster than a spreadsheet comparison. Do not treat synthetic examples as evidence of live-site performance.
