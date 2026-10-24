@@ -6,6 +6,19 @@ import {parseInstant} from './historical-integrity.mjs';
 import {prepareHistory} from './data.mjs';
 export const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
+// The fetcher preserves the provider's raw digest, but stores normalized JSON.
+// Check the digest of the *stored* bytes before issuing receipts so a stale or
+// edited history.json cannot be silently attributed to a different fetch.
+export function parseVerifiedHistorySnapshot(rawBytes,manifest){
+  if(!Buffer.isBuffer(rawBytes))throw Error('History snapshot bytes required');
+  if(manifest?.status!=='fetched'||!(/^[0-9a-f]{64}$/.test(manifest.rawSha256))||
+     !(/^[0-9a-f]{64}$/.test(manifest.storedSha256)))
+    throw Error('History snapshot manifest missing fetched status or SHA-256 digests; re-fetch data');
+  const actual=createHash('sha256').update(rawBytes).digest('hex');
+  if(actual!==manifest.storedSha256)throw Error('History snapshot / manifest SHA-256 mismatch; re-fetch data');
+  return JSON.parse(rawBytes.toString('utf8'));
+}
+
 export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest}){
   const issued=parseInstant(issuedAt,'Issue timestamp');
   if(!/^[0-9a-f]{40}$/.test(codeCommit))throw Error('Pinned Git code commit required');
