@@ -37,5 +37,7 @@ jobs:
         run: python -m unittest -q test_lumen373_receipt.py
       - name: Self-test isolated input snapshot runner
         run: python -m unittest -q test_lumen377_isolated_receipt.py
+      - name: Verify copy-only isolation boundaries with synthetic fixtures
+        run: python -m unittest -q test_lumen379_boundary_contract.py
       - name: Run regression in disposable per-mode snapshots
         run: python lumen377_isolated_receipt.py
