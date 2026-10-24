@@ -22,6 +22,25 @@ class RedirectAuditTests(unittest.TestCase):
         self.assertNotEqual(canonical_key('https://example.com/a'),
                             canonical_key('https://example.com/a/'))
 
+    def test_empty_query_marker_is_not_collapsed(self):
+        self.assertNotEqual(canonical_key('https://a.test/a?'),
+                            canonical_key('https://a.test/a'))
+        result = audit([row('https://a.test/a?', 'https://a.test/a'),
+                        row('https://a.test/a', 'https://a.test/b')])
+        self.assertEqual(result['unique_sources'], 2)
+        self.assertEqual(result['issue_counts'], {'redirect_chain': 1})
+
+    def test_malformed_percent_escapes_are_invalid(self):
+        bad = ['https://a.test/a%', 'https://a.test/a%2',
+               'https://a.test/a%ZZ', 'https://a.test/a?q=%Q0']
+        for url in bad:
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                canonical_key(url)
+        self.assertEqual(canonical_key('https://a.test/a%25'),
+                         'https://a.test/a%25')
+        result = audit([row(url, 'https://a.test/ok') for url in bad])
+        self.assertEqual(result['issue_counts'], {'invalid_url': len(bad)})
+
     def test_chain_and_cycle_and_self_redirect(self):
         result = audit([row('https://a.test/a', 'https://a.test/b'),
                         row('https://a.test/b', 'https://a.test/c'),
