@@ -48,16 +48,20 @@ test('all horizons are separately counted and quarantines are visible', () => {
 test('invalid horizon is rejected rather than silently excluded', () => {
   assert.throws(()=>summarizeSettlements([{status:'pending',horizon:365}]),TypeError);
 });
-test('verified metrics are mathematically correct if independent verification is added later', () => {
+test('raw matured input cannot bypass the gate via the summary API', () => {
   const s=summarizeSettlements([
     {...mature(7),modelAbsError:2,baselineAbsError:6},
     {...mature(7),modelAbsError:4,baselineAbsError:2}
   ])[1];
-  assert.equal(s.matured,2);
-  assert.equal(s.modelMae,3);
-  assert.equal(s.baselineMae,4);
+  assert.equal(s.matured,0);
+  assert.equal(s.provisional,2);
+  assert.equal(s.modelMae,null);
+  assert.equal(s.baselineMae,null);
 });
-test('non-finite or negative headline errors are rejected', () => {
-  for(const n of [NaN,Infinity,-1])
-    assert.throws(()=>summarizeSettlements([{...mature(),modelAbsError:n}]),TypeError);
+test('malformed headline errors cannot create a performance score', () => {
+  for(const n of [NaN,Infinity,-1]) {
+    const s=summarizeSettlements([{...mature(),modelAbsError:n}])[0];
+    assert.equal(s.matured,0);
+    assert.equal(s.modelMae,null);
+  }
 });
