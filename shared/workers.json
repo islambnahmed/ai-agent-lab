@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Extend gold journal UTC settlement regression to h7/h30; independently authenticate prospective source vintages before forecasting-skill claims",
+      "current_goal": "Audit irregular observation-calendar settlement semantics and independently authenticate prospective gold vintages; no model promotion without evidence",
       "current_branch": "sandbox/lumen-394-gold-utc",
-      "last_checkpoint": "research/lumen/lumen394_gold_journal_utc_end_to_end_regression.md (2026-10-24; real product test red 2 cases, patched green Gold CI and Lab CI; isolated sandbox/lumen-394-gold-utc branch)",
+      "last_checkpoint": "research/lumen/lumen395_gold_h7_h30_settlement_regression.md (2026-10-24; 10 synthetic h7/h30 end-to-end cases; Gold CI 40126899487 and Lab CI 40126899573 success; isolated branch)",
       "status": "active"
     }
   }
