@@ -53,7 +53,8 @@ export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest
   // must not promote a provisional source-day observation into history.
   series=prepareHistory(series,{asOf:sourceManifest.receivedAt}).series;
   const result=forecast(series,h,{asOf:issuedAt});
-  if(result.targetDate&&result.targetDate<issuedAt.slice(0,10))throw Error('Target date has already passed');
+  const issuedUtcDay=new Date(issued).toISOString().slice(0,10);
+  if(result.targetDate&&result.targetDate<issuedUtcDay)throw Error('Target date has already passed');
   const record={schemaVersion:1,issuedAt,source,codeCommit,sourceManifest,modelVersion:result.version,
     horizon:h,calendar:result.calendar,originDate:result.latest.date,originClose:result.latest.price,
     historyHash:hash(series),historyLength:series.length,targetDate:result.targetDate,
@@ -96,8 +97,12 @@ export function settleReceipt(receipt,series,{asOf}={}){
     return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate:receipt.targetDate};
   }
   const targetDate=series[index].date;
-  if(targetDate<receipt.issuedAt.slice(0,10))throw Error('Outcome predates issue');
-  if(targetDate>=asOf.slice(0,10))return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
+  // Date labels from the provider are UTC; compare against UTC calendar days,
+  // not the textual dates of timestamps with timezone offsets.
+  const issuedUtcDay=new Date(parseInstant(receipt.issuedAt,'Issue timestamp')).toISOString().slice(0,10);
+  const asOfUtcDay=new Date(parseInstant(asOf,'Settlement timestamp')).toISOString().slice(0,10);
+  if(targetDate<issuedUtcDay)throw Error('Outcome predates issue');
+  if(targetDate>=asOfUtcDay)return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
   if(index!==receipt.historyLength+receipt.horizon-1)throw Error('Horizon / calendar mismatch');
   const actual=series[index].price;
   return {id:receipt.id,horizon:receipt.horizon,status:'matured',targetDate,actual,
