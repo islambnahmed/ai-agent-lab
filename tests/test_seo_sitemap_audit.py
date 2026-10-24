@@ -1,4 +1,5 @@
 import datetime as dt
+import csv
 import gzip
 from pathlib import Path
 import sys
@@ -119,6 +120,61 @@ class SitemapAuditTests(unittest.TestCase):
         bad = subprocess.run(args, capture_output=True, text=True)
         self.assertEqual(bad.returncode, 1)
         self.assertEqual(json.loads(bad.stdout)['issues'][0]['code'], 'future_lastmod')
+
+    def test_csv_export_is_a_real_url_inventory_including_duplicates(self):
+        self.write('sitemap.xml', index('https://example.com/a.xml', 'https://example.com/b.xml'))
+        self.write('a.xml', urlset(('https://example.com/one', '2026-10-20'),
+                                   ('https://example.com/two', None)))
+        self.write('b.xml', urlset(('HTTPS://EXAMPLE.COM:443/one#fragment', None)))
+        destination = self.root / 'inventory.csv'
+        script = str(Path(__file__).resolve().parents[1] / 'tools/seo_sitemap_audit.py')
+        args = [sys.executable, script, '--root', str(self.root), '--base-url',
+                'https://example.com/', '--as-of', '2026-10-24',
+                '--urls-csv', str(destination)]
+        result = subprocess.run(args, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertEqual(json.loads(result.stdout)['summary']['unique_urls'], 2)
+        with destination.open(newline='', encoding='utf-8') as handle:
+            rows = list(csv.DictReader(handle))
+        self.assertEqual(rows, [
+            {'source_sitemap':'a.xml', 'normalized_url':'https://example.com/one',
+             'lastmod':'2026-10-20', 'duplicate':'false'},
+            {'source_sitemap':'a.xml', 'normalized_url':'https://example.com/two',
+             'lastmod':'', 'duplicate':'false'},
+            {'source_sitemap':'b.xml', 'normalized_url':'https://example.com/one',
+             'lastmod':'', 'duplicate':'true'},
+        ])
+        first = destination.read_bytes()
+        self.assertEqual(subprocess.run(args, capture_output=True).returncode, 1)
+        self.assertEqual(destination.read_bytes(), first)
+
+    def test_csv_export_skips_invalid_loc_but_preserves_diagnostics(self):
+        self.write('sitemap.xml', urlset(('javascript:bad', None),
+                                         ('https://example.com/good', None)))
+        destination = self.root / 'inventory.csv'
+        script = str(Path(__file__).resolve().parents[1] / 'tools/seo_sitemap_audit.py')
+        result = subprocess.run([sys.executable, script, '--root', str(self.root),
+                                 '--base-url', 'https://example.com/',
+                                 '--as-of', '2026-10-24', '--urls-csv', str(destination)],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual([i['code'] for i in json.loads(result.stdout)['issues']], ['invalid_url'])
+        with destination.open(newline='', encoding='utf-8') as handle:
+            self.assertEqual([row['normalized_url'] for row in csv.DictReader(handle)],
+                             ['https://example.com/good'])
+
+    def test_invalid_csv_configuration_does_not_replace_existing_output(self):
+        self.write('sitemap.xml', urlset(('https://example.com/a', None)))
+        destination = self.root / 'inventory.csv'
+        destination.write_text('previous result', encoding='utf-8')
+        script = str(Path(__file__).resolve().parents[1] / 'tools/seo_sitemap_audit.py')
+        result = subprocess.run([sys.executable, script, '--root', str(self.root),
+                                 '--base-url', 'https://example.com/',
+                                 '--as-of', 'not-a-date', '--urls-csv', str(destination)],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(destination.read_text(encoding='utf-8'), 'previous result')
+        self.assertFalse(list(self.root.glob('.sitemap-audit-*.csv')))
 
     def test_limit_and_bad_configuration(self):
         self.write('sitemap.xml', index('https://example.com/a.xml'))
