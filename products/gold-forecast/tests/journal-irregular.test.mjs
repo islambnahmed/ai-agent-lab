@@ -48,7 +48,7 @@ for (const horizon of [1, 7, 30]) {
   test('irregular h' + horizon + ': observed target stays pending until next UTC day', () => {
     const before = settleReceipt(receipt, complete, {asOf: target.date + 'T23:59:59Z'});
     assert.equal(before.status, 'pending');
-    assert.equal(before.targetDate, target.date);
+    assert.equal(before.targetDate, null); // Unknown until the target observation is completed.
     assert.equal(settleReceipt(receipt, complete, {asOf: after}).status, 'matured');
   });
 
