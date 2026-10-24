@@ -1,0 +1,38 @@
+{
+  "domains": {
+    "gold": {
+      "baseline": {
+        "aba_blocked": 0,
+        "accepted": 5000,
+        "false_conflicts": 0,
+        "legitimate_successes": 2005,
+        "stale_overwrites": 2995
+      },
+      "version_bound": {
+        "aba_blocked": 1024,
+        "accepted": 2005,
+        "false_conflicts": 0,
+        "legitimate_successes": 2005,
+        "stale_overwrites": 0
+      }
+    },
+    "seo": {
+      "baseline": {
+        "aba_blocked": 0,
+        "accepted": 5000,
+        "false_conflicts": 0,
+        "legitimate_successes": 2034,
+        "stale_overwrites": 2966
+      },
+      "version_bound": {
+        "aba_blocked": 968,
+        "accepted": 2034,
+        "false_conflicts": 0,
+        "legitimate_successes": 2034,
+        "stale_overwrites": 0
+      }
+    }
+  },
+  "per_domain": 5000,
+  "seed": 420
+}
