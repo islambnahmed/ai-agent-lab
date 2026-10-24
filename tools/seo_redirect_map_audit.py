@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import re
 from collections import Counter
 from pathlib import Path
 import sys
@@ -19,11 +20,18 @@ def canonical_key(value: str) -> str:
     """Conservative URL equality: normalize scheme/host/default port only."""
     if not value or any(ord(c) <= 32 or ord(c) == 127 for c in value):
         raise ValueError('URL contains whitespace/control characters or is empty')
+    if re.search(r'%(?![0-9A-Fa-f]{2})', value):
+        raise ValueError('URL contains malformed percent escape')
+    # Even an empty fragment marker changes the literal input; reject it rather
+    # than silently collapsing distinct map entries into a false self-redirect.
+    if '#' in value:
+        raise ValueError('URL fragments are not allowed')
+    has_query_marker = '?' in value
     try:
         parts = urlsplit(value)
         if parts.scheme.lower() not in ('http', 'https') or not parts.netloc:
             raise ValueError('URL must be absolute HTTP(S)')
-        if parts.username is not None or parts.password is not None or parts.fragment:
+        if parts.username is not None or parts.password is not None:
             raise ValueError('userinfo and fragments are not allowed')
         host = parts.hostname
         port = parts.port
@@ -41,7 +49,7 @@ def canonical_key(value: str) -> str:
     if ':' in normalized_host:
         normalized_host = f'[{normalized_host}]'
     authority = normalized_host + (f':{port}' if port else '')
-    return f'{scheme}://{authority}{parts.path or "/"}' + (f'?{parts.query}' if parts.query else '')
+    return f'{scheme}://{authority}{parts.path or "/"}' + (f'?{parts.query}' if has_query_marker else '')
 
 
 def audit(rows: list[dict[str, str]]) -> dict:
@@ -60,8 +68,13 @@ def audit(rows: list[dict[str, str]]) -> dict:
             continue
         valid_rows += 1
         if src in sources:
-            issues.append({'row': number, 'type': 'duplicate_source',
-                           'first_row': sources[src][0]})
+            first_row, first_target = sources[src]
+            # Conflicting destinations are more dangerous than repeated identical rows.
+            # Keep first-wins graph semantics so duplicate input cannot hide a cycle.
+            issue_type = ('duplicate_source' if dst == first_target
+                          else 'conflicting_duplicate_source')
+            issues.append({'row': number, 'type': issue_type,
+                           'first_row': first_row})
             continue
         sources[src] = (number, dst)
         if src == dst:

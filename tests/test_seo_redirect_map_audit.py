@@ -22,6 +22,34 @@ class RedirectAuditTests(unittest.TestCase):
         self.assertNotEqual(canonical_key('https://example.com/a'),
                             canonical_key('https://example.com/a/'))
 
+
+    def test_explicit_empty_query_preserved_in_duplicate_and_chain_checks(self):
+        self.assertNotEqual(canonical_key('https://a.test/a?'),
+                            canonical_key('https://a.test/a'))
+        result = audit([row('https://a.test/a?', 'https://a.test/a'),
+                        row('https://a.test/a', 'https://a.test/b')])
+        self.assertEqual(result['unique_sources'], 2)
+        self.assertEqual(result['issue_counts'], {'redirect_chain': 1})
+        self.assertEqual(result['issues'][0]['row'], 2)
+
+    def test_invalid_percent_escapes_and_empty_fragment_marker(self):
+        bad = ['https://a.test/a%', 'https://a.test/a%2',
+               'https://a.test/a%ZZ', 'https://a.test/a?q=%Q0',
+               'https://a.test/a#']
+        for url in bad:
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                canonical_key(url)
+        self.assertEqual(canonical_key('https://a.test/a%25'),
+                         'https://a.test/a%25')
+        result = audit([row(url, 'https://a.test/ok') for url in bad])
+        self.assertEqual(result['issue_counts'], {'invalid_url': len(bad)})
+        self.assertNotIn('a.test', json.dumps(result))
+
+    def test_conflicting_duplicates_keep_empty_query_target_distinct(self):
+        result = audit([row('https://a.test/a', 'https://a.test/b?'),
+                        row('https://a.test/a', 'https://a.test/b')])
+        self.assertEqual(result['issue_counts'], {'conflicting_duplicate_source': 1})
+
     def test_chain_and_cycle_and_self_redirect(self):
         result = audit([row('https://a.test/a', 'https://a.test/b'),
                         row('https://a.test/b', 'https://a.test/c'),
@@ -39,8 +67,31 @@ class RedirectAuditTests(unittest.TestCase):
     def test_duplicate_case_and_default_port(self):
         result = audit([row('https://a.test/a', 'https://a.test/b'),
                         row('HTTPS://A.TEST:443/a', 'https://a.test/c')])
+        self.assertEqual(result['issue_counts'], {'conflicting_duplicate_source': 1})
+        self.assertEqual(result['issues'][0]['first_row'], 2)
+
+    def test_identical_duplicate_after_target_normalization(self):
+        result = audit([row('https://a.test/a', 'HTTPS://A.TEST:443/b'),
+                        row('HTTPS://A.TEST:443/a', 'https://a.test/b')])
         self.assertEqual(result['issue_counts'], {'duplicate_source': 1})
         self.assertEqual(result['issues'][0]['first_row'], 2)
+
+    def test_conflicting_duplicate_preserves_first_wins_cycle(self):
+        result = audit([row('https://a.test/a', 'https://a.test/b'),
+                        row('https://a.test/a', 'https://a.test/c'),
+                        row('https://a.test/b', 'https://a.test/a'),
+                        row('https://a.test/c', 'https://a.test/final')])
+        self.assertEqual(result['issue_counts'], {
+            'conflicting_duplicate_source': 1,
+            'redirect_chain': 2,
+            'redirect_cycle': 2})
+        conflict = [i for i in result['issues']
+                    if i['type'] == 'conflicting_duplicate_source']
+        self.assertEqual(conflict, [{'row': 3, 'type': 'conflicting_duplicate_source',
+                                     'first_row': 2}])
+        self.assertEqual({i['row'] for i in result['issues']
+                          if i['type'] == 'redirect_cycle'}, {2, 4})
+        self.assertNotIn('a.test', json.dumps(result))
 
     def test_invalid_url_no_leak(self):
         result = audit([row('https://user:secret@a.test/x', 'https://b.test/'),
