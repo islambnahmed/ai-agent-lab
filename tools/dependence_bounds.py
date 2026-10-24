@@ -11,6 +11,7 @@ module exposes the useful evidence-survival quantity 1-P(all specified modes
 fail).
 """
 from itertools import product, combinations
+from fractions import Fraction
 
 def _solve_linear_vertices(c, aeq, beq):
     """Exact small-n LP vertex enumeration, with no numerical feasibility slack.
@@ -22,8 +23,6 @@ def _solve_linear_vertices(c, aeq, beq):
     reliability certificate. The cyclic solver is deliberately limited to
     four modes, so exact enumeration remains practical.
     """
-    from fractions import Fraction
-
     n = len(c)
     m = len(aeq)
     rhs = [Fraction(str(b)) for b in beq]
@@ -93,9 +92,13 @@ def all_fail_bounds(marginals, pairwise=None):
             raise ValueError("invalid pairwise constraint")
         # Necessary Frechet bounds catch contradictory pairwise inputs before
         # floating-point vertex enumeration can blur a tiny infeasibility.
-        lower = max(0.0, float(marginals[i]) + float(marginals[j]) - 1.0)
-        upper = min(float(marginals[i]), float(marginals[j]))
-        if q < lower or q > upper:
+        # Interpret decimal spellings exactly, matching the cyclic LP solver.
+        # Float arithmetic can spuriously reject valid boundary inputs:
+        # .8 + .8 - 1 rounds to .6000000000000001, not .6.
+        pi, pj, joint = (Fraction(str(v)) for v in (marginals[i], marginals[j], q))
+        lower = max(Fraction(0), pi + pj - 1)
+        upper = min(pi, pj)
+        if joint < lower or joint > upper:
             raise ValueError("pairwise constraint violates Frechet bounds")
     # A forest admits exact arbitrary-n all-intersection bounds.  For each
     # connected tree C:
@@ -159,13 +162,14 @@ def all_fail_bounds(marginals, pairwise=None):
     # enumeration for the complete triangle and detects globally inconsistent
     # triples that can pass every pairwise Frechet check independently.
     if n == 3 and all(k in pairwise for k in ((0,1),(0,2),(1,2))):
-        pa,pb,pc=map(float,marginals)
-        qab=float(pairwise[(0,1)]); qac=float(pairwise[(0,2)]); qbc=float(pairwise[(1,2)])
-        lower=max(0.0, qab+qac-pa, qab+qbc-pb, qac+qbc-pc)
-        upper=min(qab, qac, qbc, 1.0-pa-pb-pc+qab+qac+qbc)
+        pa,pb,pc=(Fraction(str(v)) for v in marginals)
+        qab,qac,qbc=(Fraction(str(pairwise[k]))
+                     for k in ((0,1),(0,2),(1,2)))
+        lower=max(Fraction(0), qab+qac-pa, qab+qbc-pb, qac+qbc-pc)
+        upper=min(qab, qac, qbc, 1-pa-pb-pc+qab+qac+qbc)
         if lower > upper:
             raise ValueError("pairwise constraints are globally infeasible")
-        return lower,upper
+        return float(lower),float(upper)
     c=[1.0 if all(w) else 0.0 for w in worlds]
     lo,hi=_solve_linear_vertices(c,aeq,beq)
     return lo[0],hi[0]
@@ -250,4 +254,14 @@ if __name__ == "__main__":
                             {(0,1):tiny, (1,2):tiny,
                              (2,3):tiny, (0,3):tiny})
     assert lo == tiny and hi == tiny
+    # Exact boundary checks: float Frechet validation rejected this feasible
+    # all-equal three-mode model (.8+.8-1 > .6 due rounding).
+    lo,hi=all_fail_bounds([.8]*3,{(0,1):.6,(0,2):.6,(1,2):.6})
+    assert lo == .4 and hi == .4
+    # Disjoint events exhaust the sample space: float cancellation previously
+    # made the upper bound negative and falsely reported infeasibility.
+    lo,hi=all_fail_bounds([.3,.3,.4],{(0,1):0.0,(0,2):0.0,(1,2):0.0})
+    assert lo == 0.0 and hi == 0.0
+    # Boundary pairwise checks also apply to the forest shortcut.
+    assert all_fail_bounds([.8,.8],{(0,1):.6}) == (.6,.6)
     print("dependence_bounds: all tests passed")
