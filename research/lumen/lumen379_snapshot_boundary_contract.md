@@ -35,4 +35,4 @@ If running untrusted tests becomes necessary, a separate, explicitly authorized 
 - CI: `.github/workflows/lumen-regression.yml`
 - Test-file commit: `79e2a6270f8d5c0e95e47a89ab583375a25312c8`
 - CI-step commit: `df0f055044e34871f69e075f4072909f8fd3e31e`
-- CI outcome: **pending verification at initial report publication**. Do not infer success from a queued/in-progress run.
+- CI outcome: **verified** on workflow-step commit `df0f055044e34871f69e075f4072909f8fd3e31e` in [GitHub Actions run 40059712551](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40059712551). Both Python 3.12 and 3.13 jobs completed successfully. Job logs independently show 4/4 new boundary contract tests, 7/7 receipt tests, 6/6 isolated-runner tests, and 79/79 full regression tests in each of normal and optimized modes; both receipts had `all_passed: true`, `source_drift: []`, and `snapshot_drift: []`. This verifies behavior of the repository code, **not** OS-level sandboxing.
