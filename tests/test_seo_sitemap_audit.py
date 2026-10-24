@@ -194,6 +194,28 @@ class SitemapAuditTests(unittest.TestCase):
         self.assertEqual(destination.read_text(encoding='utf-8'), 'previous result')
         self.assertFalse(list(self.root.glob('.sitemap-audit-*.csv')))
 
+    def test_csv_export_refuses_to_replace_input_sitemaps(self):
+        self.write('sitemap.xml', urlset(('https://example.com/a', None)))
+        original = (self.root / 'sitemap.xml').read_bytes()
+        script = str(Path(__file__).resolve().parents[1] / 'tools/seo_sitemap_audit.py')
+        args = [sys.executable, script, '--root', str(self.root),
+                '--base-url', 'https://example.com/', '--as-of', '2026-10-24',
+                '--urls-csv', str(self.root / 'sitemap.xml')]
+        result = subprocess.run(args, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertIn('must not end in .xml or .gz', result.stderr)
+        self.assertEqual((self.root / 'sitemap.xml').read_bytes(), original)
+        self.assertFalse(list(self.root.glob('.sitemap-audit-*.csv')))
+
+        compressed = self.root / 'child.xml.gz'
+        compressed.write_bytes(gzip.compress(urlset(('https://example.com/b', None)).encode()))
+        before = compressed.read_bytes()
+        args[-1] = str(compressed)
+        result = subprocess.run(args, capture_output=True, text=True)
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(compressed.read_bytes(), before)
+        self.assertFalse(list(self.root.glob('.sitemap-audit-*.csv')))
+
     def test_limit_and_bad_configuration(self):
         self.write('sitemap.xml', index('https://example.com/a.xml'))
         self.write('a.xml', urlset(('https://example.com/a',None)))
