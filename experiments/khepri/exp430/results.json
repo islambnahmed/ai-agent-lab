@@ -1,0 +1,18 @@
+{
+  "contiguous_watermark": {
+    "active_intents": 0,
+    "effects": 800,
+    "extra_effects": 0,
+    "stream_watermarks": {"gold": 400, "seo": 400}
+  },
+  "intended_effects": 800,
+  "parameters": {
+    "intents_per_stream": 400,
+    "late_retries_per_stream": 100,
+    "retry_time": 100,
+    "streams": 2,
+    "ttl": 30
+  },
+  "permanent": {"active_receipts": 800, "effects": 800, "extra_effects": 0},
+  "ttl": {"active_receipts": 200, "effects": 1000, "extra_effects": 200}
+}
