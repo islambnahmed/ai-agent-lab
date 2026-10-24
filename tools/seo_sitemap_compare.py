@@ -81,13 +81,17 @@ def verify_audit_report(path: Path, csv_path: Path, inventory: dict) -> dict:
     if (summary.get('urls') != rows or summary.get('unique_urls') != len(inventory)
             or exported.get('rows') != rows or exported.get('bytes') != csv_path.stat().st_size):
         raise ValueError(f'CSV inventory counts differ from audit report: {path}')
-    if summary.get('sitemaps', 0) < 1 or summary.get('urlsets', 0) < 1:
-        raise ValueError(f'audit has no complete URL set: {path}')
+    if any(type(summary.get(field)) is not int or summary[field] < 1
+           for field in ('sitemaps', 'urlsets')):
+        raise ValueError(f'audit has no valid complete URL set counts: {path}')
     with csv_path.open('rb') as stream:
         actual_digest = hashlib.file_digest(stream, 'sha256').hexdigest()
     if exported.get('sha256') != actual_digest:
         raise ValueError(f'CSV SHA-256 differs from audit report: {path}')
     base_url, as_of = report.get('base_url'), report.get('as_of')
+    start_sitemap = report.get('start_sitemap')
+    if not isinstance(start_sitemap, str) or not start_sitemap or start_sitemap.startswith('/'):
+        raise ValueError(f'audit report missing valid start sitemap scope: {path}')
     if not isinstance(base_url, str) or not base_url.startswith(('http://', 'https://')):
         raise ValueError(f'invalid audit origin: {path}')
     try:
@@ -96,7 +100,7 @@ def verify_audit_report(path: Path, csv_path: Path, inventory: dict) -> dict:
             raise ValueError('noncanonical date')
     except (TypeError, ValueError) as exc:
         raise ValueError(f'invalid audit as_of date: {path}') from exc
-    return {'base_url': base_url, 'as_of': as_of}
+    return {'base_url': base_url, 'as_of': as_of, 'start_sitemap': start_sitemap}
 
 
 def _details(counts: Counter[tuple[str, str]]) -> list[dict]:
@@ -150,10 +154,13 @@ def main(argv: list[str] | None = None) -> int:
             current = verify_audit_report(args.after_report, args.after, after)
             if previous['base_url'] != current['base_url']:
                 raise ValueError('audit origins differ; snapshots cannot be compared as one site')
+            if previous['start_sitemap'] != current['start_sitemap']:
+                raise ValueError('audit start sitemap entrypoints differ; snapshot scope is not comparable')
             if previous['as_of'] > current['as_of']:
                 raise ValueError('before audit date is after the after audit date')
             verification = {'status': 'complete_audit_csv_sha256_checked',
                             'base_url': previous['base_url'],
+                            'start_sitemap': previous['start_sitemap'],
                             'before_as_of': previous['as_of'],
                             'after_as_of': current['as_of'],
                             'limitation': 'Local JSON reports are not authenticated; this does not prove capture time or live-site completeness'}

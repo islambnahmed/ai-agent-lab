@@ -36,7 +36,7 @@ python3 tools/seo_sitemap_audit.py \
 
 For safety, `--urls-csv` refuses destinations ending in `.xml` or `.gz`, so it cannot replace an input sitemap.
 
-When `--urls-csv` is used, the JSON report also contains `csv_export.sha256`, `csv_export.bytes`, and `csv_export.rows`, computed from the exact exported CSV. Save both files together for later provenance checks. These local checks detect accidental mismatch, not maliciously forged reports.
+When `--urls-csv` is used, the JSON report also contains `csv_export.sha256`, `csv_export.bytes`, and `csv_export.rows`, computed from the exact exported CSV. The report records the normalized `start_sitemap` path to prevent comparing different entrypoint scopes as if they were equivalent. Save both files together for later provenance checks. These local checks detect accidental mismatch, not maliciously forged reports.
 
 The CSV has four columns: `source_sitemap`, `normalized_url`, `lastmod`, `duplicate`. Duplicates are retained as separate rows, marked `true`, so an analyst can locate their sources. Invalid or missing URL locations remain in the JSON issues but are excluded from CSV rows. `lastmod` is the XML value, not a verified page modification time. Spreadsheet-formula-like values in the untrusted source filename and lastmod cells are prefixed with an apostrophe; import the CSV as text when using spreadsheet software. Rows stream to a temporary file in the output directory, which is replaced only after the audit finishes; **an existing destination CSV is overwritten on success**. The JSON report and its exit code retain the original meaning (0 clean, 1 issues, 2 invalid configuration/output error). This does not fetch any page or sitemap.
 
