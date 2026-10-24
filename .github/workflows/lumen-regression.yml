@@ -37,3 +37,7 @@ jobs:
         run: python -m unittest -q test_lumen373_receipt.py
       - name: Run both modes and print exact-input regression receipt
         run: python lumen373_regression_receipt.py
+      - name: Self-test isolated input snapshot runner
+        run: python -m unittest -q test_lumen377_isolated_receipt.py
+      - name: Run regression in disposable per-mode snapshots
+        run: python lumen377_isolated_receipt.py
