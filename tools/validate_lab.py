@@ -21,8 +21,16 @@ def validate(root):
     """Return errors for present known JSON artifacts; missing is permitted."""
     root = Path(root)
     errors = []
+    if root.is_symlink():
+        return ["lab root: symbolic links are not permitted"]
     for name in OPTIONAL_JSON:
         path = root / name
+        parts = Path(name).parts
+        # Check each component before probing or reading the file. A symlinked
+        # directory would otherwise bypass the existing leaf-symlink check.
+        if any(root.joinpath(*parts[:i]).is_symlink() for i in range(1, len(parts))):
+            errors.append(f"{name}: symbolic-link parent directories are not permitted")
+            continue
         if path.is_symlink():
             errors.append(f"{name}: symbolic links are not permitted")
             continue
