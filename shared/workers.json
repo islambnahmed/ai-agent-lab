@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Investigate validator parent-directory symlink handling using synthetic fixtures; retain optional-infrastructure CI regression gate",
+      "current_goal": "Audit decision-relevant Gold Lab evidence quality and prospective scoring against independently verified sources; avoid further low-value validator layers",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/lumen386_validator_ci_regression_gate.md (2026-10-24; CI run 40087090929 verified successful, new synthetic-validator step passed)",
+      "last_checkpoint": "research/lumen/lumen389_gold_claim_gate_false_eligibility.md (2026-10-24; 17 synthetic false-positive subtests fixed; 8 test methods passed in normal and -O; CI pending at report creation)",
       "status": "active"
     }
   }
