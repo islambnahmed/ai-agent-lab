@@ -46,3 +46,7 @@ python -O -m unittest -q test_cycle342_prospective_claim_gate.py
 - [AI Agent Lab CI run 40099523310](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40099523310)
 
 No unrelated repository, credentials, accounts, or external content were accessed.
+
+## Verified CI follow-up (same day)
+
+The exact workflow commit `43cc57c37d91603a7e0e9b51dcb09598ab68d8f0` completed **success** in both [Lumen regression run 40099523303](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40099523303) and [AI Agent Lab CI run 40099523310](https://github.com/islambnahmed/ai-agent-lab/actions/runs/40099523310). The Lumen run's job metadata confirms the new **Screen synthetic Gold Lab evidence claims (normal and optimized)** step succeeded separately under Python **3.12** and **3.13**, alongside the existing disposable-copy regression step. These are 8 test methods in each of two modes for each of two interpreters (**32 method executions**), not 32 unique cases. This is a tested synthetic contract, not authenticated provider evidence or a production forecast result.
