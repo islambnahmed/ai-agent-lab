@@ -22,6 +22,34 @@ class RedirectAuditTests(unittest.TestCase):
         self.assertNotEqual(canonical_key('https://example.com/a'),
                             canonical_key('https://example.com/a/'))
 
+
+    def test_explicit_empty_query_preserved_in_duplicate_and_chain_checks(self):
+        self.assertNotEqual(canonical_key('https://a.test/a?'),
+                            canonical_key('https://a.test/a'))
+        result = audit([row('https://a.test/a?', 'https://a.test/a'),
+                        row('https://a.test/a', 'https://a.test/b')])
+        self.assertEqual(result['unique_sources'], 2)
+        self.assertEqual(result['issue_counts'], {'redirect_chain': 1})
+        self.assertEqual(result['issues'][0]['row'], 2)
+
+    def test_invalid_percent_escapes_and_empty_fragment_marker(self):
+        bad = ['https://a.test/a%', 'https://a.test/a%2',
+               'https://a.test/a%ZZ', 'https://a.test/a?q=%Q0',
+               'https://a.test/a#']
+        for url in bad:
+            with self.subTest(url=url), self.assertRaises(ValueError):
+                canonical_key(url)
+        self.assertEqual(canonical_key('https://a.test/a%25'),
+                         'https://a.test/a%25')
+        result = audit([row(url, 'https://a.test/ok') for url in bad])
+        self.assertEqual(result['issue_counts'], {'invalid_url': len(bad)})
+        self.assertNotIn('a.test', json.dumps(result))
+
+    def test_conflicting_duplicates_keep_empty_query_target_distinct(self):
+        result = audit([row('https://a.test/a', 'https://a.test/b?'),
+                        row('https://a.test/a', 'https://a.test/b')])
+        self.assertEqual(result['issue_counts'], {'conflicting_duplicate_source': 1})
+
     def test_chain_and_cycle_and_self_redirect(self):
         result = audit([row('https://a.test/a', 'https://a.test/b'),
                         row('https://a.test/b', 'https://a.test/c'),
@@ -100,6 +128,40 @@ class RedirectAuditTests(unittest.TestCase):
                 {'row': 2, 'type': 'invalid_url'},
                 {'row': 5, 'type': 'conflicting_duplicate_source', 'first_row': 4}])
             self.assertNotIn('a.test', result.stdout)
+
+    def test_cli_physical_line_numbers_after_blank_records(self):
+        script = Path(__file__).resolve().parents[1] / 'tools' / 'seo_redirect_map_audit.py'
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / 'redirects.csv'
+            path.write_text(
+                'source_url,target_url\n'
+                '\n'
+                'https://a.test/old,https://a.test/new\n'
+                '\n'
+                'https://a.test/old,https://a.test/other\n',
+                encoding='utf-8')
+            result = subprocess.run(
+                [sys.executable, str(script), '--map', str(path)],
+                capture_output=True, text=True)
+            self.assertEqual(result.returncode, 1, result.stderr)
+            report = json.loads(result.stdout)
+            self.assertEqual(report['issues'], [
+                {'row': 5, 'type': 'conflicting_duplicate_source', 'first_row': 3}])
+            self.assertNotIn('a.test', result.stdout)
+
+    def test_cli_preserves_malformed_extra_field_detection(self):
+        script = Path(__file__).resolve().parents[1] / 'tools' / 'seo_redirect_map_audit.py'
+        with tempfile.TemporaryDirectory() as td:
+            path = Path(td) / 'redirects.csv'
+            path.write_text('source_url,target_url\n'
+                            'https://a.test/a,https://a.test/b,extra\n',
+                            encoding='utf-8')
+            result = subprocess.run(
+                [sys.executable, str(script), '--map', str(path)],
+                capture_output=True, text=True)
+            self.assertEqual(result.returncode, 1, result.stderr)
+            self.assertEqual(json.loads(result.stdout)['issues'],
+                             [{'row': 2, 'type': 'malformed_row'}])
 
     def test_cli_clean_and_invalid_header(self):
         script = Path(__file__).resolve().parents[1] / 'tools' / 'seo_redirect_map_audit.py'
