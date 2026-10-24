@@ -33,6 +33,10 @@ def canonical_key(value: str) -> str:
             raise ValueError('URL must be absolute HTTP(S)')
         if parts.username is not None or parts.password is not None:
             raise ValueError('userinfo and fragments are not allowed')
+        # urlsplit treats an explicit empty port (host:) like no port, which
+        # could hide malformed mappings as duplicates or self redirects.
+        if parts.netloc.endswith(':'):
+            raise ValueError('empty port delimiter is not allowed')
         host = parts.hostname
         port = parts.port
     except ValueError as exc:
