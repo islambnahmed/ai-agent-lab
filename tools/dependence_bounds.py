@@ -159,7 +159,9 @@ if __name__ == "__main__":
     assert any_survives_bounds([.2,.2]) == (.8,1.0)
     # Marginals-only bounds remain exact beyond the atom solver's n<=4 scope.
     assert all_fail_bounds([.9]*5) == (.5,.9)
-    assert any_survives_bounds([.9]*5) == (.1,.5)
+    # Floating-point complements need tolerant comparison (1-.9 != .1).
+    survival = any_survives_bounds([.9]*5)
+    assert abs(survival[0] - .1) < 1e-12 and abs(survival[1] - .5) < 1e-12
     # Three pairwise-independent failures need not be mutually independent.
     lo,hi=any_survives_bounds([.2]*3,{(0,1):.04,(0,2):.04,(1,2):.04})
     assert abs(lo-.96)<1e-9 and abs(hi-1.0)<1e-9
@@ -195,4 +197,17 @@ if __name__ == "__main__":
             raise AssertionError("expected near-boundary infeasible constraints")
         except ValueError:
             pass
+    # Four fair pairwise-independent failures need not be mutually independent.
+    # Exact extremal all-failure interval is [0,1/6], not the iid point 1/16.
+    pair4 = {(i,j):.25 for i in range(4) for j in range(i+1,4)}
+    lo,hi=all_fail_bounds([.5]*4,pair4)
+    assert abs(lo) < 1e-12 and abs(hi-1/6) < 1e-12
+    slo,shi=any_survives_bounds([.5]*4,pair4)
+    assert abs(slo-5/6) < 1e-12 and abs(shi-1.0) < 1e-12
+    # A globally impossible triangle remains impossible when embedded in n=4.
+    try:
+        all_fail_bounds([.1,.1,.1,.5],{(0,1):0.0,(0,2):.1,(1,2):.1})
+        raise AssertionError("expected globally infeasible four-mode cycle")
+    except ValueError:
+        pass
     print("dependence_bounds: all tests passed")

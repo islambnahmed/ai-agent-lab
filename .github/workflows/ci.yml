@@ -19,3 +19,5 @@ jobs:
           python-version: "3.12"
       - name: Validate lab structure
         run: python tools/validate_lab.py
+      - name: Verify dependence bounds oracle
+        run: python tools/dependence_bounds.py
