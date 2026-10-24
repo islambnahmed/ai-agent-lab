@@ -1,18 +1,18 @@
 {
   "20": {
-    "trials": 50,
+    "mean_gain": 2.26,
     "mean_runtime_ms": 3.03,
+    "oracle": "not computed (n>18)",
     "p95_runtime_ms": 4.38,
     "strict_improvements": 13,
-    "mean_gain": 2.26,
-    "oracle": "not computed (n>18)"
+    "trials": 50
   },
   "30": {
-    "trials": 50,
+    "mean_gain": 0.96,
     "mean_runtime_ms": 6.24,
+    "oracle": "not computed (n>18)",
     "p95_runtime_ms": 8.12,
     "strict_improvements": 4,
-    "mean_gain": 0.96,
-    "oracle": "not computed (n>18)"
+    "trials": 50
   }
 }
