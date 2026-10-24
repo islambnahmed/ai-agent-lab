@@ -71,6 +71,7 @@ def coverage(retiring: list[tuple[int, str]], map_rows: list[dict],
     seen = {}
     issues = []
     for line, key in retiring:
+        key = canonical_key(key)
         if key in seen:
             issues.append({'row': line, 'type': 'duplicate_retiring_url',
                            'first_row': seen[key]})
