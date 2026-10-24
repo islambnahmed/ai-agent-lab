@@ -1,0 +1,59 @@
+{
+  "design": "90 days, 100 paired seeds, same exogenous change events per policy; synthetic independent Bernoulli daily change events",
+  "cases": {
+    "seo": {
+      "dp": {
+        "impact": 2455.07,
+        "discoveries": 186.96,
+        "spent": 810.0
+      },
+      "ratio": {
+        "impact": 2401.46,
+        "discoveries": 182.49,
+        "spent": 810.0
+      },
+      "oldest": {
+        "impact": 1623.59,
+        "discoveries": 157.24,
+        "spent": 810.0
+      },
+      "dp_misspecified": {
+        "impact": 1103.23,
+        "discoveries": 120.98,
+        "spent": 810.0
+      },
+      "paired_dp_minus_ratio": {
+        "mean_impact": 53.61,
+        "wins": 81,
+        "ties": 0
+      }
+    },
+    "feeds": {
+      "dp": {
+        "impact": 1273.4,
+        "discoveries": 86.13,
+        "spent": 450.0
+      },
+      "ratio": {
+        "impact": 1265.17,
+        "discoveries": 84.54,
+        "spent": 450.0
+      },
+      "oldest": {
+        "impact": 1102.55,
+        "discoveries": 104.34,
+        "spent": 450.0
+      },
+      "dp_misspecified": {
+        "impact": 569.26,
+        "discoveries": 43.97,
+        "spent": 450.0
+      },
+      "paired_dp_minus_ratio": {
+        "mean_impact": 8.23,
+        "wins": 58,
+        "ties": 4
+      }
+    }
+  }
+}
