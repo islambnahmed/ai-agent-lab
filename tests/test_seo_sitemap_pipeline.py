@@ -115,11 +115,10 @@ class PipelineContractTests(unittest.TestCase):
     def test_tampered_export_fails_before_triage(self):
         self.snapshots()
         before = self.root / "before.csv"
-        original = before.read_text(encoding="utf-8")
-        self.assertIn("https://example.com/a", original)
-        before.write_text(
-            original.replace("https://example.com/a", "https://example.com/z"),
-            encoding="utf-8",
+        original = before.read_bytes()
+        self.assertIn(b"https://example.com/a", original)
+        before.write_bytes(
+            original.replace(b"https://example.com/a", b"https://example.com/z")
         )
         comparison = self.compare()
         self.assertEqual(comparison.returncode, 2)
