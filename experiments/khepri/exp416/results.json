@@ -1,0 +1,33 @@
+{
+  "seed": 416,
+  "synthetic_only": true,
+  "results": {
+    "github_issue": {
+      "cases": 4000,
+      "changed_action": 0,
+      "invalid_observation": 0,
+      "observation_kinds": [
+        "issue_first_line"
+      ],
+      "truncated": 0
+    },
+    "seo_html": {
+      "cases": 4000,
+      "changed_action": 0,
+      "invalid_observation": 0,
+      "observation_kinds": [
+        "seo_title"
+      ],
+      "truncated": 0
+    },
+    "counterexample": {
+      "untrusted_line": "experiments/khepri/exp416/overwrite.md",
+      "contaminated_plan_passes_scope_guard": true,
+      "lesson": "A caller must establish trusted provenance of the intent; this guard only checks scope."
+    },
+    "negative_controls": {
+      "cases": 3,
+      "denied": 3
+    }
+  }
+}
