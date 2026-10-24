@@ -26,6 +26,18 @@ class OptionalInfrastructureValidatorTests(unittest.TestCase):
     def test_retired_optional_files_do_not_fail(self):
         self.assertEqual(module.validate(self.root), [])
 
+    def test_missing_root_is_not_a_retired_optional_state(self):
+        missing = self.root / "nonexistent_lab"
+        self.assertEqual(module.validate(missing),
+                         ["lab root: expected an existing directory"])
+
+    def test_file_root_is_rejected(self):
+        not_a_directory = self.root / "not_a_directory.json"
+        not_a_directory.write_text("{}", encoding="utf-8")
+        self.assertEqual(module.validate(not_a_directory),
+                         ["lab root: expected an existing directory"])
+
+
     def test_no_required_roles_or_subtask_policy(self):
         self.write("shared/role_pool.json", {"schema_version": 1, "default_roles": []})
         self.write("shared/task_queue.json", {"schema_version": 2, "policy": {"allow_subtasks": False}})
