@@ -1,6 +1,7 @@
 // Immutable forecast receipts. Commit receipts before outcomes mature; a hash
 // alone detects edits but does not independently prove the issuance time.
 import {createHash} from 'node:crypto';
+import path from 'node:path';
 import {forecast} from './forecast.mjs';
 import {parseInstant} from './historical-integrity.mjs';
 import {prepareHistory} from './data.mjs';
@@ -64,10 +65,23 @@ export function verifyReceipt(receipt){
   if(!receipt||typeof receipt!=='object')throw Error('Invalid receipt');
   const {id,...payload}=receipt;
   if(id!==hash(payload)||receipt.schemaVersion!==1)throw Error('Receipt integrity mismatch');
+  // Content hashing alone does not make receipt-controlled values safe as file
+  // names. A recomputed receipt ID could otherwise carry ../ in historyHash.
+  if(!/^[0-9a-f]{64}$/.test(id)||!/^[0-9a-f]{64}$/.test(receipt.historyHash)||
+     !/^[0-9a-f]{40}$/.test(receipt.codeCommit))
+    throw Error('Invalid receipt digest or commit metadata');
   parseInstant(receipt.issuedAt);
   if(![1,7,30].includes(receipt.horizon)||!Number.isInteger(receipt.historyLength)||receipt.historyLength<165)
     throw Error('Invalid receipt metadata');
   return true;
+}
+
+// Verify before forming any filesystem path from receipt-supplied metadata.
+// This function does not read or create files.
+export function verifiedVintagePath(directory,receipt){
+  verifyReceipt(receipt);
+  if(typeof directory!=='string'||!directory.trim())throw new TypeError('Vintage directory required');
+  return path.join(directory,receipt.historyHash+'.json');
 }
 export function settleReceipt(receipt,series,{asOf}={}){
   verifyReceipt(receipt);
