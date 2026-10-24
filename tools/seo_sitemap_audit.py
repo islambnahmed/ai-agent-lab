@@ -8,6 +8,7 @@ import os
 import tempfile
 import datetime as dt
 import gzip
+import hashlib
 import json
 from pathlib import Path
 import re
@@ -235,6 +236,7 @@ def main(argv: list[str] | None = None) -> int:
             if not destination.parent.is_dir():
                 raise ValueError('CSV output parent directory must exist')
             # Stream rows rather than retaining an extra inventory in memory.
+            exported_rows = 0
             # Only replace the requested output after the audit completes.
             with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', newline='',
                                              dir=destination.parent, prefix='.sitemap-audit-',
@@ -243,13 +245,21 @@ def main(argv: list[str] | None = None) -> int:
                 writer = csv.writer(stream)
                 writer.writerow(['source_sitemap', 'normalized_url', 'lastmod', 'duplicate'])
                 def record_url(source, url, lastmod, duplicate):
+                    nonlocal exported_rows
                     try:
                         writer.writerow([_csv_safe_cell(source), url, _csv_safe_cell(lastmod or ''),
                                          'true' if duplicate else 'false'])
+                        exported_rows += 1
                     except (OSError, ValueError) as exc:
                         raise ExportFailure('CSV write failed') from exc
                 report = audit(args.root, args.start, args.base_url, today,
                                max_sitemaps=args.max_sitemaps, on_url=record_url)
+            # Bind the printed audit report to the exact exported CSV bytes.
+            # The digest is computed only after the temporary file is closed.
+            with temporary_csv.open('rb') as exported:
+                digest = hashlib.file_digest(exported, 'sha256').hexdigest()
+            report['csv_export'] = {'sha256': digest, 'bytes': temporary_csv.stat().st_size,
+                                    'rows': exported_rows}
             os.replace(temporary_csv, destination)
             temporary_csv = None
     except (ValueError, OSError, ExportFailure) as exc:
