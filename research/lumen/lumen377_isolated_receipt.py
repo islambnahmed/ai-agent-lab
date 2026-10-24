@@ -16,6 +16,23 @@ from lumen373_regression_receipt import INPUTS, TESTS, _hash_inputs
 
 SCHEMA = "lumen377.isolated_receipt.v1"
 
+def _minimal_child_env(work):
+    """Pass only fixed interpreter settings and per-run temporary paths.
+
+    This limits accidental exposure through inherited environment variables.
+    It is NOT filesystem, process, or network containment.
+    """
+    home = str(work)
+    return {
+        "HOME": home, "TMPDIR": home, "TMP": home, "TEMP": home,
+        "LANG": "C.UTF-8", "LC_ALL": "C.UTF-8",
+        "PATH": os.defpath,
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONHASHSEED": "0",
+    }
+
+
 
 def _validate_manifest(inputs, tests):
     if len(set(inputs)) != len(inputs) or len(set(tests)) != len(tests):
@@ -46,7 +63,7 @@ def run_isolated_receipt(directory, *, tests=TESTS, inputs=INPUTS, timeout=120):
         "source_sha256": source_hashes, "missing_inputs": missing,
         "symlink_inputs": symlinks, "runs": [], "source_drift": [],
         "all_passed": False,
-        "attestation": "local_copied_inputs_only_no_sandbox_or_independent_provenance",
+        "attestation": "local_copied_inputs_minimal_child_env_no_sandbox_or_independent_provenance",
     }
     if missing or symlinks:
         return receipt, False
@@ -73,9 +90,7 @@ def run_isolated_receipt(directory, *, tests=TESTS, inputs=INPUTS, timeout=120):
                 break
             command = [sys.executable, "-B"] + (["-O"] if optimized else []) + [
                 "-m", "unittest", "-q", *tests]
-            env = os.environ.copy()
-            env["PYTHONDONTWRITEBYTECODE"] = "1"
-            env.pop("PYTHONPATH", None)
+            env = _minimal_child_env(work)
             try:
                 result = subprocess.run(command, cwd=work, text=True,
                                         capture_output=True, timeout=timeout,
