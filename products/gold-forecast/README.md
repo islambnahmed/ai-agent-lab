@@ -19,7 +19,13 @@ python3 -m http.server 8000 --bind 127.0.0.1
 
 Open http://127.0.0.1:8000. The site fetches provider data directly. CSV and DEMO
 are explicitly labeled. Failed network requests never substitute synthetic prices.
-The fetch manifest now records both the raw HTTP SHA-256 and the exact SHA-256\nof each serialized local JSON snapshot. Evaluation and prospective issuance reject\nmissing, stale, or mismatched snapshot files; run `npm run data` to regenerate\nolder manifests without `storedSha256`. This verifies local file/manifest binding,\nnot provider authenticity or independent price accuracy.\n\nThe evaluation command produces `reports/readiness-20261012.json`; raw provider
+The fetch manifest now records both the raw HTTP SHA-256 and the exact SHA-256
+of each serialized local JSON snapshot. Evaluation and prospective issuance reject
+missing, stale, or mismatched snapshot files; run `npm run data` to regenerate
+older manifests without `storedSha256`. This verifies local file/manifest binding,
+not provider authenticity or independent price accuracy.
+
+The evaluation command produces `reports/readiness-20261012.json`; raw provider
 snapshots stay in ignored `data/`. Macro fetch writes its source-status report.
 
 After committing the code, fetch a fresh snapshot and issue future forecasts:
