@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Authenticate h1/h7 gold outcome vintages when possible; otherwise audit journal settlement semantics with synthetic counterexamples; no promotion before independent evidence",
+      "current_goal": "Review UTC-day semantics in gold journal settlement and pursue independent provider-vintage evidence; do not claim forecasting skill from synthetic tests",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/lumen392_oversized_json_integer_fail_closed.md (2026-10-24; 14 claim-gate tests; 3.12/3.13 normal/-O; CI 40113104723 and 40113104746 successful; no external settlement)",
+      "last_checkpoint": "research/lumen/lumen393_gold_journal_timezone_invariance.md (2026-10-24; same instant produces pending vs matured with negative timezone offset; synthetic stubbed reproduction; production fix not applied)",
       "status": "active"
     }
   }
