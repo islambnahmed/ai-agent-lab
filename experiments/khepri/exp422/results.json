@@ -1,0 +1,31 @@
+{
+  "cases_per_domain": 240,
+  "total_cases": 480,
+  "per_domain": {
+    "seo": {
+      "baseline_stale_approval_accepted": 120,
+      "cases": 240,
+      "hardened_unsafe_sql_rejected": 120,
+      "legitimate_clean_ok": 40,
+      "legitimate_normal_update_stale": 40,
+      "legitimate_unrelated_ok": 40
+    },
+    "gold": {
+      "baseline_stale_approval_accepted": 120,
+      "cases": 240,
+      "hardened_unsafe_sql_rejected": 120,
+      "legitimate_clean_ok": 40,
+      "legitimate_normal_update_stale": 40,
+      "legitimate_unrelated_ok": 40
+    }
+  },
+  "totals": {
+    "baseline_stale_approval_accepted": 240,
+    "cases": 480,
+    "hardened_unsafe_sql_rejected": 240,
+    "legitimate_clean_ok": 80,
+    "legitimate_normal_update_stale": 80,
+    "legitimate_unrelated_ok": 80
+  },
+  "caveat": "Deterministically constructed synthetic SQLite scenarios; not attack prevalence, production security, or performance evidence."
+}
