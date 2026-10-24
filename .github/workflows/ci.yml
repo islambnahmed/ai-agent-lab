@@ -19,3 +19,23 @@ jobs:
           python-version: "3.12"
       - name: Validate lab structure
         run: python tools/validate_lab.py
+
+  gold-offline:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Gold forecast JavaScript regressions (offline)
+        working-directory: products/gold-forecast
+        run: npm test
+      - name: Gold data-source Python regressions (offline)
+        working-directory: products/gold-forecast
+        run: npm run source-tests
