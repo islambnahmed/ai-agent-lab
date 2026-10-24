@@ -6,31 +6,31 @@
         "impact": 2455.07,
         "discoveries": 186.96,
         "spent": 810,
-        "coverage": 16
+        "coverage": 16.0
       },
       "ratio": {
         "impact": 2401.46,
         "discoveries": 182.49,
         "spent": 810,
-        "coverage": 16
+        "coverage": 16.0
       },
       "oldest": {
         "impact": 1623.59,
         "discoveries": 157.24,
         "spent": 810,
-        "coverage": 24
+        "coverage": 24.0
       },
       "fair_dp": {
         "impact": 2383.81,
         "discoveries": 192.07,
         "spent": 810,
-        "coverage": 24
+        "coverage": 24.0
       },
       "dp_misspecified": {
         "impact": 1103.23,
         "discoveries": 120.98,
         "spent": 810,
-        "coverage": 12
+        "coverage": 12.0
       },
       "paired_dp_minus_ratio": {
         "mean_impact": 53.61,
@@ -43,31 +43,31 @@
         "impact": 1273.4,
         "discoveries": 86.13,
         "spent": 450,
-        "coverage": 10
+        "coverage": 10.0
       },
       "ratio": {
         "impact": 1265.17,
         "discoveries": 84.54,
         "spent": 450,
-        "coverage": 10
+        "coverage": 10.0
       },
       "oldest": {
         "impact": 1102.55,
         "discoveries": 104.34,
         "spent": 450,
-        "coverage": 12
+        "coverage": 12.0
       },
       "fair_dp": {
         "impact": 1265.49,
         "discoveries": 88.78,
         "spent": 450,
-        "coverage": 12
+        "coverage": 12.0
       },
       "dp_misspecified": {
         "impact": 569.26,
         "discoveries": 43.97,
         "spent": 450,
-        "coverage": 8
+        "coverage": 8.0
       },
       "paired_dp_minus_ratio": {
         "mean_impact": 8.23,
