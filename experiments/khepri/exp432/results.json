@@ -1,0 +1,80 @@
+{
+  "domains": {
+    "gold": {
+      "marginal": {
+        "below_marginal": 0,
+        "mean_cost": 9.61,
+        "mean_value": 99.668,
+        "oracle_matches": 401,
+        "strictly_beats_marginal": 0
+      },
+      "one_drop": {
+        "below_marginal": 0,
+        "mean_cost": 9.578,
+        "mean_value": 100.674,
+        "oracle_matches": 457,
+        "strictly_beats_marginal": 61
+      },
+      "oracle": {
+        "below_marginal": 0,
+        "mean_cost": 9.672,
+        "mean_value": 101.63,
+        "oracle_matches": 500,
+        "strictly_beats_marginal": 99
+      },
+      "seeded_one_drop": {
+        "below_marginal": 0,
+        "mean_cost": 9.67,
+        "mean_value": 101.6,
+        "oracle_matches": 497,
+        "strictly_beats_marginal": 97
+      },
+      "seeded_two_drop": {
+        "below_marginal": 0,
+        "mean_cost": 9.672,
+        "mean_value": 101.61,
+        "oracle_matches": 498,
+        "strictly_beats_marginal": 98
+      }
+    },
+    "seo": {
+      "marginal": {
+        "below_marginal": 0,
+        "mean_cost": 6.97,
+        "mean_value": 81.508,
+        "oracle_matches": 442,
+        "strictly_beats_marginal": 0
+      },
+      "one_drop": {
+        "below_marginal": 0,
+        "mean_cost": 6.778,
+        "mean_value": 82.174,
+        "oracle_matches": 481,
+        "strictly_beats_marginal": 40
+      },
+      "oracle": {
+        "below_marginal": 0,
+        "mean_cost": 6.744,
+        "mean_value": 82.43,
+        "oracle_matches": 500,
+        "strictly_beats_marginal": 58
+      },
+      "seeded_one_drop": {
+        "below_marginal": 0,
+        "mean_cost": 6.73,
+        "mean_value": 82.41,
+        "oracle_matches": 497,
+        "strictly_beats_marginal": 56
+      },
+      "seeded_two_drop": {
+        "below_marginal": 0,
+        "mean_cost": 6.74,
+        "mean_value": 82.428,
+        "oracle_matches": 499,
+        "strictly_beats_marginal": 57
+      }
+    }
+  },
+  "seed": 432,
+  "trials_per_domain": 500
+}
