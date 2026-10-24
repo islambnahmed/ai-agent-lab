@@ -4,12 +4,12 @@ import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {issueReceipt,settleReceipt,hash} from '../journal.mjs';
 import {prepareProviderHistory} from '../data.mjs';
+import {loadVerifiedHistory} from './source_snapshot.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const read=name=>JSON.parse(fs.readFileSync(path.join(root,'data',name+'.json'),'utf8'));
-const manifest=read('fetch-manifest');
+const {manifest,history}=loadVerifiedHistory(root);
 const asOf=manifest.history.receivedAt;
-const prepared=prepareProviderHistory(read('history'),asOf);
+const prepared=prepareProviderHistory(history,asOf);
 const dir=path.join(root,'reports','prospective');fs.mkdirSync(dir,{recursive:true});
 const vintages=path.join(root,'data','vintages');fs.mkdirSync(vintages,{recursive:true});
 const command=process.argv[2];
