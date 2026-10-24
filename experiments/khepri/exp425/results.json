@@ -1,0 +1,46 @@
+{
+  "agents": 8,
+  "alpha": 0.05,
+  "rounds": 100,
+  "scenarios": {
+    "finance_null_hide_losses_shared_shock": {
+      "missing_fraction": 0.49902,
+      "naive_any_cross_count": 600,
+      "naive_any_cross_rate": 1.0,
+      "observation_policy": "losses",
+      "process": "shared",
+      "safe_any_cross_count": 4,
+      "safe_any_cross_rate": 0.00667
+    },
+    "seo_null_hide_losses": {
+      "missing_fraction": 0.50067,
+      "naive_any_cross_count": 600,
+      "naive_any_cross_rate": 1.0,
+      "observation_policy": "losses",
+      "process": "null",
+      "safe_any_cross_count": 14,
+      "safe_any_cross_rate": 0.02333
+    },
+    "seo_positive_full": {
+      "missing_fraction": 0.0,
+      "naive_any_cross_count": 600,
+      "naive_any_cross_rate": 1.0,
+      "observation_policy": "full",
+      "process": "positive",
+      "safe_any_cross_count": 600,
+      "safe_any_cross_rate": 1.0
+    },
+    "seo_positive_hide_random_half": {
+      "missing_fraction": 0.50019,
+      "naive_any_cross_count": 499,
+      "naive_any_cross_rate": 0.83167,
+      "observation_policy": "random",
+      "process": "positive",
+      "safe_any_cross_count": 0,
+      "safe_any_cross_rate": 0.0
+    }
+  },
+  "seed": 425,
+  "synthetic": true,
+  "trials": 600
+}
