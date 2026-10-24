@@ -31,6 +31,25 @@ Do **not** equate sitemap disappearance with page deletion, deindexing, traffic 
 - **Stopwatch rule:** start when the reviewer begins inspecting the input; stop on a completed, actionable review list. Exclude breaks, but include filtering, sorting, and tool invocation time. Measure **active seconds**, not wall-clock delay.
 - **Error audit:** inspect every false negative and every P1 finding judged non-actionable. Distinguish tool classification, incomplete inputs, reviewer disagreement, and genuinely harmless sitemap changes.
 
+## Mandatory review cutoff and measurement units (cross-review correction)
+
+**Why:** The triage CSV contains *every* added, removed, or changed URL. Counting an item as "captured" merely because it appears anywhere in that complete queue yields 100% recall by construction, regardless of P1/P2/P3 quality. The 90% recall gate is meaningful **only for items actually surfaced, inspected, and flagged within a prospectively fixed budget**. A full-queue coverage check is useful for integrity, but cannot measure ranking utility.
+
+- Before seeing labels, pre-register a common per-pair **inspection budget** (e.g., first K URLs or N active minutes), the order in which each arm will inspect URLs, and what qualifies as a reviewed/flagged finding. Uninspected URLs are **not flagged**, even if present later in the queue. Report recall/precision at the cutoff, high-impact misses, and how many URLs were actually inspected.
+- For the time-based field comparison, count **only reviewer-confirmed findings** made before the same active-time cutoff in both arms. Record total active time **once per reviewer × pair × arm session**; do not repeat it in every URL row and sum it (which would multiply time by the number of URLs). Keep per-URL labels/flags separate from session timing.
+- Blind the reference adjudicator to priorities and review-arm outcomes; label the **entire union of changed URLs**, including unreviewed ones, to identify false negatives. Keep uncertain cases in coverage counts.
+- The offline budget evaluator below measures **priority ordering**, not the manual arm or time savings. Its randomized no-priority baseline is a diagnostic comparator, not a substitute for a blinded human review.
+
+Local-only diagnostic with independently adjudicated labels (`url,review_worthy,severity`, values `yes/no/uncertain` and `high/normal`):
+
+```bash
+python3 tools/seo_sitemap_budget_eval.py \
+  --queue review-queue.csv --labels private-reference.csv --budget 20 \
+  > aggregate-ranking-metrics.json
+```
+
+The evaluator requires exactly one reference label for each changed URL, rejects duplicates/mixed evidence, and emits **aggregate counts only** (no URL list). Its deterministic shuffled baseline uses 100 trials by default. If the budget equals the entire queue, recall is mechanically 100% when any positives exist; **never use that figure as evidence for the pilot go gate**. Keep all reference labels private; a local SHA check is not authenticated capture evidence. No authorized real-world dataset has been evaluated.
+
 ## Metrics and interpretation
 
 Compute on adjudicated yes/no cases only, per arm:
