@@ -84,10 +84,10 @@ class RedirectAuditTests(unittest.TestCase):
             # Record 1 begins on line 2 but spans lines 2-3.
             # Record 2 begins on line 4; conflicting record 3 begins on line 5.
             path.write_text(
-                'source_url,target_url\\n'
-                '"https://a.test/bad\\nline",https://a.test/ok\\n'
-                'https://a.test/old,https://a.test/new\\n'
-                'https://a.test/old,https://a.test/other\\n',
+                'source_url,target_url\n'
+                '"https://a.test/bad\nline",https://a.test/ok\n'
+                'https://a.test/old,https://a.test/new\n'
+                'https://a.test/old,https://a.test/other\n',
                 encoding='utf-8')
             result = subprocess.run(
                 [sys.executable, str(script), '--map', str(path)],
