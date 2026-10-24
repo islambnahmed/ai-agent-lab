@@ -35,8 +35,10 @@ def run_isolated_receipt(directory, *, tests=TESTS, inputs=INPUTS, timeout=120):
     """
     directory = Path(directory).resolve()
     _validate_manifest(inputs, tests)
-    source_hashes, missing = _hash_inputs(directory, inputs)
+    # Refuse symlinks before any content read; avoid following an out-of-scope
+    # path when inspecting a malformed checkout or a synthetic fixture.
     symlinks = sorted(name for name in inputs if (directory / name).is_symlink())
+    source_hashes, missing = ({}, []) if symlinks else _hash_inputs(directory, inputs)
     receipt = {
         "schema": SCHEMA, "python": platform.python_version(),
         "implementation": platform.python_implementation(),
