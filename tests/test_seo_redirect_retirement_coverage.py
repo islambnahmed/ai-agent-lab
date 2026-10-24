@@ -94,6 +94,13 @@ class RetirementCoverageTests(unittest.TestCase):
                              [{'row': 4, 'type': 'unmapped_retiring_url'}])
             self.assertNotIn('a.test', good.stdout)
 
+    def test_direct_api_rejects_empty_inventory_even_with_empty_map(self):
+        # File reader already rejects this; direct callers must fail closed too.
+        with self.assertRaisesRegex(ValueError, 'empty'):
+            coverage([], [], [])
+        with self.assertRaisesRegex(ValueError, 'empty'):
+            coverage([], [row('https://a.test/old', 'https://a.test/new')], [2])
+
     def test_empty_inventory_is_not_misreported_as_complete(self):
         with tempfile.TemporaryDirectory() as td:
             retirement = Path(td) / 'retiring.csv'
