@@ -38,14 +38,16 @@ def screen(receipt: dict, evidence: dict) -> dict:
         if issued.date() <= origin:
             failures.append('receipt issued before completed origin UTC day')
         horizon=receipt['horizon']
-        if horizon not in (1,7,30) or isinstance(horizon,bool): raise ValueError('invalid horizon')
+        if type(horizon) is not int or horizon not in (1,7,30): raise ValueError('invalid horizon')
         if not all(finite_positive(receipt[k]) for k in ('point','baseline','originClose')):raise ValueError('invalid receipt prices')
         if receipt['baseline']!=receipt['originClose']: failures.append('baseline not equal to originClose')
         if receipt.get('targetDate') is not None: failures.append('requires observed-cadence targetDate=null in this audit')
         if receipt.get('calendar')!='observations': failures.append('this audit only covers observations cadence')
+        if not isinstance(receipt.get('source'), str) or not receipt['source'].strip():
+            raise ValueError('nonempty source provider required')
     except (KeyError,TypeError,ValueError) as e:
         return {'status':'invalid_receipt','reasons':[str(e)]}
-    if not evidence.get('receipt_in_anchored_commit_verified'):
+    if evidence.get('receipt_in_anchored_commit_verified') is not True:
         failures.append('no independently verified anchored receipt bytes')
     try:
         anchor=instant(evidence['anchorObservedAt'])
@@ -56,9 +58,9 @@ def screen(receipt: dict, evidence: dict) -> dict:
         failures.append('outcome provider does not match receipt provider')
     if evidence.get('unit')!='USD per troy ounce' or evidence.get('grain')!='daily':
         failures.append('outcome unit/grain contract unverified')
-    if not evidence.get('original_vintage_verified'):
+    if evidence.get('original_vintage_verified') is not True:
         failures.append('original source vintage/prefix not independently verified')
-    if not evidence.get('complete_provider_sequence_independently_verified'):
+    if evidence.get('complete_provider_sequence_independently_verified') is not True:
         failures.append('future observed-close sequence completeness not independently verified')
     sequence=evidence.get('futureObservedCloses')
     if not isinstance(sequence,list) or len(sequence)!=horizon:
@@ -85,7 +87,7 @@ def screen(receipt: dict, evidence: dict) -> dict:
             failures.append('no independently verified target first-availability timestamp')
     else:
         failures.append('target publication chronology cannot be checked')
-    if not evidence.get('provider_timestamp_independently_verified'):
+    if evidence.get('provider_timestamp_independently_verified') is not True:
         failures.append('target first-availability provenance not independently verified')
     if failures:
         return {'status':'insufficient_evidence','reasons':failures,
