@@ -1,0 +1,44 @@
+{
+  "finance/complete": {
+    "mean_missing_rounds": 0,
+    "naive_crossings": 0,
+    "opportunities_per_trial": 100,
+    "reconciled_crossings": 0,
+    "trials": 300
+  },
+  "finance/drop_negative_primary": {
+    "mean_missing_rounds": 50,
+    "naive_crossings": 300,
+    "opportunities_per_trial": 100,
+    "reconciled_crossings": 0,
+    "trials": 300
+  },
+  "finance/forge_primary": {
+    "mean_missing_rounds": 0,
+    "naive_crossings": 300,
+    "opportunities_per_trial": 100,
+    "reconciled_crossings": 300,
+    "trials": 300
+  },
+  "seo/complete": {
+    "mean_missing_rounds": 0,
+    "naive_crossings": 0,
+    "opportunities_per_trial": 100,
+    "reconciled_crossings": 0,
+    "trials": 300
+  },
+  "seo/drop_negative_primary": {
+    "mean_missing_rounds": 50,
+    "naive_crossings": 300,
+    "opportunities_per_trial": 100,
+    "reconciled_crossings": 0,
+    "trials": 300
+  },
+  "seo/forge_primary": {
+    "mean_missing_rounds": 0,
+    "naive_crossings": 300,
+    "opportunities_per_trial": 100,
+    "reconciled_crossings": 300,
+    "trials": 300
+  }
+}
