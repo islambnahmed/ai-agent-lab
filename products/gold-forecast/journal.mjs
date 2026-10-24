@@ -83,7 +83,10 @@ export function settleReceipt(receipt,series,{asOf}={}){
   }
   const targetDate=series[index].date;
   if(targetDate<receipt.issuedAt.slice(0,10))throw Error('Outcome predates issue');
-  if(targetDate>=asOf.slice(0,10))return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
+  // Compare UTC calendar days, not the textual day of an offset timestamp.
+  // prepareHistory uses the UTC instant, so settlement must use the same clock.
+  const asOfUtcDay=new Date(parseInstant(asOf,'Settlement timestamp')).toISOString().slice(0,10);
+  if(targetDate>=asOfUtcDay)return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
   if(index!==receipt.historyLength+receipt.horizon-1)throw Error('Horizon / calendar mismatch');
   const actual=series[index].price;
   return {id:receipt.id,horizon:receipt.horizon,status:'matured',targetDate,actual,
