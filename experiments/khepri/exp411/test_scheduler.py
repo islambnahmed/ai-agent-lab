@@ -65,6 +65,11 @@ class SchedulerTests(unittest.TestCase):
     def test_unknown_policy_rejected(self):
         with self.assertRaises(ValueError): choose([], 1, 'magic')
 
+    def test_fair_dp_overdue_priority(self):
+        items = [Item('a', 1, 100, 1, 1), Item('b', 1, 1, .01, 30)]
+        self.assertEqual(choose(items, 1, 'dp'), ('a',))
+        self.assertEqual(choose(items, 1, 'fair_dp'), ('b',))
+
     def test_gold_transfer(self):
         feeds = [Item('spot', 3, 10, .3, 3), Item('fx', 1, 4, .7, 1), Item('rates', 2, 5, .05, 20)]
         selected = choose(feeds, 3)
