@@ -43,6 +43,16 @@ def value(item: Item) -> float:
 
 def choose(items: list[Item], budget: int, policy: str = 'dp') -> tuple[str, ...]:
     rows = validate(items, budget)
+    if policy == 'fair_dp':
+        # Illustrative coverage guard: reserve capacity for items unchecked >=30 days.
+        overdue = sorted((x for x in rows if x.age >= 30), key=lambda x: (-x.age, x.id))
+        selected, remaining = [], budget
+        for x in overdue:
+            if x.cost <= remaining:
+                selected.append(x.id)
+                remaining -= x.cost
+        others = [x for x in rows if x.id not in selected]
+        return tuple(sorted(selected + list(choose(others, remaining, 'dp'))))
     if policy == 'dp':
         # dp[c] = (reward, tuple(ids)) for exactly c units spent.
         dp: list[tuple[float, tuple[str, ...]] | None] = [None] * (budget + 1)
