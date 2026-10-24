@@ -12,6 +12,18 @@ First export two inventories with `tools/seo_sitemap_audit.py --urls-csv` (from 
 python3 tools/seo_sitemap_compare.py --before snapshot-1.csv --after snapshot-2.csv > sitemap-diff.json
 ```
 
+### Verified comparison with paired audit reports
+
+When exporting each CSV, save the corresponding JSON report from `seo_sitemap_audit.py`. To avoid false URL removal alerts from partially downloaded or malformed sitemaps, run:
+
+```bash
+python3 tools/seo_sitemap_compare.py \
+  --before snapshot-1.csv --before-report snapshot-1.json \
+  --after snapshot-2.csv --after-report snapshot-2.json > sitemap-diff.json
+```
+
+Both reports are required together. The tool checks clean audit diagnostics, the CSV byte size, row and unique-URL counts, SHA-256 of the exact CSV bytes, the same site origin, and nondecreasing `as_of` dates. It returns exit code **2** without a diff if any check fails. This detects incomplete audited snapshots and accidental CSV/report swaps, but **does not authenticate the reports or prove when the original website data was captured**. A complete offline export can still differ from a live site. Comparing CSVs without reports remains supported, but JSON explicitly labels the result `csv_only_unverified`.
+
 Exit codes: **0** means identical URL/source/lastmod multisets, **1** means differences, **2** means invalid or unreadable input. The JSON contains sorted `added_urls`, `removed_urls`, and `changed_existing_urls` with per-source/lastmod row counts before and after. Row ordering and the `duplicate` marker's first-occurrence position are ignored; multiplicity is not. Each URL must have exactly one `duplicate=false` row (the exporter invariant), even if rows were reordered; otherwise the input is rejected with exit code 2 rather than treated as a trustworthy snapshot. Inputs must have the exact four-column exporter schema. File size and row count are bounded (64 MiB and 1,000,000 rows per CSV). No files are overwritten.
 
 ## Evidence and limitations
