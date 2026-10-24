@@ -1,0 +1,271 @@
+{
+  "seo": {
+    "seed": 432177,
+    "budget": 8,
+    "weights": {
+      "canonical": 15,
+      "indexability": 2,
+      "robots": 13,
+      "render": 20,
+      "schema": 8,
+      "duplicate": 11,
+      "redirect": 2,
+      "sitemap": 12
+    },
+    "tasks": [
+      {
+        "name": "t0",
+        "cost": 3,
+        "covers": [
+          "canonical",
+          "indexability",
+          "render",
+          "robots"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t1",
+        "cost": 4,
+        "covers": [
+          "canonical",
+          "render",
+          "robots",
+          "sitemap"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t2",
+        "cost": 5,
+        "covers": [
+          "canonical",
+          "duplicate",
+          "redirect",
+          "robots"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t3",
+        "cost": 1,
+        "covers": [
+          "indexability",
+          "schema"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t4",
+        "cost": 1,
+        "covers": [
+          "canonical",
+          "indexability",
+          "redirect",
+          "schema"
+        ],
+        "requires": [
+          "t0",
+          "t2"
+        ]
+      },
+      {
+        "name": "t5",
+        "cost": 7,
+        "covers": [
+          "indexability",
+          "redirect",
+          "render",
+          "sitemap"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t6",
+        "cost": 7,
+        "covers": [
+          "duplicate",
+          "indexability",
+          "redirect",
+          "render",
+          "robots",
+          "schema"
+        ],
+        "requires": [
+          "t4"
+        ]
+      },
+      {
+        "name": "t7",
+        "cost": 5,
+        "covers": [
+          "canonical",
+          "indexability",
+          "render",
+          "schema"
+        ],
+        "requires": [
+          "t3"
+        ]
+      },
+      {
+        "name": "t8",
+        "cost": 2,
+        "covers": [
+          "redirect",
+          "robots",
+          "schema",
+          "sitemap"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t9",
+        "cost": 4,
+        "covers": [
+          "duplicate",
+          "redirect",
+          "render"
+        ],
+        "requires": []
+      }
+    ],
+    "exact": {
+      "tasks": [
+        "t1",
+        "t9"
+      ],
+      "cost": 8,
+      "value": 73
+    },
+    "repaired": {
+      "tasks": [
+        "t0",
+        "t8"
+      ],
+      "cost": 5,
+      "value": 72
+    }
+  },
+  "gold": {
+    "seed": 532441,
+    "budget": 17,
+    "weights": {
+      "stale_quote": 20,
+      "fx_drift": 10,
+      "timezone": 2,
+      "feed_gap": 5,
+      "duplicate_tick": 20,
+      "outlier": 29,
+      "spread": 25,
+      "rounding": 24
+    },
+    "tasks": [
+      {
+        "name": "t0",
+        "cost": 3,
+        "covers": [
+          "duplicate_tick",
+          "timezone"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t1",
+        "cost": 7,
+        "covers": [
+          "duplicate_tick",
+          "stale_quote"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t2",
+        "cost": 2,
+        "covers": [
+          "spread"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t3",
+        "cost": 2,
+        "covers": [],
+        "requires": []
+      },
+      {
+        "name": "t4",
+        "cost": 7,
+        "covers": [
+          "rounding"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t5",
+        "cost": 3,
+        "covers": [
+          "duplicate_tick"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t6",
+        "cost": 4,
+        "covers": [
+          "feed_gap",
+          "spread"
+        ],
+        "requires": []
+      },
+      {
+        "name": "t7",
+        "cost": 2,
+        "covers": [
+          "feed_gap",
+          "rounding"
+        ],
+        "requires": [
+          "t4"
+        ]
+      },
+      {
+        "name": "t8",
+        "cost": 3,
+        "covers": [],
+        "requires": []
+      },
+      {
+        "name": "t9",
+        "cost": 3,
+        "covers": [
+          "fx_drift",
+          "timezone"
+        ],
+        "requires": [
+          "t2"
+        ]
+      }
+    ],
+    "exact": {
+      "tasks": [
+        "t1",
+        "t2",
+        "t4"
+      ],
+      "cost": 16,
+      "value": 89
+    },
+    "repaired": {
+      "tasks": [
+        "t0",
+        "t2",
+        "t4",
+        "t7",
+        "t9"
+      ],
+      "cost": 17,
+      "value": 86
+    }
+  }
+}
