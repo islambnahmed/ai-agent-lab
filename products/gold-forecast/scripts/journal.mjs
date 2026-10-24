@@ -4,10 +4,11 @@ import {fileURLToPath} from 'node:url';
 import {execFileSync} from 'node:child_process';
 import {issueReceipt,settleReceipt,hash} from '../journal.mjs';
 import {prepareProviderHistory} from '../data.mjs';
+import {readVerifiedSnapshot} from '../snapshot-integrity.mjs';
 
 const root=path.resolve(path.dirname(fileURLToPath(import.meta.url)),'..');
-const read=name=>JSON.parse(fs.readFileSync(path.join(root,'data',name+'.json'),'utf8'));
-const manifest=read('fetch-manifest');
+const manifest=JSON.parse(fs.readFileSync(path.join(root,'data','fetch-manifest.json'),'utf8'));
+const read=name=>readVerifiedSnapshot(root,manifest,name);
 const asOf=manifest.history.receivedAt;
 const prepared=prepareProviderHistory(read('history'),asOf);
 const dir=path.join(root,'reports','prospective');fs.mkdirSync(dir,{recursive:true});
