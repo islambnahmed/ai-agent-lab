@@ -30,10 +30,12 @@ def finite_positive(x: Any) -> bool:
 def screen(receipt: dict, evidence: dict) -> dict:
     """Screen supplied evidence without network access; fail closed on missing proof."""
     failures=[]
+    as_of=dt.datetime.now(dt.timezone.utc)
     if not isinstance(receipt,dict) or not isinstance(evidence,dict):
         return {'status':'insufficient_evidence','reasons':['receipt/evidence objects required']}
     try:
         issued=instant(receipt['issuedAt'])
+        if issued>as_of: raise ValueError('receipt issue timestamp is in the future')
         origin=date(receipt['originDate'])
         if issued.date() <= origin:
             failures.append('receipt issued before completed origin UTC day')
@@ -51,6 +53,7 @@ def screen(receipt: dict, evidence: dict) -> dict:
         failures.append('no independently verified anchored receipt bytes')
     try:
         anchor=instant(evidence['anchorObservedAt'])
+        if anchor>as_of: failures.append('external anchor timestamp is in the future')
         if anchor<=issued: failures.append('anchor not after receipt issue timestamp')
     except (KeyError,ValueError):
         anchor=None;failures.append('missing verified external anchor timestamp')
@@ -79,6 +82,7 @@ def screen(receipt: dict, evidence: dict) -> dict:
     if target is not None:
         try:
             published=instant(evidence['targetFirstAvailableAt'])
+            if published>as_of: failures.append('target first availability timestamp is in the future')
             if anchor is None or published<=anchor:
                 failures.append('target first availability not proven after external receipt anchor')
             if published.date() <= date(target['date']):
