@@ -19,6 +19,7 @@ def load_inventory(path: Path) -> dict[str, Counter[tuple[str, str]]]:
     if not path.is_file() or path.stat().st_size > MAX_INPUT_BYTES:
         raise ValueError(f'inventory missing or exceeds {MAX_INPUT_BYTES} bytes: {path}')
     result: dict[str, Counter[tuple[str, str]]] = defaultdict(Counter)
+    first_markers: Counter[str] = Counter()
     try:
         with path.open('r', encoding='utf-8-sig', newline='') as stream:
             reader = csv.DictReader(stream, strict=True)
@@ -33,10 +34,17 @@ def load_inventory(path: Path) -> dict[str, Counter[tuple[str, str]]]:
                     raise ValueError(f'invalid inventory URL/source at row {number}: {path}')
                 if row['duplicate'] not in ('true', 'false'):
                     raise ValueError(f'invalid duplicate marker at row {number}: {path}')
+                if row['duplicate'] == 'false':
+                    first_markers[row['normalized_url']] += 1
                 key = (row['source_sitemap'], row['lastmod'])
                 result[row['normalized_url']][key] += 1
     except (OSError, UnicodeError, csv.Error) as exc:
         raise ValueError(f'cannot parse inventory {path}: {type(exc).__name__}') from exc
+    # The exporter marks exactly one occurrence of each URL as non-duplicate.
+    # Do not require that marker to appear first: snapshots may be row-reordered.
+    for url in result:
+        if first_markers[url] != 1:
+            raise ValueError(f'inconsistent duplicate markers for URL {url!r}: {path}')
     return dict(result)
 
 

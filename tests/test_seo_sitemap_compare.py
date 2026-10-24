@@ -89,5 +89,37 @@ class CompareTests(unittest.TestCase):
         self.assertEqual(self.cli(a, b).returncode, 2)
 
 
+    def test_missing_or_repeated_first_occurrence_marker_rejected(self):
+        a = self.write('old.csv', [
+            ['a.xml', 'https://example.com/x', '', 'false'],
+        ])
+        b = self.write('bad.csv', [
+            ['a.xml', 'https://example.com/x', '', 'false'],
+            ['b.xml', 'https://example.com/x', '', 'false'],
+        ])
+        result = self.cli(a, b)
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertEqual(result.stdout, '')
+        b = self.write('bad.csv', [
+            ['a.xml', 'https://example.com/x', '', 'true'],
+        ])
+        result = self.cli(a, b)
+        self.assertEqual(result.returncode, 2, result.stderr)
+        self.assertEqual(result.stdout, '')
+
+    def test_valid_first_marker_can_appear_after_duplicate_row(self):
+        a = self.write('old.csv', [
+            ['a.xml', 'https://example.com/x', '', 'false'],
+            ['b.xml', 'https://example.com/x', '', 'true'],
+        ])
+        b = self.write('new.csv', [
+            ['b.xml', 'https://example.com/x', '', 'true'],
+            ['a.xml', 'https://example.com/x', '', 'false'],
+        ])
+        result = self.cli(a, b)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
+
+
 if __name__ == '__main__':
     unittest.main()

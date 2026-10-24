@@ -12,7 +12,7 @@ First export two inventories with `tools/seo_sitemap_audit.py --urls-csv` (from 
 python3 tools/seo_sitemap_compare.py --before snapshot-1.csv --after snapshot-2.csv > sitemap-diff.json
 ```
 
-Exit codes: **0** means identical URL/source/lastmod multisets, **1** means differences, **2** means invalid or unreadable input. The JSON contains sorted `added_urls`, `removed_urls`, and `changed_existing_urls` with per-source/lastmod row counts before and after. Row ordering and the `duplicate` marker's first-occurrence position are ignored; multiplicity is not. Inputs must have the exact four-column exporter schema. File size and row count are bounded (64 MiB and 1,000,000 rows per CSV). No files are overwritten.
+Exit codes: **0** means identical URL/source/lastmod multisets, **1** means differences, **2** means invalid or unreadable input. The JSON contains sorted `added_urls`, `removed_urls`, and `changed_existing_urls` with per-source/lastmod row counts before and after. Row ordering and the `duplicate` marker's first-occurrence position are ignored; multiplicity is not. Each URL must have exactly one `duplicate=false` row (the exporter invariant), even if rows were reordered; otherwise the input is rejected with exit code 2 rather than treated as a trustworthy snapshot. Inputs must have the exact four-column exporter schema. File size and row count are bounded (64 MiB and 1,000,000 rows per CSV). No files are overwritten.
 
 ## Evidence and limitations
 
