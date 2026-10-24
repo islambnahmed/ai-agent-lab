@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Independently archive and reconcile prospective gold forecast receipts and source vintages; test evidence gaps before model promotion",
+      "current_goal": "Recover independent source vintages and reconcile prospective gold h1/h7/h30 settlements; retain evidence-based model promotion gate",
       "current_branch": "sandbox/lumen-394-gold-utc",
-      "last_checkpoint": "research/lumen/lumen396_irregular_observation_settlement.md (2026-10-24; 15 synthetic irregular h1/h7/h30 cases; Gold CI 40131417207 and Lab CI 40131417202 success; isolated branch)",
+      "last_checkpoint": "research/lumen/lumen397_prospective_receipt_anchor_audit.md (2026-10-25; GitHub Actions created_at 2026-10-12T17:13:55Z anchors all three receipts; vendor snapshot and actuals not verified)",
       "status": "active"
     }
   }
