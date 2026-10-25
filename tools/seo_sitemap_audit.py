@@ -223,6 +223,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument('--as-of', default=dt.datetime.now(dt.timezone.utc).date().isoformat())
     parser.add_argument('--max-sitemaps', type=int, default=MAX_SITEMAPS)
     parser.add_argument('--urls-csv', type=Path, help='Optional atomic CSV export of valid URL entries, including duplicates')
+    parser.add_argument('--replace-csv', action='store_true',
+                        help='Explicitly allow replacing a CSV destination with different contents')
     args = parser.parse_args(argv)
     temporary_csv = None
     try:
@@ -261,7 +263,20 @@ def main(argv: list[str] | None = None) -> int:
                 digest = hashlib.file_digest(exported, 'sha256').hexdigest()
             report['csv_export'] = {'sha256': digest, 'bytes': temporary_csv.stat().st_size,
                                     'rows': exported_rows}
-            os.replace(temporary_csv, destination)
+            if args.replace_csv:
+                os.replace(temporary_csv, destination)
+            else:
+                # An atomic hard link prevents silently clobbering a pre-existing
+                # report, including one created between validation and export.
+                try:
+                    os.link(temporary_csv, destination)
+                except FileExistsError:
+                    # Identical reruns are harmless and remain idempotent.
+                    with destination.open('rb') as existing:
+                        old_digest = hashlib.file_digest(existing, 'sha256').hexdigest()
+                    if old_digest != digest:
+                        raise ValueError('CSV destination differs; pass --replace-csv to overwrite')
+                temporary_csv.unlink()
             temporary_csv = None
     except (ValueError, OSError, ExportFailure) as exc:
         print(json.dumps({'error': str(exc)}), file=sys.stderr)
