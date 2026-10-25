@@ -1,0 +1,28 @@
+{
+  "baseline": {
+    "schedules": 3,
+    "violations": 2,
+    "counterexamples": [
+      [
+        "verify",
+        "effect",
+        "cancel"
+      ],
+      [
+        "verify",
+        "cancel",
+        "effect"
+      ]
+    ]
+  },
+  "guarded": {
+    "schedules": 6,
+    "violations": 0,
+    "counterexamples": []
+  },
+  "tests_run": 10,
+  "failures": 0,
+  "errors": 0,
+  "randomized_operations": 1000,
+  "external_effects": false
+}
