@@ -45,12 +45,24 @@ def predict_drift(train, horizon):
         raise ValueError("Insufficient training prices")
     if horizon < 1 or any(not math.isfinite(p) or p <= 0 for p in train):
         raise ValueError("Horizon and training prices must be positive and finite")
-    # Log returns telescope. Log prices avoid overflowing b/a for valid floats.
-    mean_return = (math.log(train[-1]) - math.log(train[0])) / (len(train) - 1)
-    if mean_return == 0:
-        return train[-1]  # avoid round-trip exp(log(price)) error for flat drift
+    # Endpoint log differences lose tiny but representable changes at large
+    # price scales (e.g. adjacent floats around 1e300). Use log1p near unity,
+    # and endpoint logs when a ratio/difference could overflow or underflow.
+    first, last = train[0], train[-1]
+    if first == last:
+        return last
+    relative_change = (last - first) / first
+    if math.isfinite(relative_change) and abs(relative_change) <= 0.5:
+        total_log_return = math.log1p(relative_change)
+    else:
+        total_log_return = math.log(last) - math.log(first)
+    log_growth = horizon * total_log_return / (len(train) - 1)
     try:
-        forecast = math.exp(math.log(train[-1]) + horizon * mean_return)
+        # Multiply near unity to preserve the significant bits of last.
+        # For large growth use log space: exp(growth) alone may overflow even
+        # when the final forecast (starting from a tiny price) is finite.
+        forecast = (last * math.exp(log_growth) if abs(log_growth) <= 1
+                    else math.exp(math.log(last) + log_growth))
     except OverflowError as exc:
         raise ValueError("Drift forecast is outside the finite positive range") from exc
     if not math.isfinite(forecast) or forecast <= 0:
