@@ -19,3 +19,9 @@ jobs:
           python-version: "3.12"
       - name: Validate lab structure
         run: python tools/validate_lab.py
+      - name: Offline redirect-map regression tests
+        run: python -m unittest discover -s tests -p 'test_seo_redirect_map_audit.py' -v
+      - name: Offline redirect retirement coverage tests
+        run: python -m unittest discover -s tests -p 'test_seo_redirect_retirement_coverage.py' -v
+      - name: Verify gold walk-forward backtest
+        run: python -m unittest discover -s tests -p 'test_gold_walkforward.py'
