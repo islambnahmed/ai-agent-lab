@@ -1,0 +1,20 @@
+{
+  "gold_derived_conversion": {
+    "cases": 2000,
+    "early_fallback_accepted": 2000,
+    "early_fallback_accuracy": 0.508,
+    "early_fallback_correct": 1016,
+    "late_dependency_rejected": 2000,
+    "naive_accuracy": 1,
+    "naive_correct": 2000
+  },
+  "seo_alias_join": {
+    "cases": 2000,
+    "guarded_accuracy": 0.493,
+    "guarded_correct": 986,
+    "guarded_future_mappings": 0,
+    "unsafe_accuracy": 1,
+    "unsafe_correct": 2000,
+    "unsafe_future_mappings": 2000
+  }
+}
