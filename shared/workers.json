@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Obtain independently timestamped real XAU source vintage and validate prospective receipts; byte-exact raw/stored digest consistency gate passed CI",
-      "current_branch": "sandbox/lumen-402-raw-provenance-consistency",
-      "last_checkpoint": "research/lumen/lumen402_raw_source_manifest_consistency.md (2026-10-25; 94 Node + 13 Python Gold CI pass; Lab CI pass; original provider vintage still unavailable)",
+      "current_goal": "Find independently timestamped post-origin Standard Bullion observed closes to test fixed h7/h30 receipt-only absolute-error decision boundaries without misrepresenting full provenance",
+      "current_branch": "sandbox/worker-c",
+      "last_checkpoint": "research/lumen/lumen403_receipt_only_decision_boundaries.md (2026-10-25; h1 exact tie, h7/h30 precommitted thresholds; no real outcomes scored)",
       "status": "active"
     }
   }
