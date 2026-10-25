@@ -216,6 +216,37 @@ class SitemapAuditTests(unittest.TestCase):
         self.assertEqual(compressed.read_bytes(), before)
         self.assertFalse(list(self.root.glob('.sitemap-audit-*.csv')))
 
+    def test_csv_export_does_not_clobber_different_existing_file_without_opt_in(self):
+        self.write('sitemap.xml', urlset(('https://example.com/first', None)))
+        destination = self.root / 'inventory.csv'
+        destination.write_text('important existing data', encoding='utf-8')
+        script = str(Path(__file__).resolve().parents[1] / 'tools/seo_sitemap_audit.py')
+        args = [sys.executable, script, '--root', str(self.root),
+                '--base-url', 'https://example.com/', '--as-of', '2026-10-24',
+                '--urls-csv', str(destination)]
+        blocked = subprocess.run(args, capture_output=True, text=True)
+        self.assertEqual(blocked.returncode, 2, blocked.stderr)
+        self.assertIn('--replace-csv', blocked.stderr)
+        self.assertEqual(destination.read_text(encoding='utf-8'), 'important existing data')
+        self.assertFalse(list(self.root.glob('.sitemap-audit-*.csv')))
+
+        allowed = subprocess.run(args + ['--replace-csv'], capture_output=True, text=True)
+        self.assertEqual(allowed.returncode, 0, allowed.stderr)
+        with destination.open(newline='', encoding='utf-8') as stream:
+            self.assertEqual([row['normalized_url'] for row in csv.DictReader(stream)],
+                             ['https://example.com/first'])
+
+        # Same bytes are idempotent, but a changed sitemap requires opt-in.
+        self.assertEqual(subprocess.run(args, capture_output=True).returncode, 0)
+        first_export = destination.read_bytes()
+        self.write('sitemap.xml', urlset(('https://example.com/second', None)))
+        changed = subprocess.run(args, capture_output=True, text=True)
+        self.assertEqual(changed.returncode, 2, changed.stderr)
+        self.assertEqual(destination.read_bytes(), first_export)
+        self.assertFalse(list(self.root.glob('.sitemap-audit-*.csv')))
+        self.assertEqual(subprocess.run(args + ['--replace-csv'],
+                                        capture_output=True).returncode, 0)
+
     def test_limit_and_bad_configuration(self):
         self.write('sitemap.xml', index('https://example.com/a.xml'))
         self.write('a.xml', urlset(('https://example.com/a',None)))
