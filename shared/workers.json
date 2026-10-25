@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Find independently timestamped post-origin Standard Bullion observed closes to test fixed h7/h30 receipt-only absolute-error decision boundaries without misrepresenting full provenance",
+      "current_goal": "Validate dependency-complete Gold Lab release scope and peer compatibility before proposing any main integration; keep live skill claims gated on authenticated observations",
       "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/lumen403_receipt_only_decision_boundaries.md (2026-10-25; h1 exact tie, h7/h30 precommitted thresholds; no real outcomes scored)",
+      "last_checkpoint": "research/lumen/lumen404_gold_release_scope_audit.md (2026-10-25; full integration 41 commits/21 files, not 3-file standalone fix)",
       "status": "active"
     }
   }
