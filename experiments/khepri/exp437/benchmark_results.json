@@ -1,0 +1,50 @@
+{
+  "injection": {
+    "attack_variants": {
+      "drive": 6,
+      "github": 6,
+      "notion": 6
+    },
+    "by_domain": {
+      "drive": {
+        "attacks": 2000,
+        "unsafe_baseline_accepts": 2000
+      },
+      "github": {
+        "attacks": 2000,
+        "unsafe_baseline_accepts": 2000
+      },
+      "notion": {
+        "attacks": 2000,
+        "unsafe_baseline_accepts": 2000
+      }
+    },
+    "counts": {
+      "attacks": 6000,
+      "benign_allowed": 6,
+      "benign_total": 6,
+      "unsafe_baseline_accepts": 6000
+    },
+    "seed": 437
+  },
+  "metamorphic": {
+    "drive": {
+      "mutation_total": 1000,
+      "mutations_rejected": 1000,
+      "valid_accepted": 1000,
+      "valid_total": 1000
+    },
+    "github": {
+      "mutation_total": 1000,
+      "mutations_rejected": 1000,
+      "valid_accepted": 1000,
+      "valid_total": 1000
+    },
+    "notion": {
+      "mutation_total": 1000,
+      "mutations_rejected": 1000,
+      "valid_accepted": 1000,
+      "valid_total": 1000
+    }
+  }
+}
