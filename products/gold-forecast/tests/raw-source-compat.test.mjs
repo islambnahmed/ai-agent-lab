@@ -15,3 +15,10 @@ test('peer snapshot parser quarantines altered bytes after fetch',()=>{
   const changed=Buffer.from('{"metal":"XAU","attribution":"café"}','utf8');
   assert.throws(()=>parseVerifiedHistorySnapshot(changed,manifest),/SHA-256 mismatch/);
 });
+
+// A valid saved snapshot cannot be attributed to a different raw provider
+// response: the byte-exact collector promises rawSha256 === storedSha256.
+test('peer snapshot parser rejects a manifest with contradictory raw digest',()=>{
+  const inconsistent={...manifest,rawSha256:'0'.repeat(64)};
+  assert.throws(()=>parseVerifiedHistorySnapshot(raw,inconsistent),/raw\/stored SHA-256 disagreement/);
+});
