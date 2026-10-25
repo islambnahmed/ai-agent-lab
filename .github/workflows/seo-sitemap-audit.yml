@@ -13,6 +13,7 @@ on:
       - "tests/test_seo_sitemap_pipeline.py"
       - "tools/seo_sitemap_field_score.py"
       - "tests/test_seo_sitemap_field_score.py"
+      - "tests/test_seo_sitemap_cli_privacy.py"
       - ".github/workflows/seo-sitemap-audit.yml"
   pull_request:
     paths:
@@ -27,6 +28,7 @@ on:
       - "tests/test_seo_sitemap_pipeline.py"
       - "tools/seo_sitemap_field_score.py"
       - "tests/test_seo_sitemap_field_score.py"
+      - "tests/test_seo_sitemap_cli_privacy.py"
       - ".github/workflows/seo-sitemap-audit.yml"
 permissions:
   contents: read
@@ -50,3 +52,5 @@ jobs:
         run: python -m unittest discover -s tests -p 'test_seo_sitemap_pipeline.py' -v
       - name: Offline field review session scoring regressions
         run: python -m unittest discover -s tests -p 'test_seo_sitemap_field_score.py' -v
+      - name: Sitemap CLI path and URL privacy regressions
+        run: python -m unittest discover -s tests -p 'test_seo_sitemap_cli_privacy.py' -v
