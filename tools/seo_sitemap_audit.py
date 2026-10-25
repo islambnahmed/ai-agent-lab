@@ -53,9 +53,13 @@ def _normalize_url(raw: str) -> str | None:
         parts = urlsplit(raw.strip())
         if parts.scheme.lower() not in ('http', 'https') or not parts.hostname:
             return None
-        if parts.username or parts.password or any(c.isspace() for c in raw):
+        # A blank userinfo (https://@host/) must not be silently discarded.
+        # Likewise, an explicit empty port or port zero is not a usable HTTP origin.
+        if '@' in parts.netloc or parts.netloc.endswith(':') or any(c.isspace() for c in raw):
             return None
         port = parts.port  # may raise ValueError
+        if port == 0:
+            return None
         host = parts.hostname.lower()
         if ':' in host:
             host = '[' + host + ']'
