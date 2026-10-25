@@ -1,0 +1,11 @@
+{
+  "legitimate_accepted": 3000,
+  "payload_swap_baseline_accepted": 3000,
+  "payload_swap_guard_accepted": 0,
+  "replay_baseline_accepted": 3000,
+  "replay_guard_accepted": 0,
+  "same_policy_path_swap_baseline_accepted": 1000,
+  "same_policy_path_swap_guard_accepted": 0,
+  "seed": 438,
+  "total_trials": 4000
+}
