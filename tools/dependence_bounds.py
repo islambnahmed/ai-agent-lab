@@ -156,11 +156,14 @@ def all_fail_bounds(marginals, pairwise=None):
     if n > 4:
         raise ValueError("cyclic pairwise prototype supports at most 4 modes")
     worlds=list(product((0,1), repeat=n))
-    aeq=[[1.0]*len(worlds)]; beq=[1.0]
+    # Keep the original numeric values as RHS inputs.  Converting a Decimal
+    # or Fraction to float here silently erases contradictions smaller than
+    # binary64 resolution before the exact vertex solver ever sees them.
+    aeq=[[1]*len(worlds)]; beq=[1]
     for i,p in enumerate(marginals):
-        aeq.append([float(w[i]) for w in worlds]); beq.append(float(p))
+        aeq.append([w[i] for w in worlds]); beq.append(p)
     for (i,j),q in pairwise.items():
-        aeq.append([float(w[i] and w[j]) for w in worlds]); beq.append(float(q))
+        aeq.append([int(w[i] and w[j]) for w in worlds]); beq.append(q)
     # With all three pairwise joints specified, the eight probability atoms
     # are affine functions of t=P(A&B&C). Non-negativity therefore gives the
     # exact feasible interval below. This avoids floating-point vertex
@@ -259,6 +262,21 @@ if __name__ == "__main__":
                             {(0,1):tiny, (1,2):tiny,
                              (2,3):tiny, (0,3):tiny})
     assert lo == tiny and hi == tiny
+    # Decimal constraints that differ below float resolution must not become
+    # identical before exact feasibility checking.  Three equal-joint edges
+    # force all four events to coincide; the smaller closing joint is impossible.
+    from decimal import Decimal
+    d = Decimal("0.1")
+    slightly_smaller = Decimal("0.099999999999999999999999999999")
+    assert float(d) == float(slightly_smaller)
+    try:
+        all_fail_bounds([d]*4, {(0,1):d, (1,2):d, (2,3):d,
+                                 (0,3):slightly_smaller})
+        raise AssertionError("expected exact Decimal cyclic infeasibility")
+    except ValueError:
+        pass
+    assert all_fail_bounds([d]*4, {(0,1):d, (1,2):d,
+                                    (2,3):d, (0,3):d}) == (.1,.1)
     # Exact boundary checks: float Frechet validation rejected this feasible
     # all-equal three-mode model (.8+.8-1 > .6 due rounding).
     lo,hi=all_fail_bounds([.8]*3,{(0,1):.6,(0,2):.6,(1,2):.6})
