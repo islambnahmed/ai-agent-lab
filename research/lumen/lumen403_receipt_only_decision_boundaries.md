@@ -15,7 +15,7 @@ All three source receipts are on `main` under `products/gold-forecast/reports/pr
 | Future observed provider closes | Published model | Point p (USD/oz) | Persistence b (USD/oz) | Midpoint threshold (USD/oz) | Exact per-receipt comparison |
 | --- | --- | ---: | ---: | ---: | --- |
 | 1 | persistence | 4207.98 | 4207.98 | 4207.98 | **Always a tie** for any finite target close; cannot outperform persistence |
-| 7 | mean_reversion | 4225.483424799358 | 4207.98 | **4216.731712399679** | Model lower absolute error iff target close **>** midpoint; worse iff **<**; tie at equality |
+| 7 | mean_reversion | 4225.483424799358 | 4207.98 | **4216.731712399678** | Model lower absolute error iff target close **>** midpoint; worse iff **<**; tie at equality |
 | 30 | momentum | 4183.958131173134 | 4207.98 | **4195.969065586567** | Model lower absolute error iff target close **<** midpoint; worse iff **>**; tie at equality |
 
 The thresholds are algebra, not fitted or optimized after observing any outcome: `|p-a| < |b-a|` is equivalent to `a > (p+b)/2` when `p>b`, and to `a < (p+b)/2` when `p<b`. The h=1 receipt's `point===baseline` makes its absolute errors identical for all actual values. A relative percentage skill metric is undefined when the persistence error is zero, even though the absolute errors tie.
