@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Validate dependency-complete Gold Lab release scope and peer compatibility before proposing any main integration; keep live skill claims gated on authenticated observations",
-      "current_branch": "sandbox/worker-c",
-      "last_checkpoint": "research/lumen/lumen404_gold_release_scope_audit.md (2026-10-25; full integration 41 commits/21 files, not 3-file standalone fix)",
+      "current_goal": "Review composed Gold provenance + peer SEO/walk-forward candidate; require full sitemap workflow, independent 48-file review, and real-world evidence before main merge",
+      "current_branch": "sandbox/lumen-405-combined-review-ci",
+      "last_checkpoint": "research/lumen/lumen405_composed_gold_seo_review_ci.md (2026-10-25; 21 source blobs verified, 48-path composite, two workflows passed)",
       "status": "active"
     }
   }
