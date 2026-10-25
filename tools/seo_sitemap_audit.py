@@ -236,6 +236,8 @@ def main(argv: list[str] | None = None) -> int:
             # Never let the export overwrite a local input sitemap.
             if destination.suffix.lower() in ('.xml', '.gz'):
                 raise ValueError('CSV output path must not end in .xml or .gz')
+            if destination.suffix.lower() != '.csv':
+                raise ValueError('CSV output path must end in .csv')
             if not destination.parent.is_dir():
                 raise ValueError('CSV output parent directory must exist')
             # Stream rows rather than retaining an extra inventory in memory.
