@@ -278,7 +278,11 @@ def main(argv: list[str] | None = None) -> int:
                         raise ValueError('CSV destination differs; pass --replace-csv to overwrite')
                 temporary_csv.unlink()
             temporary_csv = None
-    except (ValueError, OSError, ExportFailure) as exc:
+    except OSError:
+        # OS exceptions can include private input/output paths in their text.
+        print(json.dumps({'error': 'Sitemap audit input/output operation failed'}), file=sys.stderr)
+        return 2
+    except (ValueError, ExportFailure) as exc:
         print(json.dumps({'error': str(exc)}), file=sys.stderr)
         return 2
     finally:
