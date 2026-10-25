@@ -1,0 +1,19 @@
+{
+  "experiment": "exp441",
+  "date": "2026-10-25",
+  "source": "local deterministic SQLite simulation",
+  "unit_tests_passed": 27,
+  "randomized_transitions": 8000,
+  "benchmark": {
+    "applied_once": 400,
+    "distinct_db_files": true,
+    "duplicate_effects": 0,
+    "effects": 400,
+    "operations": 400,
+    "pending": 0,
+    "per_family": 200,
+    "rejected_forged_dispatches": 800,
+    "suppressed_retries": 400
+  },
+  "limits": "trusted dispatcher/sink, honest time, atomic sink receipts/effects; no remote integration"
+}
