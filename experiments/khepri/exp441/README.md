@@ -24,7 +24,7 @@ The sink remains independently idempotent by stable operation ID. If a crash occ
 From the repository root, with Python 3.10+ and standard library only:
 
     cd experiments/khepri/exp441
-    python -m unittest -v ../exp440/test_durable_delivery.py test_verified_delivery.py
+    PYTHONPATH=../exp440:. python -m unittest -v test_durable_delivery test_verified_delivery
     python benchmark.py
 
 The parent exp440 files are inherited on this branch; no shared main files were changed.
