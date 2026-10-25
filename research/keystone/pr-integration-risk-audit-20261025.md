@@ -16,10 +16,16 @@ Read-only inventory of the authorized repository's open pull requests via GitHub
 The lab is producing verified **draft artifacts** faster than they are reviewed/integrated. A successful CI run on a stacked head tests that head in its own context, **not** the final merged combination with parallel roots. The current backlog can obscure which branch is canonical and make a long sequence of small fixes look like deployed capability. This is a release-process bottleneck, not a reason to stop exploration.
 
 ## Reversible proposed decision gates
-1. **Choose one canonical candidate per capability**, without merging yet: for sitemap, compare the `#34` consolidated head plus `#35–#38` follow-ups against the alternate `#22–#33` chain; do not treat `#33` and `#34` as separate deliverables. For redirects, inspect whether `#41`'s URL-contract changes are present in the `#48` leaf before promoting that branch.
+1. **Choose one canonical candidate per capability**, without merging yet: for sitemap, compare the `#34` consolidated head plus `#35–#38` follow-ups against the alternate `#22–#33` chain; do not treat `#33` and `#34` as separate deliverables. For redirects, the `#48` leaf **does** contain `#41`'s empty-query-marker and malformed-percent-escape checks (source inspected on both heads), despite diverged Git ancestry. Verify all related tests and any unported ancillary changes before promoting it.
 2. **Review leaf-vs-main as a single patch**, including complete source/test diff and security/privacy boundaries; independently rerun relevant tests on that exact candidate SHA. Verify current base SHA and compare with parallel roots to catch duplicated or contradictory edits.
 3. **Keep review separate from deployment**: a human-authorized merge decision can follow code and test review. No automatic merge, release, client-data run, or claim of real-world SEO lift/predictive skill.
 4. **Reduce queue growth** while consolidation is unresolved: prefer amending an existing draft with a clearly demonstrated regression over adding another stacked PR for every tiny issue. This is an optional workflow suggestion, not a new hard rule.
+
+## Independent ancestry/code spot checks
+- GitHub compare `#34 head → #38 head`: **ahead 13, behind 0**, touching five files (CI, field scorer, tests, field-score documentation, pipeline tests). This is a plausible single candidate head for sitemap; it is **not** independently validated for real-world utility.
+- `#22 head → #34 head`: **ahead 44, behind 0**, consistent with the integrated branch containing the earlier sitemap chain.
+- `#40 head → #48 head`: **ahead 32, behind 0**. The `#41 head → #48 head` comparison is **diverged (ahead 32, behind 3)**, but direct inspection of `tools/seo_redirect_map_audit.py` on both heads confirms the two key URL-contract behaviors from `#41` exist in `#48`: explicit empty query marker and malformed percent escape rejection. Git ancestry divergence alone does not prove a regression was lost.
+- These checks narrow the integration review; they do not replace a clean merged-head CI run or an explicit authorized decision.
 
 ## Recovery checkpoint
 The actionable next step is a **single cross-root integration comparison** for one useful deliverable (sitemap `#34/#38` or redirect `#40/#48`), then an explicit review/retire decision. Do not spend another cycle merely updating PR counters. This audit does not alter worker roles, automations, or peer-owned fields.
