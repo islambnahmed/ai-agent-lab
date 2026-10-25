@@ -1,0 +1,28 @@
+{
+  "gold": {
+    "domain": "gold",
+    "n": 600,
+    "repeats": 300,
+    "summary": {
+      "dr": {"bias": -0.0148, "mean": 0.4852, "rmse": 0.1537},
+      "ess": {"mean": 108.3925},
+      "ips": {"bias": -0.0206, "mean": 0.4794, "rmse": 0.1845},
+      "naive": {"bias": -0.5698, "mean": -0.0698, "rmse": 0.5767},
+      "snips": {"bias": -0.0233, "mean": 0.4767, "rmse": 0.1666}
+    },
+    "truth": 0.5
+  },
+  "seo": {
+    "domain": "seo",
+    "n": 600,
+    "repeats": 300,
+    "summary": {
+      "dr": {"bias": -0.0001, "mean": 0.4999, "rmse": 0.0421},
+      "ess": {"mean": 108.6875},
+      "ips": {"bias": 0.0015, "mean": 0.5015, "rmse": 0.0489},
+      "naive": {"bias": 0.2, "mean": 0.7, "rmse": 0.2016},
+      "snips": {"bias": 0.0009, "mean": 0.5009, "rmse": 0.0466}
+    },
+    "truth": 0.5
+  }
+}
