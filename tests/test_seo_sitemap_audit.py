@@ -96,6 +96,9 @@ class SitemapAuditTests(unittest.TestCase):
                     'https://example.com/a\x7f',
                     'https://example.com/a\x80',
                     'https://example.com:/a',
+                    'https://example.com:0/a',
+                    'https://example.com:0000/a',
+                    'https://[::1]:0/a',
                     'https://[::1]:/a',
                     'https://@example.com/a'):
             with self.subTest(url=repr(url)):
