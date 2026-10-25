@@ -98,6 +98,25 @@ class SitemapAuditTests(unittest.TestCase):
         self.write('sitemap.xml', f'<urlset xmlns="{NS}"><url><loc>https://example.com/a</loc></url><url xmlns="urn:wrong"><loc>https://example.com/b</loc></url></urlset>')
         self.assertEqual(self.codes(), ['wrong_entry_namespace'])
 
+    def test_unexpected_direct_children_cannot_hide_incomplete_inventory(self):
+        # Unknown direct children must fail closed rather than make a partial
+        # sitemap look like a clean complete inventory.
+        self.write('sitemap.xml',
+                   f'<urlset xmlns="{NS}"><url><loc>https://example.com/good</loc></url>'
+                   f'<entry><loc>https://example.com/hidden</loc></entry></urlset>')
+        report = self.run_audit()
+        self.assertEqual(report['summary']['urls'], 1)
+        self.assertEqual(self.codes(), ['unexpected_entry'])
+        self.write('sitemap.xml',
+                   f'<urlset xmlns="{NS}"><url><loc>https://example.com/good</loc></url>'
+                   f'<other:entry xmlns:other="urn:other"><other:loc>https://example.com/hidden'
+                   f'</other:loc></other:entry></urlset>')
+        self.assertEqual(self.codes(), ['unexpected_entry'])
+        self.write('sitemap.xml',
+                   f'<sitemapindex xmlns="{NS}"><entry><loc>https://example.com/hidden.xml'
+                   f'</loc></entry></sitemapindex>')
+        self.assertEqual(self.codes(), ['unexpected_entry'])
+
     def test_mixed_scheme_same_host_is_reported(self):
         self.write('sitemap.xml', urlset(('http://example.com/a', None), ('https://example.com/b', None)))
         report = self.run_audit()
