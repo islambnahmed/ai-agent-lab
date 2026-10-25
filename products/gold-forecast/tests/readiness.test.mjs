@@ -88,8 +88,8 @@ test('provisional same-day price cannot enter the committed receipt vintage',()=
 
 test('issuer rejects stale or altered stored history even with a valid raw provider digest',()=>{
   const bytes=Buffer.from(JSON.stringify({metal:'XAU',points:data(260)}));
-  const manifest={status:'fetched',rawSha256:'a'.repeat(64),
-    storedSha256:createHash('sha256').update(bytes).digest('hex')};
+  const digest=createHash('sha256').update(bytes).digest('hex');
+  const manifest={status:'fetched',rawSha256:digest,storedSha256:digest};
   assert.equal(parseVerifiedHistorySnapshot(bytes,manifest).points.length,260);
   assert.throws(()=>parseVerifiedHistorySnapshot(Buffer.concat([bytes,Buffer.from(' ')]),manifest),/SHA-256 mismatch/);
   assert.throws(()=>parseVerifiedHistorySnapshot(bytes,{...manifest,storedSha256:undefined}),/manifest missing/);
