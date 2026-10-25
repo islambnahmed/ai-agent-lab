@@ -19,3 +19,5 @@ jobs:
           python-version: "3.12"
       - name: Validate lab structure
         run: python tools/validate_lab.py
+      - name: Verify gold walk-forward backtest
+        run: python -m unittest discover -s tests -p 'test_gold_walkforward.py'
