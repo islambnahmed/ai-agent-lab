@@ -44,7 +44,7 @@ The CSV has four columns: `source_sitemap`, `normalized_url`, `lastmod`, `duplic
 
 ### Demonstrated local cases
 
-17 dependency-free tests cover a valid multi-file index with gzip, duplicate normalized URL, future/invalid `lastmod`, missing child and cycle, off-origin and traversal index entries, malformed XML and DOCTYPE, malformed/off-host URL entries, unexpected root, corrupt gzip, CLI exit codes and deterministic output, and configuration/sitemap-count limits. CSV export tests cover deterministic full inventories, duplicates, invalid URL exclusions and safe behavior on invalid configuration. No real customer sitemap, live HTTP response, browser, ranking data, or production deployment was used.
+20 dependency-free tests cover a valid multi-file index with gzip, duplicate normalized URL, future/invalid `lastmod`, missing child and cycle, off-origin and traversal index entries, malformed XML and DOCTYPE, malformed/off-host URL entries, unexpected root, corrupt gzip, CLI exit codes and deterministic output, and configuration/sitemap-count limits. CSV export tests cover deterministic full inventories, duplicates, invalid URL exclusions and safe behavior on invalid configuration. No real customer sitemap, live HTTP response, browser, ranking data, or production deployment was used.
 
 ## Known limitations and next falsification
 
