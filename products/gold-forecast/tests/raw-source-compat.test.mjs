@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {createHash} from 'node:crypto';
 import {parseVerifiedHistorySnapshot} from '../journal.mjs';
 
-const raw=Buffer.from('{\\n "metal":"XAU", "attribution":"café"\\n}\\n'.replaceAll('\\n','\n'),'utf8');
+const raw=Buffer.from("{\n \"metal\":\"XAU\", \"attribution\":\"café\"\n}\n",'utf8');
 const digest=createHash('sha256').update(raw).digest('hex');
 const manifest={status:'fetched',rawSha256:digest,storedSha256:digest};
 
