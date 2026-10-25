@@ -81,20 +81,31 @@ def backtest(rows, horizon=7, train_min=120, stride=None):
             "baseline_abs_error": abs(train[-1] - actual),
             "candidate_abs_error": abs(candidate - actual),
             "baseline_direction_correct": False,  # flat forecast has no direction
-            "candidate_direction_correct": (candidate - train[-1]) * (actual - train[-1]) > 0,
+            "candidate_direction_correct": (
+                (candidate > train[-1] and actual > train[-1])
+                or (candidate < train[-1] and actual < train[-1])
+            ),
         })
     if not results:
         return {"status": "insufficient_holdout", "independent_windows": 0, "results": []}
     base = statistics.mean(x["baseline_abs_error"] for x in results)
     cand = statistics.mean(x["candidate_abs_error"] for x in results)
+    errors = [x["candidate_abs_error"] for x in results]
+    max_error = max(errors)
+    # Scale before squaring: raw squares can overflow or underflow for finite errors.
+    rmse = (max_error * math.sqrt(statistics.mean((e / max_error) ** 2 for e in errors))
+            if max_error else 0.0)
+    improvement = (base - cand) / base * 100 if base else None
+    if improvement is not None and not math.isfinite(improvement):
+        improvement = None  # unrepresentable percentage; never emit JSON Infinity
     return {
         "status": "descriptive_only" if len(results) < 20 else "evaluation_ready",
         "horizon_sessions": horizon,
         "independent_windows": len(results),
         "baseline_mae": base,
         "candidate_mae": cand,
-        "mae_improvement_pct": (base - cand) / base * 100 if base else None,
-        "candidate_rmse": math.sqrt(statistics.mean((x["candidate"] - x["actual"]) ** 2 for x in results)),
+        "mae_improvement_pct": improvement,
+        "candidate_rmse": rmse,
         "candidate_direction_accuracy": statistics.mean(x["candidate_direction_correct"] for x in results),
         "warning": "Non-overlapping target windows are not statistically independent. Model choice must not be tuned on these test windows; validate on a later untouched period.",
         "results": results,
