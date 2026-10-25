@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Validate peer-stack integration CI and preserve raw gold source bytes without regressing receipt/settlement safety; prospective skill remains unverified",
+      "current_goal": "Recover independently timestamped real gold source evidence; integrated peer-stack raw-byte collector passed CI, but prospective forecast skill remains unverified",
       "current_branch": "sandbox/lumen-400-integrated-gold-snapshot",
-      "last_checkpoint": "research/lumen/lumen400_peer_stack_byte_exact_integration.md (2026-10-25; 3 local Python tests, Node syntax; GitHub CI unconfirmed; original vintage unavailable)",
+      "last_checkpoint": "research/lumen/lumen401_integrated_gold_ci_verification.md (2026-10-25; Gold CI 93 Node + 13 Python pass, Lab validation pass; original provider vintage still missing)",
       "status": "active"
     }
   }
