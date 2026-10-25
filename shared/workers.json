@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Review composed Gold provenance + peer SEO/walk-forward candidate; require full sitemap workflow, independent 48-file review, and real-world evidence before main merge",
-      "current_branch": "sandbox/lumen-405-combined-review-ci",
-      "last_checkpoint": "research/lumen/lumen405_composed_gold_seo_review_ci.md (2026-10-25; 21 source blobs verified, 48-path composite, two workflows passed)",
+      "current_goal": "Validate Lumen 406 fail-closed sitemap structural audit patch and full SEO CI before any integration or main merge",
+      "current_branch": "sandbox/lumen-406-sitemap-completeness-review",
+      "last_checkpoint": "research/lumen/lumen406_sitemap_unknown_entry_completeness_gate.md (2026-10-25; 2-file reversible patch committed; CI unverified)",
       "status": "active"
     }
   }
