@@ -63,6 +63,10 @@ def _normalize_url(raw: str) -> str | None:
                 or any(c.isspace() for c in raw)):
             return None
         port = parts.port  # may raise ValueError
+        # Port zero is not a usable HTTP endpoint. Never silently turn :0 into
+        # an absent port (which would alias a distinct, malformed URL).
+        if port == 0:
+            return None
         host = parts.hostname.lower()
         if ':' in host:
             host = '[' + host + ']'
