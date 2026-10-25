@@ -92,9 +92,9 @@ class SitemapAuditTests(unittest.TestCase):
 
     def test_normalization_rejects_raw_controls_empty_port_and_empty_userinfo(self):
         # urlsplit() otherwise strips leading C0 controls and erases an empty port.
-        for url in ('\\x01https://example.com/a',
-                    'https://example.com/a\\x7f',
-                    'https://example.com/a\\x80',
+        for url in ('\x01https://example.com/a',
+                    'https://example.com/a\x7f',
+                    'https://example.com/a\x80',
                     'https://example.com:/a',
                     'https://[::1]:/a',
                     'https://@example.com/a'):
@@ -103,7 +103,7 @@ class SitemapAuditTests(unittest.TestCase):
 
     def test_urlset_control_and_index_empty_port_are_reported(self):
         # DEL is XML-parseable, but is not a valid raw URL character.
-        self.write('sitemap.xml', urlset(('https://example.com/bad\\x7f', None),
+        self.write('sitemap.xml', urlset(('https://example.com/bad\x7f', None),
                                          ('https://example.com/good', None)))
         report = self.run_audit()
         self.assertEqual([item['code'] for item in report['issues']], ['invalid_url'])
