@@ -146,8 +146,10 @@ def audit(root: Path, start: str, base_url: str, today: dt.date, *, max_sitemaps
                 entries = doc.findall(NS + 'sitemap')
                 # Wrong-namespace entries are otherwise silently skipped by findall.
                 for child in doc:
-                    if child.tag.rsplit('}', 1)[-1] == 'sitemap' and child.tag != NS + 'sitemap':
-                        issue('wrong_entry_namespace', path, str(child.tag)[:200])
+                    if child.tag != NS + 'sitemap':
+                        code = ('wrong_entry_namespace' if child.tag.rsplit('}', 1)[-1] == 'sitemap'
+                                else 'unexpected_entry')
+                        issue(code, path, str(child.tag)[:200])
                 if len(entries) > MAX_ENTRIES:
                     issue('entry_limit', path, str(len(entries)))
                     return
@@ -165,8 +167,10 @@ def audit(root: Path, start: str, base_url: str, today: dt.date, *, max_sitemaps
                 summary['urlsets'] += 1
                 entries = doc.findall(NS + 'url')
                 for child in doc:
-                    if child.tag.rsplit('}', 1)[-1] == 'url' and child.tag != NS + 'url':
-                        issue('wrong_entry_namespace', path, str(child.tag)[:200])
+                    if child.tag != NS + 'url':
+                        code = ('wrong_entry_namespace' if child.tag.rsplit('}', 1)[-1] == 'url'
+                                else 'unexpected_entry')
+                        issue(code, path, str(child.tag)[:200])
                 if len(entries) > MAX_ENTRIES:
                     issue('entry_limit', path, str(len(entries)))
                     return
