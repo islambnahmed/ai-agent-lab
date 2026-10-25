@@ -1,0 +1,22 @@
+{
+  "gold": {
+    "seeds": 200,
+    "mean_strict_accuracy": 0.5488,
+    "mean_leaky_accuracy": 0.9861,
+    "mean_leakage_inflation": 0.4373,
+    "min_leakage_inflation": 0.325,
+    "positive_inflation_cases": 200,
+    "negative_control_mean_strict": 0.5488,
+    "negative_control_mean_leaky": 0.4997
+  },
+  "seo": {
+    "seeds": 200,
+    "mean_strict_accuracy": 0.6171,
+    "mean_leaky_accuracy": 0.9707,
+    "mean_leakage_inflation": 0.3536,
+    "min_leakage_inflation": 0.275,
+    "positive_inflation_cases": 200,
+    "negative_control_mean_strict": 0.6171,
+    "negative_control_mean_leaky": 0.6132
+  }
+}
