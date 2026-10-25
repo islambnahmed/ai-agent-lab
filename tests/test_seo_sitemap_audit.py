@@ -98,6 +98,41 @@ class SitemapAuditTests(unittest.TestCase):
         self.write('sitemap.xml', f'<urlset xmlns="{NS}"><url><loc>https://example.com/a</loc></url><url xmlns="urn:wrong"><loc>https://example.com/b</loc></url></urlset>')
         self.assertEqual(self.codes(), ['wrong_entry_namespace'])
 
+    def test_unexpected_direct_children_cannot_hide_incomplete_inventory(self):
+        # Fail closed: malformed direct entries cannot be silently omitted.
+        self.write('sitemap.xml',
+                   f'<urlset xmlns="{NS}"><url><loc>https://example.com/good</loc></url>'
+                   f'<entry><loc>https://example.com/hidden</loc></entry></urlset>')
+        report = self.run_audit()
+        self.assertEqual(report['summary']['urls'], 1)
+        self.assertEqual(self.codes(), ['unexpected_entry'])
+        self.write('sitemap.xml',
+                   f'<urlset xmlns="{NS}"><url><loc>https://example.com/good</loc></url>'
+                   f'<other:entry xmlns:other="urn:other"><other:loc>https://example.com/hidden'
+                   f'</other:loc></other:entry></urlset>')
+        self.assertEqual(self.codes(), ['unexpected_entry'])
+        self.write('sitemap.xml',
+                   f'<sitemapindex xmlns="{NS}"><entry><loc>https://example.com/hidden.xml'
+                   f'</loc></entry></sitemapindex>')
+        self.assertEqual(self.codes(), ['unexpected_entry'])
+
+    def test_unknown_entry_causes_nonzero_cli_even_with_csv_export(self):
+        self.write('sitemap.xml',
+                   f'<urlset xmlns="{NS}"><url><loc>https://example.com/good</loc></url>'
+                   f'<entry><loc>https://example.com/hidden</loc></entry></urlset>')
+        destination = self.root / 'inventory.csv'
+        script = str(Path(__file__).resolve().parents[1] / 'tools/seo_sitemap_audit.py')
+        result = subprocess.run([sys.executable, script, '--root', str(self.root),
+                                 '--base-url', 'https://example.com/',
+                                 '--as-of', '2026-10-24', '--urls-csv', str(destination)],
+                                capture_output=True, text=True)
+        self.assertEqual(result.returncode, 1, result.stderr)
+        self.assertEqual([i['code'] for i in json.loads(result.stdout)['issues']],
+                         ['unexpected_entry'])
+        with destination.open(newline='', encoding='utf-8') as handle:
+            self.assertEqual([row['normalized_url'] for row in csv.DictReader(handle)],
+                             ['https://example.com/good'])
+
     def test_mixed_scheme_same_host_is_reported(self):
         self.write('sitemap.xml', urlset(('http://example.com/a', None), ('https://example.com/b', None)))
         report = self.run_audit()
