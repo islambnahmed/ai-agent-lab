@@ -84,8 +84,11 @@ def all_fail_bounds(marginals, pairwise=None):
     # Marginals alone have exact Frechet-Hoeffding bounds for any n, so avoid
     # exponential atom enumeration entirely in this common case.
     if not pairwise:
-        vals=list(map(float,marginals))
-        return max(0.0, sum(vals) - (n - 1)), min(vals)
+        # Keep decimal input semantics exact until the public float boundary.
+        # Float summation can move a sharp bound across its true endpoint.
+        vals=[Fraction(str(p)) for p in marginals]
+        return (float(max(Fraction(0), sum(vals, Fraction(0)) - (n - 1))),
+                float(min(vals)))
     # Validate every supplied edge before choosing a graph-specific solver.
     for (i,j),q in pairwise.items():
         if not (0 <= i < j < n) or not 0 <= q <= 1:
@@ -131,22 +134,24 @@ def all_fail_bounds(marginals, pairwise=None):
         lowers=[]; uppers=[]
         for nodes in comps.values():
             node_set=set(nodes)
-            edges=[(i,j,float(q)) for (i,j),q in pairwise.items()
+            edges=[(i,j,Fraction(str(q))) for (i,j),q in pairwise.items()
                    if i in node_set and j in node_set]
             if not edges:
-                p=float(marginals[nodes[0]])
+                p=Fraction(str(marginals[nodes[0]]))
                 lowers.append(p); uppers.append(p)
                 continue
             deg={v:0 for v in nodes}
             for i,j,_ in edges:
                 deg[i]+=1; deg[j]+=1
-            lo=max(0.0,
-                   sum(q for _,_,q in edges)
-                   - sum((deg[v]-1)*float(marginals[v]) for v in nodes))
+            lo=max(Fraction(0),
+                   sum((q for _,_,q in edges), Fraction(0))
+                   - sum(((deg[v]-1)*Fraction(str(marginals[v]))
+                          for v in nodes), Fraction(0)))
             hi=min(q for _,_,q in edges)
             lowers.append(lo); uppers.append(hi)
         k=len(lowers)
-        return max(0.0, sum(lowers)-(k-1)), min(uppers)
+        return (float(max(Fraction(0), sum(lowers, Fraction(0))-(k-1))),
+                float(min(uppers)))
 
     if n > 4:
         raise ValueError("cyclic pairwise prototype supports at most 4 modes")
@@ -264,4 +269,12 @@ if __name__ == "__main__":
     assert lo == 0.0 and hi == 0.0
     # Boundary pairwise checks also apply to the forest shortcut.
     assert all_fail_bounds([.8,.8],{(0,1):.6}) == (.6,.6)
+    # A feasible forest of identical events must never return lower > upper.
+    # Float accumulation previously produced (0.7000000000000002, 0.7).
+    chain={(i,i+1):.7 for i in range(4)}
+    assert all_fail_bounds([.7]*5,chain) == (.7,.7)
+    # Two disconnected trees each force their component event to probability
+    # .7, so their intersection is bounded by exactly [.4, .7].
+    two_chains={(i,i+1):.7 for i in (0,1,2,4,5,6)}
+    assert all_fail_bounds([.7]*8,two_chains) == (.4,.7)
     print("dependence_bounds: all tests passed")
