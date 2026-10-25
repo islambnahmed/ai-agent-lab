@@ -216,6 +216,23 @@ class SitemapAuditTests(unittest.TestCase):
         self.assertEqual(compressed.read_bytes(), before)
         self.assertFalse(list(self.root.glob('.sitemap-audit-*.csv')))
 
+    def test_csv_export_rejects_non_csv_destination_even_with_replace(self):
+        self.write('sitemap.xml', urlset(('https://example.com/a', None)))
+        script = str(Path(__file__).resolve().parents[1] / 'tools/seo_sitemap_audit.py')
+        for name in ('important.txt', 'notes.md', 'report'):
+            with self.subTest(name=name):
+                destination = self.root / name
+                destination.write_text('preserve this content', encoding='utf-8')
+                args = [sys.executable, script, '--root', str(self.root),
+                        '--base-url', 'https://example.com/', '--as-of', '2026-10-24',
+                        '--urls-csv', str(destination), '--replace-csv']
+                result = subprocess.run(args, capture_output=True, text=True)
+                self.assertEqual(result.returncode, 2, result.stderr)
+                self.assertIn('must end in .csv', result.stderr)
+                self.assertEqual(destination.read_text(encoding='utf-8'),
+                                 'preserve this content')
+                self.assertFalse(list(self.root.glob('.sitemap-audit-*.csv')))
+
     def test_csv_export_does_not_clobber_different_existing_file_without_opt_in(self):
         self.write('sitemap.xml', urlset(('https://example.com/first', None)))
         destination = self.root / 'inventory.csv'
