@@ -177,7 +177,10 @@ def main(argv: list[str] | None = None) -> int:
         result = score(read_csv(args.references, REF_COLS),
                        read_csv(args.sessions, SESSION_COLS),
                        read_csv(args.decisions, DECISION_COLS))
-    except (ValueError, OSError, UnicodeError, csv.Error, OverflowError) as exc:
+    except (OSError, UnicodeError, csv.Error):
+        print('Cannot score offline sitemap review: input read failed', file=sys.stderr)
+        return 2
+    except (ValueError, OverflowError) as exc:
         print(f'Cannot score offline sitemap review: {exc}', file=sys.stderr)
         return 2
     print(json.dumps(result, indent=2, sort_keys=True))

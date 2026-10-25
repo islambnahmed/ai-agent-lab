@@ -120,7 +120,10 @@ def main(argv: list[str] | None = None) -> int:
         queue = _csv_rows(args.queue, QUEUE_COLUMNS)
         labels = _csv_rows(args.labels, LABEL_COLUMNS)
         result = evaluate(queue, labels, args.budget, seed=args.seed)
-    except (OSError, UnicodeError, ValueError, csv.Error) as exc:
+    except (OSError, UnicodeError, csv.Error):
+        print('Cannot evaluate offline sitemap ranking: input read failed', file=sys.stderr)
+        return 2
+    except ValueError as exc:
         print(f'Cannot evaluate offline sitemap ranking: {exc}', file=sys.stderr)
         return 2
     print(json.dumps(result, indent=2, sort_keys=True))

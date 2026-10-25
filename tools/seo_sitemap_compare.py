@@ -20,34 +20,34 @@ MAX_REPORT_BYTES = 8 * 1024 * 1024
 def load_inventory(path: Path) -> dict[str, Counter[tuple[str, str]]]:
     """Preserve source and lastmod multiplicity, independent of CSV row order."""
     if not path.is_file() or path.stat().st_size > MAX_INPUT_BYTES:
-        raise ValueError(f'inventory missing or exceeds {MAX_INPUT_BYTES} bytes: {path}')
+        raise ValueError(f'inventory missing or exceeds {MAX_INPUT_BYTES} bytes: [path omitted]')
     result: dict[str, Counter[tuple[str, str]]] = defaultdict(Counter)
     first_markers: Counter[str] = Counter()
     try:
         with path.open('r', encoding='utf-8-sig', newline='') as stream:
             reader = csv.DictReader(stream, strict=True)
             if reader.fieldnames != COLUMNS:
-                raise ValueError(f'invalid inventory columns: {path}; expected {COLUMNS}')
+                raise ValueError(f'invalid inventory columns: [path omitted]; expected {COLUMNS}')
             for number, row in enumerate(reader, start=2):
                 if number > MAX_ROWS + 1:
-                    raise ValueError(f'inventory row limit exceeded: {path}')
+                    raise ValueError(f'inventory row limit exceeded: [path omitted]')
                 if None in row or any(row[col] is None for col in COLUMNS):
-                    raise ValueError(f'malformed CSV row {number}: {path}')
+                    raise ValueError(f'malformed CSV row {number}: [path omitted]')
                 if not row['normalized_url'].startswith(('http://', 'https://')) or not row['source_sitemap']:
-                    raise ValueError(f'invalid inventory URL/source at row {number}: {path}')
+                    raise ValueError(f'invalid inventory URL/source at row {number}: [path omitted]')
                 if row['duplicate'] not in ('true', 'false'):
-                    raise ValueError(f'invalid duplicate marker at row {number}: {path}')
+                    raise ValueError(f'invalid duplicate marker at row {number}: [path omitted]')
                 if row['duplicate'] == 'false':
                     first_markers[row['normalized_url']] += 1
                 key = (row['source_sitemap'], row['lastmod'])
                 result[row['normalized_url']][key] += 1
     except (OSError, UnicodeError, csv.Error) as exc:
-        raise ValueError(f'cannot parse inventory {path}: {type(exc).__name__}') from exc
+        raise ValueError(f'cannot parse inventory [path omitted]: {type(exc).__name__}') from exc
     # The exporter marks exactly one occurrence of each URL as non-duplicate.
     # Do not require that marker to appear first: snapshots may be row-reordered.
     for url in result:
         if first_markers[url] != 1:
-            raise ValueError(f'inconsistent duplicate markers for URL {url!r}: {path}')
+            raise ValueError(f'inconsistent duplicate markers for URL [URL redacted]: [path omitted]')
     return dict(result)
 
 
@@ -58,16 +58,16 @@ def verify_audit_report(path: Path, csv_path: Path, inventory: dict) -> dict:
     This detects accidental file swaps and partial audits, not forged reports.
     """
     if not path.is_file() or path.stat().st_size > MAX_REPORT_BYTES:
-        raise ValueError(f'audit report missing or exceeds {MAX_REPORT_BYTES} bytes: {path}')
+        raise ValueError(f'audit report missing or exceeds {MAX_REPORT_BYTES} bytes: [path omitted]')
     try:
         report = json.loads(path.read_text(encoding='utf-8'))
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
-        raise ValueError(f'cannot parse audit report {path}: {type(exc).__name__}') from exc
+        raise ValueError(f'cannot parse audit report [path omitted]: {type(exc).__name__}') from exc
     if not isinstance(report, dict) or report.get('schema_version') != 1 or report.get('kind') != 'offline_sitemap_inventory':
-        raise ValueError(f'unsupported audit report: {path}')
+        raise ValueError(f'unsupported audit report: [path omitted]')
     summary, exported = report.get('summary'), report.get('csv_export')
     if not isinstance(summary, dict) or not isinstance(exported, dict):
-        raise ValueError(f'audit report missing CSV export metadata: {path}')
+        raise ValueError(f'audit report missing CSV export metadata: [path omitted]')
     # Duplicates and lastmod/origin warnings do not omit CSV rows.
     # All unknown or structural issues fail closed, because they may hide URLs.
     non_omitting_codes = {'duplicate_url', 'future_lastmod', 'invalid_lastmod',
@@ -76,30 +76,30 @@ def verify_audit_report(path: Path, csv_path: Path, inventory: dict) -> dict:
     if (not isinstance(issues, list) or summary.get('issues') != len(issues)
             or any(not isinstance(issue, dict)
                    or issue.get('code') not in non_omitting_codes for issue in issues)):
-        raise ValueError(f'audit has incomplete or unmapped sitemap entries: {path}')
+        raise ValueError(f'audit has incomplete or unmapped sitemap entries: [path omitted]')
     rows = sum(sum(counts.values()) for counts in inventory.values())
     if (summary.get('urls') != rows or summary.get('unique_urls') != len(inventory)
             or exported.get('rows') != rows or exported.get('bytes') != csv_path.stat().st_size):
-        raise ValueError(f'CSV inventory counts differ from audit report: {path}')
+        raise ValueError(f'CSV inventory counts differ from audit report: [path omitted]')
     if any(type(summary.get(field)) is not int or summary[field] < 1
            for field in ('sitemaps', 'urlsets')):
-        raise ValueError(f'audit has no valid complete URL set counts: {path}')
+        raise ValueError(f'audit has no valid complete URL set counts: [path omitted]')
     with csv_path.open('rb') as stream:
         actual_digest = hashlib.file_digest(stream, 'sha256').hexdigest()
     if exported.get('sha256') != actual_digest:
-        raise ValueError(f'CSV SHA-256 differs from audit report: {path}')
+        raise ValueError(f'CSV SHA-256 differs from audit report: [path omitted]')
     base_url, as_of = report.get('base_url'), report.get('as_of')
     start_sitemap = report.get('start_sitemap')
     if not isinstance(start_sitemap, str) or not start_sitemap or start_sitemap.startswith('/'):
-        raise ValueError(f'audit report missing valid start sitemap scope: {path}')
+        raise ValueError(f'audit report missing valid start sitemap scope: [path omitted]')
     if not isinstance(base_url, str) or not base_url.startswith(('http://', 'https://')):
-        raise ValueError(f'invalid audit origin: {path}')
+        raise ValueError(f'invalid audit origin: [path omitted]')
     try:
         day = dt.date.fromisoformat(as_of)
         if day.isoformat() != as_of:
             raise ValueError('noncanonical date')
     except (TypeError, ValueError) as exc:
-        raise ValueError(f'invalid audit as_of date: {path}') from exc
+        raise ValueError(f'invalid audit as_of date: [path omitted]') from exc
     return {'base_url': base_url, 'as_of': as_of, 'start_sitemap': start_sitemap}
 
 
@@ -169,6 +169,10 @@ def main(argv: list[str] | None = None) -> int:
                             'limitation': 'Without paired clean audit reports, apparent removals may reflect incomplete sitemap exports'}
         result = compare(before, after)
         result['verification'] = verification
+    except OSError:
+        # A file can disappear/change after validation; do not expose its path.
+        print(json.dumps({'error': 'Cannot read sitemap inventory or audit report'}), file=sys.stderr)
+        return 2
     except ValueError as exc:
         print(json.dumps({'error': str(exc)}), file=sys.stderr)
         return 2

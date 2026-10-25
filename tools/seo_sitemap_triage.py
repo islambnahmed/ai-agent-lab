@@ -106,7 +106,10 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError('diff missing or too large')
         diff = json.loads(args.diff.read_text(encoding='utf-8'))
         queue = build_queue(diff)
-    except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError):
+        print('Cannot triage sitemap diff: input read failed', file=sys.stderr)
+        return 2
+    except (ValueError, json.JSONDecodeError) as exc:
         print(f'Cannot triage sitemap diff: {exc}', file=sys.stderr)
         return 2
     writer = csv.writer(sys.stdout, lineterminator='\n')
