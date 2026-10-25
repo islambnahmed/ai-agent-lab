@@ -3,7 +3,8 @@ import assert from 'node:assert/strict';
 import {forecast,predict} from '../forecast.mjs';
 import {features} from '../models.mjs';
 import {prepareProviderHistory,prepareCsvHistory,validatedSpot,crossCheck,UNIT} from '../data.mjs';
-import {issueReceipt,settleReceipt,verifyReceipt} from '../journal.mjs';
+import {issueReceipt,settleReceipt,verifyReceipt,parseVerifiedHistorySnapshot,appendVerifiedVintage} from '../journal.mjs';
+import {createHash} from 'node:crypto';
 const data=(n=360)=>Array.from({length:n},(_,i)=>({date:new Date(Date.UTC(2025,0,1+i)).toISOString().slice(0,10),price:2500+i+20*Math.sin(i*.3)}));
 const asOf='2026-01-01T12:00:00Z';
 
@@ -83,4 +84,39 @@ test('provisional same-day price cannot enter the committed receipt vintage',()=
   const rows=data(260),issuedAt='2025-09-18T12:00:00Z';
   const receipt=issueReceipt([...rows,{date:'2025-09-18',price:1e7}],7,{issuedAt,source:'test',codeCommit:'a'.repeat(40),sourceManifest:{receivedAt:'2025-09-18T11:59:00Z'}});
   assert.equal(receipt.historyLength,260);assert.equal(receipt.originDate,'2025-09-17');
+});
+
+test('issuer rejects stale or altered stored history even with a valid raw provider digest',()=>{
+  const bytes=Buffer.from(JSON.stringify({metal:'XAU',points:data(260)}));
+  const digest=createHash('sha256').update(bytes).digest('hex');
+  const manifest={status:'fetched',rawSha256:digest,storedSha256:digest};
+  assert.equal(parseVerifiedHistorySnapshot(bytes,manifest).points.length,260);
+  assert.throws(()=>parseVerifiedHistorySnapshot(Buffer.concat([bytes,Buffer.from(' ')]),manifest),/SHA-256 mismatch/);
+  assert.throws(()=>parseVerifiedHistorySnapshot(bytes,{...manifest,storedSha256:undefined}),/manifest missing/);
+  assert.throws(()=>parseVerifiedHistorySnapshot(bytes,{...manifest,status:'unavailable'}),/manifest missing/);
+});
+
+test('receipt issued just after UTC midnight cannot promote pre-midnight provisional close',()=>{
+  const issuedAt='2025-09-19T00:01:00Z';
+  const receivedAt='2025-09-18T23:59:00Z';
+  const raw=[...data(260),{date:'2025-09-18',price:1e7}];
+  const receipt=issueReceipt(raw,7,{issuedAt,source:'test',codeCommit:'a'.repeat(40),sourceManifest:{receivedAt}});
+  assert.equal(receipt.historyLength,260);
+  assert.equal(receipt.originDate,'2025-09-17');
+  assert.equal(receipt.originClose,data(260).at(-1).price);
+  assert.equal(verifyReceipt(receipt),true);
+});
+
+test('overlapping source-vintage omissions and insertions quarantine settlement',()=>{
+  const frozen=data(260),origin=frozen.at(-1).date,updated=data(262);
+  assert.equal(appendVerifiedVintage(frozen,updated,origin).length,262);
+  // Rolling feeds can drop observations older than their first retained date.
+  assert.equal(appendVerifiedVintage(frozen,updated.slice(40),origin).length,262);
+  const omitted=updated.filter(row=>row.date!==frozen[100].date);
+  assert.throws(()=>appendVerifiedVintage(frozen,omitted,origin),/omitted historical vintage/);
+  const missingInOriginal=frozen.filter(row=>row.date!==frozen[100].date);
+  assert.throws(()=>appendVerifiedVintage(missingInOriginal,updated,origin),/inserted historical vintage/);
+  const revised=updated.map(row=>row.date===frozen[100].date?{...row,price:row.price+1}:row);
+  assert.throws(()=>appendVerifiedVintage(frozen,revised,origin),/revised historical vintage/);
+  assert.throws(()=>appendVerifiedVintage(frozen,updated.slice(0,259),origin),/Origin missing/);
 });

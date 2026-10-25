@@ -1,10 +1,48 @@
 // Immutable forecast receipts. Commit receipts before outcomes mature; a hash
 // alone detects edits but does not independently prove the issuance time.
 import {createHash} from 'node:crypto';
+import path from 'node:path';
 import {forecast} from './forecast.mjs';
 import {parseInstant} from './historical-integrity.mjs';
 import {prepareHistory} from './data.mjs';
 export const hash=value=>createHash('sha256').update(JSON.stringify(value)).digest('hex');
+
+// The byte-exact fetcher stores the original provider response. Both manifest
+// digests must therefore agree with each other and with the saved bytes.
+// Reject an internally inconsistent manifest before issuing or settling.
+export function parseVerifiedHistorySnapshot(rawBytes,manifest){
+  if(!Buffer.isBuffer(rawBytes))throw Error('History snapshot bytes required');
+  if(manifest?.status!=='fetched'||!(/^[0-9a-f]{64}$/.test(manifest.rawSha256))||
+     !(/^[0-9a-f]{64}$/.test(manifest.storedSha256)))
+    throw Error('History snapshot manifest missing fetched status or SHA-256 digests; re-fetch data');
+  if(manifest.rawSha256!==manifest.storedSha256)
+    throw Error('History snapshot raw/stored SHA-256 disagreement; re-fetch data');
+  const actual=createHash('sha256').update(rawBytes).digest('hex');
+  if(actual!==manifest.storedSha256)throw Error('History snapshot / manifest SHA-256 mismatch; re-fetch data');
+  return JSON.parse(rawBytes.toString('utf8'));
+}
+
+// A rolling provider feed may legitimately lose old dates outside its window,
+// but any changed, missing, or inserted date *inside* the overlapping vintage
+// is a source revision. Quarantine rather than silently score a mixed vintage.
+export function appendVerifiedVintage(frozen,refreshed,originDate){
+  const original=new Map(frozen.map(row=>[row.date,row.price]));
+  const latest=new Map(refreshed.map(row=>[row.date,row.price]));
+  if(!latest.has(originDate))throw Error('Origin missing from refreshed source');
+  const firstRefreshed=refreshed[0].date;
+  const firstFrozen=frozen[0].date;
+  for(const row of frozen){
+    if(row.date>=firstRefreshed&&row.date<=originDate&&!latest.has(row.date))
+      throw Error('Provider omitted historical vintage: '+row.date);
+    if(latest.has(row.date)&&latest.get(row.date)!==row.price)
+      throw Error('Provider revised historical vintage: '+row.date);
+  }
+  for(const row of refreshed){
+    if(row.date>=firstFrozen&&row.date<=originDate&&!original.has(row.date))
+      throw Error('Provider inserted historical vintage: '+row.date);
+  }
+  return frozen.concat(refreshed.filter(row=>row.date>originDate));
+}
 
 export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest}){
   const issued=parseInstant(issuedAt,'Issue timestamp');
@@ -12,9 +50,13 @@ export function issueReceipt(series,h,{issuedAt,source,codeCommit,sourceManifest
   if(typeof source!=='string'||!source.trim())throw Error('Source required');
   const fetched=parseInstant(sourceManifest.receivedAt,'Source receipt time');
   if(fetched>issued||issued-fetched>60*60000)throw Error('Use a snapshot fetched before issue and within one hour');
-  series=prepareHistory(series,{asOf:issuedAt}).series;
+  // The source snapshot cannot contain a completed close from its own UTC day.
+  // Gate against the fetch time, not the later issue time: a midnight crossing
+  // must not promote a provisional source-day observation into history.
+  series=prepareHistory(series,{asOf:sourceManifest.receivedAt}).series;
   const result=forecast(series,h,{asOf:issuedAt});
-  if(result.targetDate&&result.targetDate<issuedAt.slice(0,10))throw Error('Target date has already passed');
+  const issuedUtcDay=new Date(issued).toISOString().slice(0,10);
+  if(result.targetDate&&result.targetDate<issuedUtcDay)throw Error('Target date has already passed');
   const record={schemaVersion:1,issuedAt,source,codeCommit,sourceManifest,modelVersion:result.version,
     horizon:h,calendar:result.calendar,originDate:result.latest.date,originClose:result.latest.price,
     historyHash:hash(series),historyLength:series.length,targetDate:result.targetDate,
@@ -26,10 +68,23 @@ export function verifyReceipt(receipt){
   if(!receipt||typeof receipt!=='object')throw Error('Invalid receipt');
   const {id,...payload}=receipt;
   if(id!==hash(payload)||receipt.schemaVersion!==1)throw Error('Receipt integrity mismatch');
+  // Content hashing alone does not make receipt-controlled values safe as file
+  // names. A recomputed receipt ID could otherwise carry ../ in historyHash.
+  if(!/^[0-9a-f]{64}$/.test(id)||!/^[0-9a-f]{64}$/.test(receipt.historyHash)||
+     !/^[0-9a-f]{40}$/.test(receipt.codeCommit))
+    throw Error('Invalid receipt digest or commit metadata');
   parseInstant(receipt.issuedAt);
   if(![1,7,30].includes(receipt.horizon)||!Number.isInteger(receipt.historyLength)||receipt.historyLength<165)
     throw Error('Invalid receipt metadata');
   return true;
+}
+
+// Verify before forming any filesystem path from receipt-supplied metadata.
+// This function does not read or create files.
+export function verifiedVintagePath(directory,receipt){
+  verifyReceipt(receipt);
+  if(typeof directory!=='string'||!directory.trim())throw new TypeError('Vintage directory required');
+  return path.join(directory,receipt.historyHash+'.json');
 }
 export function settleReceipt(receipt,series,{asOf}={}){
   verifyReceipt(receipt);
@@ -44,8 +99,12 @@ export function settleReceipt(receipt,series,{asOf}={}){
     return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate:receipt.targetDate};
   }
   const targetDate=series[index].date;
-  if(targetDate<receipt.issuedAt.slice(0,10))throw Error('Outcome predates issue');
-  if(targetDate>=asOf.slice(0,10))return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
+  // Date labels from the provider are UTC; compare against UTC calendar days,
+  // not the textual dates of timestamps with timezone offsets.
+  const issuedUtcDay=new Date(parseInstant(receipt.issuedAt,'Issue timestamp')).toISOString().slice(0,10);
+  const asOfUtcDay=new Date(parseInstant(asOf,'Settlement timestamp')).toISOString().slice(0,10);
+  if(targetDate<issuedUtcDay)throw Error('Outcome predates issue');
+  if(targetDate>=asOfUtcDay)return {id:receipt.id,horizon:receipt.horizon,status:'pending',targetDate};
   if(index!==receipt.historyLength+receipt.horizon-1)throw Error('Horizon / calendar mismatch');
   const actual=series[index].price;
   return {id:receipt.id,horizon:receipt.horizon,status:'matured',targetDate,actual,
