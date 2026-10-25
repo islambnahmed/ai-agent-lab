@@ -1,0 +1,63 @@
+{
+  "date": "2026-10-25",
+  "seeds_per_domain_scenario": 100,
+  "datasets": 800,
+  "heldout_per_policy": 224000,
+  "unit_tests_passed": 13,
+  "randomized_clock_checks": 2000,
+  "domains": {
+    "gold": {
+      "backdated": {
+        "declared": 98.564,
+        "ingest": 56.236,
+        "guard": 56.236,
+        "oracle": 56.236
+      },
+      "clock_skew": {
+        "declared": 98.564,
+        "ingest": 98.564,
+        "guard": 56.236,
+        "oracle": 56.236
+      },
+      "legitimate_archive": {
+        "declared": 98.564,
+        "ingest": 56.236,
+        "guard": 56.236,
+        "oracle": 98.564
+      },
+      "clean": {
+        "declared": 56.236,
+        "ingest": 56.236,
+        "guard": 56.236,
+        "oracle": 56.236
+      }
+    },
+    "seo": {
+      "backdated": {
+        "declared": 96.889,
+        "ingest": 62.146,
+        "guard": 62.146,
+        "oracle": 62.146
+      },
+      "clock_skew": {
+        "declared": 96.889,
+        "ingest": 96.889,
+        "guard": 62.146,
+        "oracle": 62.146
+      },
+      "legitimate_archive": {
+        "declared": 96.889,
+        "ingest": 62.146,
+        "guard": 62.146,
+        "oracle": 96.889
+      },
+      "clean": {
+        "declared": 62.146,
+        "ingest": 62.146,
+        "guard": 62.146,
+        "oracle": 62.146
+      }
+    }
+  },
+  "caveat": "All synthetic. Clock guard assumes independent untampered ingestion record and a justified bound on negative clock error."
+}
