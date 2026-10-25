@@ -90,6 +90,23 @@ class SitemapAuditTests(unittest.TestCase):
         self.assertIsNone(_normalize_url('https://user:pw@example.com/x'))
         self.assertIsNone(_normalize_url('not-a-url'))
 
+    def test_ambiguous_authorities_are_rejected_not_canonicalized(self):
+        # Before this guard, all three normalized to the ordinary HTTPS origin.
+        malformed = ('https://example.com:0/a', 'https://@example.com/b',
+                     'https://example.com:/c')
+        for raw in malformed:
+            with self.subTest(url=raw):
+                self.assertIsNone(_normalize_url(raw))
+        self.write('sitemap.xml', urlset(*((raw, None) for raw in malformed)))
+        self.assertEqual(self.codes(), ['invalid_url'] * len(malformed))
+        self.write('sitemap.xml', index(*malformed))
+        self.assertEqual(self.codes(), ['unmapped_index_loc'] * len(malformed))
+        # Ordinary explicit/default ports remain valid.
+        self.assertEqual(_normalize_url('https://example.com:443/a'),
+                         'https://example.com/a')
+        self.assertEqual(_normalize_url('https://example.com:8443/a'),
+                         'https://example.com:8443/a')
+
     def test_wrong_namespace_entries_cannot_disappear_silently(self):
         self.write('sitemap.xml', f'<urlset xmlns="{NS}"><url xmlns="urn:wrong"><loc>https://example.com/a</loc></url></urlset>')
         self.assertEqual(self.codes(), ['wrong_entry_namespace'])
