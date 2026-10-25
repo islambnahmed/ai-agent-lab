@@ -36,10 +36,6 @@ def run(seed=437, n=6000):
             counts['benign_allowed'] += 1
     return {'seed': seed, 'counts': dict(counts), 'by_domain': {k:dict(v) for k,v in by_domain.items()}, 'attack_variants': {k:len(v) for k,v in families.items()}}
 
-if __name__ == '__main__':
-    print(json.dumps(run(), indent=2, sort_keys=True))
-
-
 def metamorphic(seed=9437, cases_per_domain=1000):
     """Randomly generate valid actions, then perturb one authority field."""
     rng = random.Random(seed)
@@ -64,4 +60,4 @@ def metamorphic(seed=9437, cases_per_domain=1000):
     return results
 
 if __name__ == '__main__':
-    print(json.dumps({'metamorphic': metamorphic()}, indent=2, sort_keys=True))
+    print(json.dumps({'injection': run(), 'metamorphic': metamorphic()}, indent=2, sort_keys=True))
