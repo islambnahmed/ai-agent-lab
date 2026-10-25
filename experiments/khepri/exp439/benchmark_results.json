@@ -1,0 +1,12 @@
+{
+  "adapter_drift_rejected": 2000,
+  "duplicate_rejected": 2000,
+  "parser_disagreements": 2000,
+  "path_alias_rejected": 2000,
+  "path_aliases_escape_sample_prefix": 2000,
+  "payload_swap_rejected": 2000,
+  "simulated_effects": 6000,
+  "total_cases": 12000,
+  "valid_github": 2000,
+  "valid_notion": 2000
+}
