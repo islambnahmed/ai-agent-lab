@@ -1,5 +1,6 @@
 import datetime as dt
 import math
+import json
 import unittest
 
 from tools.gold_walkforward import backtest, predict_drift
@@ -61,6 +62,33 @@ class GoldWalkForwardTests(unittest.TestCase):
     def test_warns_nonoverlapping_not_independent(self):
         result = backtest(self.make_rows(), horizon=7, train_min=120)
         self.assertIn("not statistically independent", result["warning"])
+
+
+    def test_tiny_price_direction_and_rmse_do_not_underflow(self):
+        days = [dt.date(2025, 1, 1) + dt.timedelta(days=i) for i in range(4)]
+        rows = list(zip(days, [1e-200, 2e-200, 4e-200, 8e-200]))
+        result = backtest(rows, horizon=1, train_min=3)
+        self.assertTrue(result["results"][0]["candidate_direction_correct"])
+        self.assertGreater(result["candidate_rmse"], 0)
+        self.assertTrue(math.isclose(
+            result["candidate_rmse"], result["results"][0]["candidate_abs_error"],
+            rel_tol=1e-12,
+        ))
+
+    def test_large_finite_residual_has_finite_rmse(self):
+        days = [dt.date(2025, 1, 1) + dt.timedelta(days=i) for i in range(3)]
+        rows = list(zip(days, [1e155, 1e155, 1e-300]))
+        result = backtest(rows, horizon=1, train_min=2)
+        self.assertTrue(math.isfinite(result["candidate_rmse"]))
+        self.assertTrue(math.isclose(result["candidate_rmse"], 1e155))
+
+    def test_unrepresentable_improvement_is_null_not_infinity(self):
+        days = [dt.date(2025, 1, 1) + dt.timedelta(days=i) for i in range(3)]
+        rows = list(zip(days, [1e-308, 1.0, math.nextafter(1.0, math.inf)]))
+        result = backtest(rows, horizon=1, train_min=2)
+        self.assertIsNone(result["mae_improvement_pct"])
+        self.assertTrue(math.isfinite(result["candidate_rmse"]))
+        json.dumps(result, allow_nan=False)
 
 
 if __name__ == "__main__":
