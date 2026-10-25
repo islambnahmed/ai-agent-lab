@@ -1,4 +1,4 @@
-"""Offline regression for stored fetch-manifest provenance (no network)."""
+"""Offline regression for byte-exact provider provenance on the peer settlement stack."""
 import contextlib
 import hashlib
 import io
@@ -13,15 +13,15 @@ import fetch_data
 
 class FetchManifestTests(unittest.TestCase):
     def test_manifest_hashes_exact_saved_history_bytes(self):
-        payload = {'metal': 'XAU', 'grain': 'daily',
-                   'points': [{'date': '2025-01-01', 'price': 2500}],
-                   'attribution': 'Test café'}
-        raw_digest = 'a' * 64
+        # Intentionally noncanonical whitespace and Unicode; normalization
+        # would destroy the byte identity required for raw-source recovery.
+        raw = '{\n "metal": "XAU", "grain": "daily", "attribution": "Test café"\n}\n'.encode('utf-8')
+        digest = hashlib.sha256(raw).hexdigest()
 
         def fake_fetch(name, url):
-            return name, payload, {'url': url, 'status': 'fetched',
-                                   'receivedAt': '2025-01-02T12:00:00Z',
-                                   'rawSha256': raw_digest}
+            return name, raw, {'url': url, 'status': 'fetched',
+                               'receivedAt': '2025-01-02T12:00:00Z',
+                               'rawSha256': digest}
 
         with tempfile.TemporaryDirectory() as directory:
             with mock.patch.object(fetch_data, 'ROOT', Path(directory)), \
@@ -33,14 +33,9 @@ class FetchManifestTests(unittest.TestCase):
             manifest = json.loads(
                 (Path(directory) / 'data/fetch-manifest.json').read_text()
             )
-            self.assertEqual(
-                manifest['history']['storedSha256'],
-                hashlib.sha256(saved).hexdigest(),
-            )
-            self.assertEqual(manifest['history']['rawSha256'], raw_digest)
-            # The raw provider digest and normalized stored-byte digest
-            # represent different byte streams and must not be conflated.
-            self.assertNotEqual(manifest['history']['storedSha256'], raw_digest)
+            self.assertEqual(saved, raw)
+            self.assertEqual(manifest['history']['storedSha256'], digest)
+            self.assertEqual(manifest['history']['rawSha256'], digest)
             self.assertIn('café'.encode('utf-8'), saved)
 
 
