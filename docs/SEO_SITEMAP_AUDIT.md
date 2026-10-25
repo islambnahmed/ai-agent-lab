@@ -34,7 +34,7 @@ python3 tools/seo_sitemap_audit.py \
   --urls-csv /path/to/inventory.csv > /path/to/report.json
 ```
 
-For safety, `--urls-csv` refuses destinations ending in `.xml` or `.gz`, so it cannot replace an input sitemap. Existing CSV files are preserved by default when the new export differs; use `--replace-csv` only when deliberately replacing an existing CSV. Identical reruns are allowed without the flag.
+For safety, `--urls-csv` requires a `.csv` destination (case-insensitive), rejecting `.xml`, `.gz`, and other extensions even when `--replace-csv` is set. This prevents accidentally overwriting non-CSV files; still review the target path before using explicit replacement. Existing CSV files are preserved by default when the new export differs; use `--replace-csv` only when deliberately replacing an existing CSV. Identical reruns are allowed without the flag.
 
 When `--urls-csv` is used, the JSON report also contains `csv_export.sha256`, `csv_export.bytes`, and `csv_export.rows`, computed from the exact exported CSV. The report records the normalized `start_sitemap` path to prevent comparing different entrypoint scopes as if they were equivalent. Save both files together for later provenance checks. These local checks detect accidental mismatch, not maliciously forged reports.
 
