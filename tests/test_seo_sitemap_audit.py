@@ -90,6 +90,28 @@ class SitemapAuditTests(unittest.TestCase):
         self.assertIsNone(_normalize_url('https://user:pw@example.com/x'))
         self.assertIsNone(_normalize_url('not-a-url'))
 
+    def test_invalid_url_syntax_is_not_silently_normalized(self):
+        # urllib.parse accepts these malformed authority/escape forms; treating
+        # them as valid creates false duplicate or same-origin conclusions.
+        invalid = [
+            'https://@example.com/a',
+            'https://example.com:/a',
+            'https://example.com:0/a',
+            'https://example.com/a%zz',
+            'https://example.com/a%2G',
+        ]
+        for raw in invalid:
+            with self.subTest(raw=raw):
+                self.assertIsNone(_normalize_url(raw))
+        self.assertEqual(_normalize_url('https://example.com:443/a%20b'),
+                         'https://example.com/a%20b')
+        self.write('sitemap.xml', urlset(*[(raw, None) for raw in invalid]))
+        self.assertEqual(self.codes(), ['invalid_url'] * len(invalid))
+        self.write('sitemap.xml', index('https://example.com:0/child.xml'))
+        self.assertEqual(self.codes(), ['unmapped_index_loc'])
+        with self.assertRaises(ValueError):
+            audit(self.root, 'sitemap.xml', 'https://example.com:0/', TODAY)
+
     def test_wrong_namespace_entries_cannot_disappear_silently(self):
         self.write('sitemap.xml', f'<urlset xmlns="{NS}"><url xmlns="urn:wrong"><loc>https://example.com/a</loc></url></urlset>')
         self.assertEqual(self.codes(), ['wrong_entry_namespace'])
