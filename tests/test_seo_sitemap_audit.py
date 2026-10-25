@@ -90,6 +90,29 @@ class SitemapAuditTests(unittest.TestCase):
         self.assertIsNone(_normalize_url('https://user:pw@example.com/x'))
         self.assertIsNone(_normalize_url('not-a-url'))
 
+    def test_normalization_rejects_raw_controls_empty_port_and_empty_userinfo(self):
+        # urlsplit() otherwise strips leading C0 controls and erases an empty port.
+        for url in ('\\x01https://example.com/a',
+                    'https://example.com/a\\x7f',
+                    'https://example.com/a\\x80',
+                    'https://example.com:/a',
+                    'https://[::1]:/a',
+                    'https://@example.com/a'):
+            with self.subTest(url=repr(url)):
+                self.assertIsNone(_normalize_url(url))
+
+    def test_urlset_control_and_index_empty_port_are_reported(self):
+        # DEL is XML-parseable, but is not a valid raw URL character.
+        self.write('sitemap.xml', urlset(('https://example.com/bad\\x7f', None),
+                                         ('https://example.com/good', None)))
+        report = self.run_audit()
+        self.assertEqual([item['code'] for item in report['issues']], ['invalid_url'])
+        self.assertEqual(report['summary']['unique_urls'], 1)
+
+        self.write('sitemap.xml', index('https://example.com:/child.xml'))
+        self.write('child.xml', urlset(('https://example.com/page', None)))
+        self.assertEqual(self.codes(), ['unmapped_index_loc'])
+
     def test_wrong_namespace_entries_cannot_disappear_silently(self):
         self.write('sitemap.xml', f'<urlset xmlns="{NS}"><url xmlns="urn:wrong"><loc>https://example.com/a</loc></url></urlset>')
         self.assertEqual(self.codes(), ['wrong_entry_namespace'])
