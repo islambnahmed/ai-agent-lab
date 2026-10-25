@@ -53,9 +53,16 @@ def _normalize_url(raw: str) -> str | None:
         parts = urlsplit(raw.strip())
         if parts.scheme.lower() not in ('http', 'https') or not parts.hostname:
             return None
-        if parts.username or parts.password or any(c.isspace() for c in raw):
+        # urlsplit accepts empty userinfo, explicit :0 / : ports and malformed
+        # percent escapes; dropping them during normalization can conceal bad
+        # sitemap URLs or falsely merge them with valid canonical URLs.
+        if (parts.username is not None or parts.password is not None
+                or parts.netloc.endswith(':') or any(c.isspace() for c in raw)
+                or re.search(r'%(?![0-9A-Fa-f]{2})', raw)):
             return None
-        port = parts.port  # may raise ValueError
+        port = parts.port  # may raise ValueError for out-of-range ports
+        if port == 0:
+            return None
         host = parts.hostname.lower()
         if ':' in host:
             host = '[' + host + ']'
