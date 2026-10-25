@@ -43,5 +43,25 @@ class GoldWalkForwardTests(unittest.TestCase):
         self.assertTrue(math.isclose(predict_drift([100, 110, 121], 2), 146.41))
 
 
+    def test_extreme_finite_training_prices_do_not_overflow_ratio(self):
+        self.assertTrue(math.isclose(predict_drift([1e-300, 1e300, 1e-300], 1), 1e-300))
+
+    def test_reject_unrepresentable_forecast(self):
+        with self.assertRaisesRegex(ValueError, "finite positive range"):
+            predict_drift([1e-300, 1e300], 7)
+
+    def test_direct_api_rejects_invalid_price_or_date_order(self):
+        rows = self.make_rows()
+        for bad in [float("nan"), float("inf"), -1.0, 0.0]:
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                backtest(rows[:5] + [(rows[5][0], bad)] + rows[6:], horizon=2, train_min=3)
+        with self.assertRaisesRegex(ValueError, "strictly increasing"):
+            backtest(rows[:5] + [rows[4]] + rows[6:], horizon=2, train_min=3)
+
+    def test_warns_nonoverlapping_not_independent(self):
+        result = backtest(self.make_rows(), horizon=7, train_min=120)
+        self.assertIn("not statistically independent", result["warning"])
+
+
 if __name__ == "__main__":
     unittest.main()
