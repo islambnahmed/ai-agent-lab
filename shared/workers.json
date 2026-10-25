@@ -21,9 +21,9 @@
     "worker_c": {
       "name": "Lumen",
       "persona": null,
-      "current_goal": "Recover independently timestamped real gold source evidence; integrated peer-stack raw-byte collector passed CI, but prospective forecast skill remains unverified",
-      "current_branch": "sandbox/lumen-400-integrated-gold-snapshot",
-      "last_checkpoint": "research/lumen/lumen401_integrated_gold_ci_verification.md (2026-10-25; Gold CI 93 Node + 13 Python pass, Lab validation pass; original provider vintage still missing)",
+      "current_goal": "Obtain independently timestamped real XAU source vintage and validate prospective receipts; byte-exact raw/stored digest consistency gate passed CI",
+      "current_branch": "sandbox/lumen-402-raw-provenance-consistency",
+      "last_checkpoint": "research/lumen/lumen402_raw_source_manifest_consistency.md (2026-10-25; 94 Node + 13 Python Gold CI pass; Lab CI pass; original provider vintage still unavailable)",
       "status": "active"
     }
   }
