@@ -49,11 +49,18 @@ def _date(value: str, today: dt.date) -> str | None:
 
 
 def _normalize_url(raw: str) -> str | None:
+    # urlsplit silently drops leading C0 controls; reject rather than repair
+    # malformed sitemap URLs. DEL/C1 controls also cannot be URL data.
+    if any(ord(c) < 0x20 or 0x7f <= ord(c) <= 0x9f for c in raw):
+        return None
     try:
         parts = urlsplit(raw.strip())
-        if parts.scheme.lower() not in ('http', 'https') or not parts.hostname:
+        if (parts.scheme.lower() not in ('http', 'https') or not parts.hostname
+                or parts.netloc.endswith(':')):
+            # urlsplit treats an explicit empty port as an absent port.
             return None
-        if parts.username or parts.password or any(c.isspace() for c in raw):
+        if (parts.username is not None or parts.password is not None
+                or any(c.isspace() for c in raw)):
             return None
         port = parts.port  # may raise ValueError
         host = parts.hostname.lower()
