@@ -82,6 +82,30 @@ class GoldWalkForwardTests(unittest.TestCase):
         self.assertTrue(math.isfinite(result["candidate_rmse"]))
         self.assertTrue(math.isclose(result["candidate_rmse"], 1e155))
 
+    def test_adjacent_prices_keep_small_drift_at_extreme_scales(self):
+        for price in [1e-300, 1e-100, 1e100, 1e300]:
+            with self.subTest(price=price):
+                next_price = math.nextafter(price, math.inf)
+                forecast = predict_drift([price, next_price], horizon=1)
+                self.assertGreater(forecast, next_price)
+
+    def test_adjacent_extreme_prices_preserve_direction_in_backtest(self):
+        price = 1e100
+        second = math.nextafter(price, math.inf)
+        third = math.nextafter(second, math.inf)
+        days = [dt.date(2025, 1, 1) + dt.timedelta(days=i) for i in range(3)]
+        result = backtest(list(zip(days, [price, second, third])), horizon=1, train_min=2)
+        self.assertTrue(result["results"][0]["candidate_direction_correct"])
+        json.dumps(result, allow_nan=False)
+
+    def test_large_log_growth_can_still_produce_finite_forecast(self):
+        # exp(log_growth) overflows, but multiplying by a tiny last price
+        # produces a representable forecast. Keep the log-space fallback.
+        forecast = predict_drift([1e-300, 1e-200], horizon=4)
+        self.assertTrue(math.isfinite(forecast))
+        self.assertTrue(math.isclose(forecast, 1e200, rel_tol=1e-11))
+
+
     def test_unrepresentable_improvement_is_null_not_infinity(self):
         days = [dt.date(2025, 1, 1) + dt.timedelta(days=i) for i in range(3)]
         rows = list(zip(days, [1e-308, 1.0, math.nextafter(1.0, math.inf)]))
